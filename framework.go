@@ -2,8 +2,13 @@ package clustertest
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/giantswarm/clustertest/pkg/client"
+)
+
+const (
+	KubeconfigEnvVar = "E2E_KUBECONFIG"
 )
 
 // Framework is the overall framework for testing of clusters
@@ -11,6 +16,24 @@ type Framework struct {
 	kubeconfigPath string
 	mcClient       *client.Client
 	wcClients      map[string]*client.Client
+}
+
+// New initializes a new Framework instance using the kubeconfig found in the env var `E2E_KUBECONFIG`
+func New() (*Framework, error) {
+	mcKubeconfig, ok := os.LookupEnv(KubeconfigEnvVar)
+	if !ok {
+		return nil, fmt.Errorf("no %s set", KubeconfigEnvVar)
+	}
+
+	framework := NewWithKubeconfig(mcKubeconfig)
+
+	// for _, envVar := range os.Environ() {
+	// 	if strings.HasPrefix(envVar, "E2E_WC_") {
+	// 		// TODO: Initialize workload cluster
+	// 	}
+	// }
+
+	return framework, nil
 }
 
 // NewWithKubeconfig generates a new framework initialised with the Management Cluster provided as a Kubeconfig

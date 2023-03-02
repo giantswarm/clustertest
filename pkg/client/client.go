@@ -10,6 +10,8 @@ import (
 	"k8s.io/kubectl/pkg/scheme"
 	cr "sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/client/apiutil"
+
+	applicationv1alpha1 "github.com/giantswarm/apiextensions-application/api/v1alpha1"
 )
 
 // Client extends the client from controller-runtime
@@ -43,6 +45,9 @@ func New(kubeconfigPath string) (*Client, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to create new client - %v", err)
 	}
+
+	// Add known CRDs to scheme
+	applicationv1alpha1.AddToScheme(client.Scheme())
 
 	return &Client{client}, nil
 }

@@ -3,6 +3,7 @@ package client
 import (
 	"context"
 	"fmt"
+	"os"
 
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -50,6 +51,21 @@ func New(kubeconfigPath string) (*Client, error) {
 	applicationv1alpha1.AddToScheme(client.Scheme())
 
 	return &Client{client}, nil
+}
+
+// NewFromRawKubeconfig is like New but takes in the string contents of a Kubeconfig and creates a client for it
+func NewFromRawKubeconfig(kubeconfig string) (*Client, error) {
+	f, err := os.CreateTemp("", "kubeconfig-")
+	if err != nil {
+		return nil, err
+	}
+	defer f.Close()
+	_, err = f.WriteString(kubeconfig)
+	if err != nil {
+		return nil, err
+	}
+
+	return New(f.Name())
 }
 
 // CheckConnection attempts to connect to the clusters API server

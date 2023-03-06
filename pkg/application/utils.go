@@ -12,19 +12,22 @@ type ValuesTemplateVars struct {
 	Organization string
 }
 
-func parseTemplate(path string, config *ValuesTemplateVars) (string, error) {
+func parseTemplateFile(path string, config *ValuesTemplateVars) (string, error) {
 	manifest, err := os.ReadFile(path)
 	if err != nil {
 		return "", err
 	}
+	return parseTemplate(string(manifest), config), nil
+}
 
+func parseTemplate(manifest string, config *ValuesTemplateVars) string {
 	if config == nil {
 		config = &ValuesTemplateVars{}
 	}
 
-	ut := template.Must(template.New("values").Parse(string(manifest)))
+	ut := template.Must(template.New("values").Parse(manifest))
 	manifestBuffer := &bytes.Buffer{}
 	ut.Execute(manifestBuffer, *config)
 
-	return manifestBuffer.String(), nil
+	return manifestBuffer.String()
 }

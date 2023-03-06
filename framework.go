@@ -85,7 +85,9 @@ func (f *Framework) CreateCluster(ctx context.Context, clusterName string,
 	// Cluster app
 	app := application.New(clusterName, clusterApp).
 		WithVersion(clusterVersion).
-		WithValues(clusterValues).
+		WithValues(clusterValues, &application.ValuesTemplateVars{
+			ClusterName: clusterName,
+		}).
 		WithConfigMapLabels(map[string]string{
 			"giantswarm.io/cluster": clusterName,
 		})
@@ -106,7 +108,9 @@ func (f *Framework) CreateCluster(ctx context.Context, clusterName string,
 	// Default Apps app
 	app = application.New(fmt.Sprintf("%s-default-apps", clusterName), defaultAppsApp).
 		WithVersion(defaultAppsVersion).
-		WithValues(defaultAppsValues).
+		WithValues(defaultAppsValues, &application.ValuesTemplateVars{
+			ClusterName: clusterName,
+		}).
 		WithAppLabels(map[string]string{
 			"giantswarm.io/managed-by": "cluster",
 		})

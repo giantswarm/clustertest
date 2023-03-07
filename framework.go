@@ -2,7 +2,6 @@ package clustertest
 
 import (
 	"context"
-	"encoding/base64"
 	"fmt"
 	"os"
 	"regexp"
@@ -13,6 +12,7 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 
 	corev1 "k8s.io/api/core/v1"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	cr "sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -57,6 +57,7 @@ func NewWithKubeconfig(kubeconfigPath string) *Framework {
 	return &Framework{
 		kubeconfigPath: kubeconfigPath,
 		mcClient:       mcClient,
+		wcClients:      map[string]*client.Client{},
 	}
 }
 
@@ -90,6 +91,9 @@ func (f *Framework) CreateCluster(ctx context.Context, clusterName string,
 		WithValues(clusterValues, &application.ValuesTemplateVars{
 			ClusterName: clusterName,
 		}).
+		WithAppLabels(map[string]string{
+			"app-operator.giantswarm.io/version": "0.0.0",
+		}).
 		WithConfigMapLabels(map[string]string{
 			"giantswarm.io/cluster": clusterName,
 		})
@@ -114,7 +118,12 @@ func (f *Framework) CreateCluster(ctx context.Context, clusterName string,
 			ClusterName: clusterName,
 		}).
 		WithAppLabels(map[string]string{
-			"giantswarm.io/managed-by": "cluster",
+			"app-operator.giantswarm.io/version": "0.0.0",
+			"giantswarm.io/cluster":              clusterName,
+			"giantswarm.io/managed-by":           "cluster",
+		}).
+		WithConfigMapLabels(map[string]string{
+			"giantswarm.io/cluster": clusterName,
 		})
 	if isShaVersion.MatchString(defaultAppsVersion) {
 		app = app.WithCatalog("cluster-test")
@@ -143,19 +152,26 @@ func (f *Framework) CreateCluster(ctx context.Context, clusterName string,
 			return nil, ctx.Err()
 		default:
 			f.Log("Checking for valid Kubeconfig for cluster %s", clusterName)
+
+			var kubeconfigSecret corev1.Secret
+			err := f.MC().Get(ctx, types.NamespacedName{Name: fmt.Sprintf("%s-kubeconfig", clusterName), Namespace: app.Namespace}, &kubeconfigSecret)
 			if cr.IgnoreNotFound(err) != nil {
 				return nil, err
-			}
-			if kubeconfigSecret == nil {
+			} else if apierrors.IsNotFound(err) {
 				// Kubeconfig not yet available
+				f.Log(" - kubeconfig secret not yet available.\n")
 				time.Sleep(10 * time.Second)
 				continue
 			}
 
-			kubeconfig, err := base64.StdEncoding.DecodeString(string(kubeconfigSecret.Data["value"]))
-			if err != nil {
-				return nil, err
+			if len(kubeconfigSecret.Data["value"]) == 0 {
+				// Kubeconfig data not yet available
+				f.Log(" - kubeconfig secret not yet populated.\n")
+				time.Sleep(10 * time.Second)
+				continue
 			}
+
+			kubeconfig := string(kubeconfigSecret.Data["value"])
 			wcClient, err := client.NewFromRawKubeconfig(string(kubeconfig))
 			if err != nil {
 				return nil, err
@@ -163,9 +179,12 @@ func (f *Framework) CreateCluster(ctx context.Context, clusterName string,
 
 			if err := wcClient.CheckConnection(); err != nil {
 				// Cluster not yet ready
+				f.Log(" - connection to api-server not yet available.\n")
 				time.Sleep(10 * time.Second)
 				continue
 			}
+
+			f.Log(" - Got it!\n")
 
 			// Store client for later
 			f.wcClients[clusterName] = wcClient

@@ -5,6 +5,7 @@ go 1.19
 require (
 	github.com/giantswarm/apiextensions-application v0.6.0
 	github.com/giantswarm/kubectl-gs/v2 v2.32.0
+	github.com/google/go-github/v50 v50.1.0
 	github.com/onsi/ginkgo/v2 v2.6.0
 	k8s.io/api v0.26.1
 	k8s.io/apimachinery v0.26.1
@@ -33,6 +34,7 @@ require (
 	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/google/gnostic v0.6.9 // indirect
 	github.com/google/go-cmp v0.5.9 // indirect
+	github.com/google/go-querystring v1.1.0 // indirect
 	github.com/google/gofuzz v1.2.0 // indirect
 	github.com/google/safetext v0.0.0-20220905092116-b49f7bc46da2 // indirect
 	github.com/imdario/mergo v0.3.13 // indirect
@@ -50,6 +52,7 @@ require (
 	github.com/spf13/afero v1.9.3 // indirect
 	github.com/spf13/cobra v1.6.1 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
+	golang.org/x/crypto v0.3.0 // indirect
 	golang.org/x/net v0.5.0 // indirect
 	golang.org/x/oauth2 v0.4.0 // indirect
 	golang.org/x/sys v0.4.0 // indirect

@@ -5,6 +5,7 @@ go 1.19
 require (
 	github.com/giantswarm/apiextensions-application v0.6.0
 	github.com/giantswarm/kubectl-gs/v2 v2.32.0
+	github.com/onsi/ginkgo/v2 v2.6.0
 	k8s.io/api v0.26.1
 	k8s.io/apimachinery v0.26.1
 	k8s.io/client-go v0.26.1

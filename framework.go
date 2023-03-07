@@ -22,6 +22,8 @@ const (
 
 // Framework is the overall framework for testing of clusters
 type Framework struct {
+	DisableLogging bool
+
 	kubeconfigPath string
 	mcClient       *client.Client
 	wcClients      map[string]*client.Client
@@ -140,8 +142,7 @@ func (f *Framework) CreateCluster(ctx context.Context, clusterName string,
 			// Timeout / deadline reached
 			return nil, ctx.Err()
 		default:
-			var kubeconfigSecret *corev1.Secret
-			err := f.MC().Get(ctx, types.NamespacedName{Name: fmt.Sprintf("%s-kubeconfig", clusterName), Namespace: app.Namespace}, kubeconfigSecret)
+			f.Log("Checking for valid Kubeconfig for cluster %s", clusterName)
 			if cr.IgnoreNotFound(err) != nil {
 				return nil, err
 			}

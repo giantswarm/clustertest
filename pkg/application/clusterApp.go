@@ -47,7 +47,7 @@ func NewClusterApp(clusterName string, provider Provider) *Cluster {
 
 // WithNamespace sets the Namespace value
 func (c *Cluster) WithNamespace(namespace string) *Cluster {
-	c.Name = namespace
+	c.Namespace = namespace
 	c.ClusterApp = c.ClusterApp.WithNamespace(namespace)
 	c.DefaultAppsApp = c.DefaultAppsApp.WithNamespace(namespace)
 	return c

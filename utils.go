@@ -18,3 +18,7 @@ func GenerateRandomName(prefix string) string {
 	}
 	return fmt.Sprintf("%s-%s", prefix, str)[:9]
 }
+
+func StringToPointer(str string) *string {
+	return &str
+}

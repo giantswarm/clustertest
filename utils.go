@@ -3,7 +3,12 @@ package clustertest
 import (
 	"fmt"
 	"math/rand"
+	"time"
 )
+
+func init() {
+	rand.Seed(time.Now().UnixNano())
+}
 
 func GenerateRandomName(prefix string) string {
 	charset := []byte("abcdefghijklmnopqrstuvwxyz0123456789")

@@ -4,13 +4,15 @@ import (
 	"context"
 	"fmt"
 	"os"
-	"regexp"
 	"time"
 
 	"github.com/giantswarm/clustertest/pkg/application"
 	"github.com/giantswarm/clustertest/pkg/client"
+
+	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 
+	applicationv1alpha1 "github.com/giantswarm/apiextensions-application/api/v1alpha1"
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	cr "sigs.k8s.io/controller-runtime/pkg/client"
@@ -76,67 +78,23 @@ func (f *Framework) WC(clusterName string) (*client.Client, error) {
 	return c, nil
 }
 
-// CreateCluster creates and applies the cluster and default-apps App resources to the MC and then waits for a value Kubeconfig to be available
+// ApplyCluster takes a Cluster object, applies it to the MC in the correct order and then waits for a valid Kubeconfig to be available
+//
 // A timeout can be provided via the given `ctx` value by using `context.WithTimeout()`
-func (f *Framework) CreateCluster(ctx context.Context, clusterName string,
-	clusterApp string, clusterVersion string, clusterValues string,
-	defaultAppsApp string, defaultAppsVersion string, defaultAppsValues string) (*client.Client, error) {
-
-	// If commit SHA based version we'll change the catalog
-	var isShaVersion = regexp.MustCompile(`(?m)^v?[0-9]+\.[0-9]+\.[0-9]+\-\w{40}`)
-
-	// Cluster app
-	app := application.New(clusterName, clusterApp).
-		WithVersion(clusterVersion).
-		WithValues(clusterValues, &application.ValuesTemplateVars{
-			ClusterName: clusterName,
-		}).
-		WithAppLabels(map[string]string{
-			"app-operator.giantswarm.io/version": "0.0.0",
-		}).
-		WithConfigMapLabels(map[string]string{
-			"giantswarm.io/cluster": clusterName,
-		})
-	if isShaVersion.MatchString(clusterVersion) {
-		app = app.WithCatalog("cluster-test")
-	}
-	clusterApplication, clusterCM, err := app.Build()
+func (f *Framework) ApplyCluster(ctx context.Context, cluster *application.Cluster) (*client.Client, error) {
+	clusterApplication, clusterCM, defaultAppsApplication, defaultAppsCM, err := cluster.Build()
 	if err != nil {
 		return nil, fmt.Errorf("failed to build cluster app: %v", err)
 	}
+
+	// Apply Cluster resources
 	if err := f.MC().Client.Create(ctx, clusterCM); err != nil {
 		return nil, fmt.Errorf("failed to apply cluster configmap: %v", err)
 	}
 	if err := f.MC().Client.Create(ctx, clusterApplication); err != nil {
 		return nil, fmt.Errorf("failed to apply cluster app CR: %v", err)
 	}
-
-	// Default Apps app
-	app = application.New(fmt.Sprintf("%s-default-apps", clusterName), defaultAppsApp).
-		WithVersion(defaultAppsVersion).
-		WithValues(defaultAppsValues, &application.ValuesTemplateVars{
-			ClusterName: clusterName,
-		}).
-		WithAppLabels(map[string]string{
-			"app-operator.giantswarm.io/version": "0.0.0",
-			"giantswarm.io/cluster":              clusterName,
-			"giantswarm.io/managed-by":           "cluster",
-		}).
-		WithConfigMapLabels(map[string]string{
-			"giantswarm.io/cluster": clusterName,
-		})
-	if isShaVersion.MatchString(defaultAppsVersion) {
-		app = app.WithCatalog("cluster-test")
-	}
-	defaultAppsApplication, defaultAppsCM, err := app.Build()
-	if err != nil {
-		return nil, fmt.Errorf("failed to build cluster app: %v", err)
-	}
-
-	// Add missing config
-	defaultAppsApplication.Spec.Config.ConfigMap.Name = fmt.Sprintf("%s-cluster-values", clusterName)
-	defaultAppsApplication.Spec.Config.ConfigMap.Namespace = app.Namespace
-
+	// Apply Default Apps resources
 	if err := f.MC().Client.Create(ctx, defaultAppsCM); err != nil {
 		return nil, fmt.Errorf("failed to apply default-apps configmap: %v", err)
 	}
@@ -144,6 +102,13 @@ func (f *Framework) CreateCluster(ctx context.Context, clusterName string,
 		return nil, fmt.Errorf("failed to apply default-apps app CR: %v", err)
 	}
 
+	return f.WaitForClusterReady(ctx, cluster.Name, cluster.Namespace)
+}
+
+// WaitForClusterReady watches for a Kubeconfig secret to be created on the MC and then waits until that cluster's api-server response successfully
+//
+// A timeout can be provided via the given `ctx` value by using `context.WithTimeout()`
+func (f *Framework) WaitForClusterReady(ctx context.Context, clusterName string, namespace string) (*client.Client, error) {
 	// Allow for context-based timeout handling
 	for {
 		select {
@@ -154,7 +119,7 @@ func (f *Framework) CreateCluster(ctx context.Context, clusterName string,
 			f.Log("Checking for valid Kubeconfig for cluster %s", clusterName)
 
 			var kubeconfigSecret corev1.Secret
-			err := f.MC().Get(ctx, types.NamespacedName{Name: fmt.Sprintf("%s-kubeconfig", clusterName), Namespace: app.Namespace}, &kubeconfigSecret)
+			err := f.MC().Get(ctx, types.NamespacedName{Name: fmt.Sprintf("%s-kubeconfig", clusterName), Namespace: namespace}, &kubeconfigSecret)
 			if cr.IgnoreNotFound(err) != nil {
 				return nil, err
 			} else if apierrors.IsNotFound(err) {
@@ -192,4 +157,15 @@ func (f *Framework) CreateCluster(ctx context.Context, clusterName string,
 			return wcClient, nil
 		}
 	}
+}
+
+// DeleteCluster removes the Cluster app from the MC
+func (f *Framework) DeleteCluster(ctx context.Context, clusterName string, namespace string) error {
+	app := applicationv1alpha1.App{
+		ObjectMeta: v1.ObjectMeta{
+			Name:      clusterName,
+			Namespace: namespace,
+		},
+	}
+	return f.MC().Client.Delete(ctx, &app)
 }

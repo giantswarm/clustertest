@@ -42,29 +42,23 @@ func New() (*Framework, error) {
 		return nil, fmt.Errorf("no %s set", KubeconfigEnvVar)
 	}
 
-	framework := NewWithKubeconfig(mcKubeconfig)
+	framework, err := NewWithKubeconfig(mcKubeconfig)
 
-	// for _, envVar := range os.Environ() {
-	// 	if strings.HasPrefix(envVar, "E2E_WC_") {
-	// 		// TODO: Initialize workload cluster
-	// 	}
-	// }
-
-	return framework, nil
+	return framework, err
 }
 
 // NewWithKubeconfig generates a new framework initialised with the Management Cluster provided as a Kubeconfig
-func NewWithKubeconfig(kubeconfigPath string) *Framework {
+func NewWithKubeconfig(kubeconfigPath string) (*Framework, error) {
 	mcClient, err := client.New(kubeconfigPath)
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 
 	return &Framework{
 		mcKubeconfigPath: kubeconfigPath,
 		mcClient:         mcClient,
 		wcClients:        map[string]*client.Client{},
-	}
+	}, nil
 }
 
 // MC returns an initialized client for the Management Cluster

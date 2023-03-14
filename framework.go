@@ -3,6 +3,7 @@ package clustertest
 import (
 	"context"
 	"fmt"
+	"io"
 	"os"
 	"time"
 
@@ -10,6 +11,7 @@ import (
 	"github.com/giantswarm/clustertest/pkg/client"
 	"github.com/giantswarm/clustertest/pkg/organization"
 	"github.com/giantswarm/clustertest/pkg/wait"
+	"github.com/go-logr/logr"
 
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
@@ -28,11 +30,12 @@ const (
 
 // Framework is the overall framework for testing of clusters
 type Framework struct {
-	DisableLogging bool
+	LogWriter io.Writer
 
 	mcKubeconfigPath string
 	mcClient         *client.Client
 	wcClients        map[string]*client.Client
+	logger           *logr.Logger
 }
 
 // New initializes a new Framework instance using the kubeconfig found in the env var `E2E_KUBECONFIG`
@@ -122,13 +125,13 @@ func (f *Framework) WaitForClusterReady(ctx context.Context, clusterName string,
 				return false, err
 			} else if apierrors.IsNotFound(err) {
 				// Kubeconfig not yet available
-				f.Log(" - kubeconfig secret not yet available.\n")
+				f.Log("kubeconfig secret not yet available")
 				return false, nil
 			}
 
 			if len(kubeconfigSecret.Data["value"]) == 0 {
 				// Kubeconfig data not yet available
-				f.Log(" - kubeconfig secret not yet populated.\n")
+				f.Log("kubeconfig secret not yet populated")
 				return false, nil
 			}
 
@@ -140,11 +143,11 @@ func (f *Framework) WaitForClusterReady(ctx context.Context, clusterName string,
 
 			if err := wcClient.CheckConnection(); err != nil {
 				// Cluster not yet ready
-				f.Log(" - connection to api-server not yet available.\n")
+				f.Log("connection to api-server not yet available")
 				return false, nil
 			}
 
-			f.Log(" - Got it!\n")
+			f.Log("Got valid kubeconfig!")
 
 			// Store client for later
 			f.wcClients[clusterName] = wcClient
@@ -237,7 +240,7 @@ func (f *Framework) CreateOrg(ctx context.Context, org *organization.Org) error 
 				},
 			}
 			if err := f.MC().Client.Get(ctx, cr.ObjectKeyFromObject(ns), ns); err != nil {
-				f.Log("Waiting for org namespace '%s' to be created.\n", org.GetNamespace())
+				f.Log("Waiting for org namespace '%s' to be created", org.GetNamespace())
 				return false, nil
 			}
 

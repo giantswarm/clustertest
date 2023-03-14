@@ -30,9 +30,9 @@ const (
 type Framework struct {
 	DisableLogging bool
 
-	kubeconfigPath string
-	mcClient       *client.Client
-	wcClients      map[string]*client.Client
+	mcKubeconfigPath string
+	mcClient         *client.Client
+	wcClients        map[string]*client.Client
 }
 
 // New initializes a new Framework instance using the kubeconfig found in the env var `E2E_KUBECONFIG`
@@ -61,9 +61,9 @@ func NewWithKubeconfig(kubeconfigPath string) *Framework {
 	}
 
 	return &Framework{
-		kubeconfigPath: kubeconfigPath,
-		mcClient:       mcClient,
-		wcClients:      map[string]*client.Client{},
+		mcKubeconfigPath: kubeconfigPath,
+		mcClient:         mcClient,
+		wcClients:        map[string]*client.Client{},
 	}
 }
 

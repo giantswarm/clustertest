@@ -29,7 +29,8 @@ type Client struct {
 // New creates a new Kubernetes client for the provided kubeconfig file
 //
 // The client is an extension of the client from controller-runtime and provides some additional helper functions.
-// The creation of the client doesn't confirm connectivity to the cluster and REST discovery is set to lazy discovery.
+// The creation of the client doesn't confirm connectivity to the cluster and REST discovery is set to lazy discovery
+// so the client can be created while the cluster is still being set up.
 func New(kubeconfigPath string) (*Client, error) {
 	if kubeconfigPath == "" {
 		return nil, fmt.Errorf("a kubeconfig file must be provided")
@@ -99,6 +100,7 @@ func (c *Client) CheckConnection() error {
 	return nil
 }
 
+// WaitForControlPlane polls the cluster and waits until the provided number of Control Plane nodes are reporting as ready
 func (c *Client) WaitForControlPlane(ctx context.Context, expectedNodes int) error {
 	return wait.For(
 		func() (bool, error) {

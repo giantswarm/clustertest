@@ -7,7 +7,6 @@ import (
 	"time"
 
 	corev1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/kubectl/pkg/scheme"
 	cr "sigs.k8s.io/controller-runtime/pkg/client"
@@ -81,20 +80,12 @@ func NewFromRawKubeconfig(kubeconfig string) (*Client, error) {
 func (c *Client) CheckConnection() error {
 	var ns corev1.NamespaceList
 	err := c.List(context.Background(), &ns)
-	if err != nil {
-		if _, ok := err.(errors.APIStatus); ok {
-			if errors.IsServiceUnavailable(err) || errors.IsTimeout(err) ||
-				errors.IsServerTimeout(err) || errors.IsUnexpectedServerError(err) {
-				// We treat these errors as an unsuccesful connection as the cluster is possibly still setting up.
-				return err
-			} else {
-				// The API server did return but with a known error.
-				// For now, we consider this a successful connection to the cluster.
-				return nil
-			}
-		} else {
-			return err
-		}
+	if isSuccessfulConnectionError(err) {
+		// The API server did return but with a known error.
+		// For now, we consider this a successful connection to the cluster.
+		return nil
+	} else if err != nil {
+		return err
 	}
 
 	return nil

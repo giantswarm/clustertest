@@ -8,6 +8,8 @@ import (
 
 	"github.com/giantswarm/clustertest/pkg/application"
 	"github.com/giantswarm/clustertest/pkg/client"
+	"github.com/giantswarm/clustertest/pkg/organization"
+	"github.com/giantswarm/clustertest/pkg/wait"
 
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
@@ -15,6 +17,8 @@ import (
 	applicationv1alpha1 "github.com/giantswarm/apiextensions-application/api/v1alpha1"
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	capi "sigs.k8s.io/cluster-api/api/v1beta1"
 	cr "sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -82,6 +86,11 @@ func (f *Framework) WC(clusterName string) (*client.Client, error) {
 //
 // A timeout can be provided via the given `ctx` value by using `context.WithTimeout()`
 func (f *Framework) ApplyCluster(ctx context.Context, cluster *application.Cluster) (*client.Client, error) {
+	err := f.CreateOrg(ctx, cluster.Organization)
+	if err != nil {
+		return nil, err
+	}
+
 	clusterApplication, clusterCM, defaultAppsApplication, defaultAppsCM, err := cluster.Build()
 	if err != nil {
 		return nil, fmt.Errorf("failed to build cluster app: %v", err)
@@ -109,44 +118,36 @@ func (f *Framework) ApplyCluster(ctx context.Context, cluster *application.Clust
 //
 // A timeout can be provided via the given `ctx` value by using `context.WithTimeout()`
 func (f *Framework) WaitForClusterReady(ctx context.Context, clusterName string, namespace string) (*client.Client, error) {
-	// Allow for context-based timeout handling
-	for {
-		select {
-		case <-ctx.Done():
-			// Timeout / deadline reached
-			return nil, ctx.Err()
-		default:
+	err := wait.For(
+		func() (bool, error) {
 			f.Log("Checking for valid Kubeconfig for cluster %s", clusterName)
 
 			var kubeconfigSecret corev1.Secret
 			err := f.MC().Get(ctx, types.NamespacedName{Name: fmt.Sprintf("%s-kubeconfig", clusterName), Namespace: namespace}, &kubeconfigSecret)
 			if cr.IgnoreNotFound(err) != nil {
-				return nil, err
+				return false, err
 			} else if apierrors.IsNotFound(err) {
 				// Kubeconfig not yet available
 				f.Log(" - kubeconfig secret not yet available.\n")
-				time.Sleep(10 * time.Second)
-				continue
+				return false, nil
 			}
 
 			if len(kubeconfigSecret.Data["value"]) == 0 {
 				// Kubeconfig data not yet available
 				f.Log(" - kubeconfig secret not yet populated.\n")
-				time.Sleep(10 * time.Second)
-				continue
+				return false, nil
 			}
 
 			kubeconfig := string(kubeconfigSecret.Data["value"])
 			wcClient, err := client.NewFromRawKubeconfig(string(kubeconfig))
 			if err != nil {
-				return nil, err
+				return false, err
 			}
 
 			if err := wcClient.CheckConnection(); err != nil {
 				// Cluster not yet ready
 				f.Log(" - connection to api-server not yet available.\n")
-				time.Sleep(10 * time.Second)
-				continue
+				return false, nil
 			}
 
 			f.Log(" - Got it!\n")
@@ -154,18 +155,121 @@ func (f *Framework) WaitForClusterReady(ctx context.Context, clusterName string,
 			// Store client for later
 			f.wcClients[clusterName] = wcClient
 
-			return wcClient, nil
-		}
+			return true, nil
+		},
+		wait.WithContext(ctx), wait.WithInterval(10*time.Second))
+	if err != nil {
+		return nil, err
 	}
+
+	return f.wcClients[clusterName], nil
 }
 
 // DeleteCluster removes the Cluster app from the MC
-func (f *Framework) DeleteCluster(ctx context.Context, clusterName string, namespace string) error {
+func (f *Framework) DeleteCluster(ctx context.Context, cluster *application.Cluster) error {
 	app := applicationv1alpha1.App{
 		ObjectMeta: v1.ObjectMeta{
-			Name:      clusterName,
-			Namespace: namespace,
+			Name:      cluster.Name,
+			Namespace: cluster.Namespace,
 		},
 	}
-	return f.MC().Client.Delete(ctx, &app)
+	err := f.MC().Client.Delete(ctx, &app)
+	if err != nil {
+		return err
+	}
+
+	err = wait.For(
+		func() (bool, error) {
+			cluster := &capi.Cluster{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      cluster.Name,
+					Namespace: cluster.Namespace,
+				},
+			}
+			err := f.MC().Client.Get(ctx, cr.ObjectKeyFromObject(cluster), cluster, &cr.GetOptions{})
+			if cr.IgnoreNotFound(err) != nil {
+				return false, err
+			} else if apierrors.IsNotFound(err) {
+				return true, nil
+			}
+
+			return false, nil
+		},
+		wait.WithContext(ctx))
+	if err != nil {
+		return err
+	}
+
+	// Remove the finalizer from the bastion secret or the namespace delete gets blocked
+	err = f.MC().Client.Patch(ctx,
+		&corev1.Secret{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      fmt.Sprintf("%s-bastion-ignition", cluster.Name),
+				Namespace: cluster.Namespace,
+			},
+		},
+		cr.RawPatch(types.MergePatchType, []byte(`{"metadata":{"finalizers":null}}`)),
+	)
+	if err != nil {
+		return err
+	}
+
+	return f.DeleteOrg(ctx, cluster.Organization)
+}
+
+// CreateOrg create a new Organization in the MC (which then triggers the creation of the org namespace)
+func (f *Framework) CreateOrg(ctx context.Context, org *organization.Org) error {
+	orgCR, err := org.Build()
+	if err != nil {
+		return err
+	}
+
+	err = f.MC().Client.Get(ctx, cr.ObjectKeyFromObject(orgCR), orgCR)
+	if cr.IgnoreNotFound(err) != nil {
+		return err
+	} else if err != nil {
+		// Not found so lets create
+		err = f.MC().Client.Create(ctx, orgCR, &cr.CreateOptions{})
+		if err != nil {
+			return err
+		}
+	}
+
+	return wait.For(
+		func() (done bool, err error) {
+			ns := &corev1.Namespace{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: org.GetNamespace(),
+				},
+			}
+			if err := f.MC().Client.Get(ctx, cr.ObjectKeyFromObject(ns), ns); err != nil {
+				f.Log("Waiting for org namespace '%s' to be created.\n", org.GetNamespace())
+				return false, nil
+			}
+
+			return true, nil
+		},
+		wait.WithContext(ctx), wait.WithInterval(2*time.Second))
+}
+
+// DeleteOrg deletes an Organization from the MC, waiting for all Clusters in the org namespace to be deleted first
+func (f *Framework) DeleteOrg(ctx context.Context, org *organization.Org) error {
+	orgCR, err := org.Build()
+	if err != nil {
+		return err
+	}
+
+	err = f.MC().Client.Get(ctx, cr.ObjectKeyFromObject(orgCR), orgCR)
+	if cr.IgnoreNotFound(err) != nil {
+		return err
+	} else if err != nil {
+		// Not found, nothing for us to do
+		return nil
+	}
+
+	if organization.SafeToDelete(*orgCR) {
+		return f.MC().Client.Delete(ctx, orgCR, &cr.DeleteOptions{})
+	}
+
+	return nil
 }

@@ -3,10 +3,11 @@ package application
 import (
 	"fmt"
 	"regexp"
-	"strings"
 
 	applicationv1alpha1 "github.com/giantswarm/apiextensions-application/api/v1alpha1"
 	corev1 "k8s.io/api/core/v1"
+
+	"github.com/giantswarm/clustertest/pkg/organization"
 )
 
 // Cluster is a wrapper around Cluster and Default-apps Apps that makes creating them together easier
@@ -15,6 +16,7 @@ type Cluster struct {
 	Namespace      string
 	ClusterApp     *Application
 	DefaultAppsApp *Application
+	Organization   *organization.Org
 }
 
 // Provider is the supported cluster providers
@@ -37,12 +39,21 @@ func NewClusterApp(clusterName string, provider Provider) *Cluster {
 	clusterApp := New(clusterName, fmt.Sprintf("cluster-%s", provider))
 	defaultAppsApp := New(fmt.Sprintf("%s-default-apps", clusterName), fmt.Sprintf("default-apps-%s", provider))
 
+	org := organization.NewRandomOrg()
+
 	return &Cluster{
 		Name:           clusterName,
-		Namespace:      "org-giantswarm",
+		Namespace:      org.GetNamespace(),
 		ClusterApp:     clusterApp,
 		DefaultAppsApp: defaultAppsApp,
+		Organization:   org,
 	}
+}
+
+// WithOrg sets the Organization for the cluster and updates the namespace to that for the org
+func (c *Cluster) WithOrg(org *organization.Org) *Cluster {
+	c.Organization = org
+	return c.WithNamespace(org.GetNamespace())
 }
 
 // WithNamespace sets the Namespace value
@@ -75,7 +86,7 @@ func (c *Cluster) WithAppValues(clusterValues string, defaultAppsValues string) 
 	config := &ValuesTemplateVars{
 		ClusterName:  c.Name,
 		Namespace:    c.Namespace,
-		Organization: strings.TrimPrefix(c.Namespace, "org-"),
+		Organization: c.Organization.Name,
 	}
 	c.ClusterApp = c.ClusterApp.WithValues(clusterValues, config)
 	c.DefaultAppsApp = c.DefaultAppsApp.WithValues(defaultAppsValues, config)
@@ -89,7 +100,7 @@ func (c *Cluster) WithAppValuesFile(clusterValuesFile string, defaultAppsValuesF
 	config := &ValuesTemplateVars{
 		ClusterName:  c.Name,
 		Namespace:    c.Namespace,
-		Organization: strings.TrimPrefix(c.Namespace, "org-"),
+		Organization: c.Organization.Name,
 	}
 	c.ClusterApp = c.ClusterApp.MustWithValuesFile(clusterValuesFile, config)
 	c.DefaultAppsApp = c.DefaultAppsApp.MustWithValuesFile(defaultAppsValuesFile, config)

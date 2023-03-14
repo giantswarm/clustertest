@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"time"
 
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -13,6 +14,11 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client/apiutil"
 
 	applicationv1alpha1 "github.com/giantswarm/apiextensions-application/api/v1alpha1"
+	"github.com/giantswarm/clustertest/pkg/wait"
+	orgv1alpha1 "github.com/giantswarm/organization-operator/api/v1alpha1"
+	capi "sigs.k8s.io/cluster-api/api/v1beta1"
+
+	. "github.com/onsi/ginkgo/v2"
 )
 
 // Client extends the client from controller-runtime
@@ -49,6 +55,8 @@ func New(kubeconfigPath string) (*Client, error) {
 
 	// Add known CRDs to scheme
 	applicationv1alpha1.AddToScheme(client.Scheme())
+	orgv1alpha1.AddToScheme(client.Scheme())
+	capi.AddToScheme(client.Scheme())
 
 	return &Client{client}, nil
 }
@@ -89,4 +97,38 @@ func (c *Client) CheckConnection() error {
 	}
 
 	return nil
+}
+
+func (c *Client) WaitForControlPlane(ctx context.Context, expectedNodes int) error {
+	return wait.For(
+		func() (bool, error) {
+			GinkgoWriter.Printf("Checking for ready control plane nodes")
+
+			nodes := &corev1.NodeList{}
+			err := c.List(ctx, nodes, &cr.MatchingLabels{
+				"node-role.kubernetes.io/control-plane": "",
+			},
+			)
+			if err != nil {
+				return false, err
+			}
+
+			readyNodes := 0
+
+			for _, node := range nodes.Items {
+				for _, condition := range node.Status.Conditions {
+					if condition.Type == corev1.NodeReady && condition.Status == corev1.ConditionTrue {
+						readyNodes += 1
+					}
+				}
+			}
+
+			GinkgoWriter.Printf(" - %d nodes ready, expecting %d\n", readyNodes, expectedNodes)
+			if readyNodes < expectedNodes {
+				return false, nil
+			}
+
+			return true, nil
+		},
+		wait.WithContext(ctx), wait.WithInterval(30*time.Second))
 }

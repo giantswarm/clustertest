@@ -1,4 +1,4 @@
-package clustertest
+package utils
 
 import (
 	"fmt"

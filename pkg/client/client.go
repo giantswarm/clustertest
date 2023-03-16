@@ -80,9 +80,7 @@ func (c *Client) CheckConnection() error {
 		// The API server did return but with a known error.
 		// For now, we consider this a successful connection to the cluster.
 		return nil
-	} else if err != nil {
-		return err
 	}
 
-	return nil
+	return err
 }

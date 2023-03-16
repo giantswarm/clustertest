@@ -10,9 +10,6 @@ const (
 	DefaultInterval = 10 * time.Second
 )
 
-// WaitCondition is a function performing a condition check for if we need to keep waiting
-type WaitCondition func() (done bool, err error)
-
 // Options are the options available when waiting
 type Options struct {
 	Context  context.Context

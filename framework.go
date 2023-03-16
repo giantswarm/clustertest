@@ -3,7 +3,6 @@ package clustertest
 import (
 	"context"
 	"fmt"
-	"io"
 	"os"
 	"time"
 
@@ -11,14 +10,12 @@ import (
 	"github.com/giantswarm/clustertest/pkg/client"
 	"github.com/giantswarm/clustertest/pkg/organization"
 	"github.com/giantswarm/clustertest/pkg/wait"
-	"github.com/go-logr/logr"
 
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 
 	applicationv1alpha1 "github.com/giantswarm/apiextensions-application/api/v1alpha1"
 	corev1 "k8s.io/api/core/v1"
-	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	capi "sigs.k8s.io/cluster-api/api/v1beta1"
 	cr "sigs.k8s.io/controller-runtime/pkg/client"
@@ -30,12 +27,9 @@ const (
 
 // Framework is the overall framework for testing of clusters
 type Framework struct {
-	LogWriter io.Writer
-
 	mcKubeconfigPath string
 	mcClient         *client.Client
 	wcClients        map[string]*client.Client
-	logger           *logr.Logger
 }
 
 // New initializes a new Framework instance using the kubeconfig found in the env var `E2E_KUBECONFIG`
@@ -115,51 +109,20 @@ func (f *Framework) ApplyCluster(ctx context.Context, cluster *application.Clust
 //
 // A timeout can be provided via the given `ctx` value by using `context.WithTimeout()`
 func (f *Framework) WaitForClusterReady(ctx context.Context, clusterName string, namespace string) (*client.Client, error) {
-	err := wait.For(
-		func() (bool, error) {
-			f.Log("Checking for valid Kubeconfig for cluster %s", clusterName)
-
-			var kubeconfigSecret corev1.Secret
-			err := f.MC().Get(ctx, types.NamespacedName{Name: fmt.Sprintf("%s-kubeconfig", clusterName), Namespace: namespace}, &kubeconfigSecret)
-			if cr.IgnoreNotFound(err) != nil {
-				return false, err
-			} else if apierrors.IsNotFound(err) {
-				// Kubeconfig not yet available
-				f.Log("kubeconfig secret not yet available")
-				return false, nil
-			}
-
-			if len(kubeconfigSecret.Data["value"]) == 0 {
-				// Kubeconfig data not yet available
-				f.Log("kubeconfig secret not yet populated")
-				return false, nil
-			}
-
-			kubeconfig := string(kubeconfigSecret.Data["value"])
-			wcClient, err := client.NewFromRawKubeconfig(string(kubeconfig))
-			if err != nil {
-				return false, err
-			}
-
-			if err := wcClient.CheckConnection(); err != nil {
-				// Cluster not yet ready
-				f.Log("connection to api-server not yet available")
-				return false, nil
-			}
-
-			f.Log("Got valid kubeconfig!")
-
-			// Store client for later
-			f.wcClients[clusterName] = wcClient
-
-			return true, nil
-		},
-		wait.WithContext(ctx), wait.WithInterval(10*time.Second))
+	err := wait.For(wait.IsClusterReadyCondition(ctx, f.MC(), clusterName, namespace, f.wcClients), wait.WithContext(ctx), wait.WithInterval(10*time.Second))
 	if err != nil {
 		return nil, err
 	}
 
 	return f.wcClients[clusterName], nil
+}
+
+// WaitForControlPlane polls the provided cluster and waits until the provided number of Control Plane nodes are reporting as ready
+func (f *Framework) WaitForControlPlane(ctx context.Context, c *client.Client, expectedNodes int) error {
+	return wait.For(
+		wait.IsNumNodesReady(ctx, c, expectedNodes, &cr.MatchingLabels{"node-role.kubernetes.io/control-plane": ""}),
+		wait.WithContext(ctx), wait.WithInterval(30*time.Second),
+	)
 }
 
 // DeleteCluster removes the Cluster app from the MC
@@ -175,24 +138,13 @@ func (f *Framework) DeleteCluster(ctx context.Context, cluster *application.Clus
 		return err
 	}
 
-	err = wait.For(
-		func() (bool, error) {
-			cluster := &capi.Cluster{
-				ObjectMeta: metav1.ObjectMeta{
-					Name:      cluster.Name,
-					Namespace: cluster.Namespace,
-				},
-			}
-			err := f.MC().Client.Get(ctx, cr.ObjectKeyFromObject(cluster), cluster, &cr.GetOptions{})
-			if cr.IgnoreNotFound(err) != nil {
-				return false, err
-			} else if apierrors.IsNotFound(err) {
-				return true, nil
-			}
-
-			return false, nil
+	clusterResource := &capi.Cluster{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      cluster.Name,
+			Namespace: cluster.Namespace,
 		},
-		wait.WithContext(ctx))
+	}
+	err = wait.For(wait.IsResourceDeleted(ctx, f.MC(), clusterResource), wait.WithContext(ctx))
 	if err != nil {
 		return err
 	}
@@ -232,21 +184,12 @@ func (f *Framework) CreateOrg(ctx context.Context, org *organization.Org) error 
 		}
 	}
 
-	return wait.For(
-		func() (done bool, err error) {
-			ns := &corev1.Namespace{
-				ObjectMeta: metav1.ObjectMeta{
-					Name: org.GetNamespace(),
-				},
-			}
-			if err := f.MC().Client.Get(ctx, cr.ObjectKeyFromObject(ns), ns); err != nil {
-				f.Log("Waiting for org namespace '%s' to be created", org.GetNamespace())
-				return false, nil
-			}
-
-			return true, nil
+	ns := &corev1.Namespace{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: org.GetNamespace(),
 		},
-		wait.WithContext(ctx), wait.WithInterval(2*time.Second))
+	}
+	return wait.For(wait.DoesResourceExist(ctx, f.MC(), ns), wait.WithContext(ctx), wait.WithInterval(2*time.Second))
 }
 
 // DeleteOrg deletes an Organization from the MC, waiting for all Clusters in the org namespace to be deleted first

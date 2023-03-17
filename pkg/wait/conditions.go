@@ -2,14 +2,12 @@ package wait
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/giantswarm/clustertest/pkg/client"
 	"github.com/giantswarm/clustertest/pkg/logger"
 
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
-	"k8s.io/apimachinery/pkg/types"
 	cr "sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -21,23 +19,15 @@ func IsClusterReadyCondition(ctx context.Context, kubeClient *client.Client, clu
 	return func() (bool, error) {
 		logger.Log("Checking for valid Kubeconfig for cluster %s", clusterName)
 
-		var kubeconfigSecret corev1.Secret
-		err := kubeClient.Get(ctx, types.NamespacedName{Name: fmt.Sprintf("%s-kubeconfig", clusterName), Namespace: namespace}, &kubeconfigSecret)
-		if cr.IgnoreNotFound(err) != nil {
-			return false, err
-		} else if apierrors.IsNotFound(err) {
+		kubeconfig, err := kubeClient.GetClusterKubeConfig(ctx, clusterName, namespace)
+		if err != nil && cr.IgnoreNotFound(err) == nil {
 			// Kubeconfig not yet available
 			logger.Log("kubeconfig secret not yet available")
 			return false, nil
+		} else if err != nil {
+			return false, err
 		}
 
-		if len(kubeconfigSecret.Data["value"]) == 0 {
-			// Kubeconfig data not yet available
-			logger.Log("kubeconfig secret not yet populated")
-			return false, nil
-		}
-
-		kubeconfig := string(kubeconfigSecret.Data["value"])
 		wcClient, err := client.NewFromRawKubeconfig(string(kubeconfig))
 		if err != nil {
 			return false, err
@@ -45,7 +35,7 @@ func IsClusterReadyCondition(ctx context.Context, kubeClient *client.Client, clu
 
 		if err := wcClient.CheckConnection(); err != nil {
 			// Cluster not yet ready
-			logger.Log("connection to api-server not yet available")
+			logger.Log("connection to api-server not yet available - %v", err)
 			return false, nil
 		}
 

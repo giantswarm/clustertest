@@ -15,6 +15,7 @@ require (
 	sigs.k8s.io/controller-runtime v0.14.5
 	sigs.k8s.io/e2e-framework v0.1.0
 	sigs.k8s.io/kind v0.17.0
+	sigs.k8s.io/yaml v1.3.0
 )
 
 require (
@@ -88,5 +89,4 @@ require (
 	k8s.io/utils v0.0.0-20230115233650-391b47cb4029 // indirect
 	sigs.k8s.io/json v0.0.0-20220713155537-f223a00ba0e2 // indirect
 	sigs.k8s.io/structured-merge-diff/v4 v4.2.3 // indirect
-	sigs.k8s.io/yaml v1.3.0 // indirect
 )

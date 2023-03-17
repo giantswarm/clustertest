@@ -3,17 +3,22 @@ package client
 import (
 	"context"
 	"fmt"
+	"net"
+	"net/url"
 	"os"
 
-	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/kubectl/pkg/scheme"
-	cr "sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/client/apiutil"
+	"sigs.k8s.io/yaml"
 
 	applicationv1alpha1 "github.com/giantswarm/apiextensions-application/api/v1alpha1"
 	orgv1alpha1 "github.com/giantswarm/organization-operator/api/v1alpha1"
+	corev1 "k8s.io/api/core/v1"
+	clientcmdapi "k8s.io/client-go/tools/clientcmd/api/v1"
 	capi "sigs.k8s.io/cluster-api/api/v1beta1"
+	cr "sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 // Client extends the client from controller-runtime
@@ -83,4 +88,58 @@ func (c *Client) CheckConnection() error {
 	}
 
 	return err
+}
+
+// GetClusterKubeConfig retrieves the Kubeconfig from the secret associated with the provided cluster name
+// The server hostname used in the kubeconfig is modified to use the DNS name if it is found to be using an IP address
+func (c *Client) GetClusterKubeConfig(ctx context.Context, clusterName string, clusterNamespace string) (string, error) {
+	var kubeconfigSecret corev1.Secret
+	err := c.Get(ctx, types.NamespacedName{Name: fmt.Sprintf("%s-kubeconfig", clusterName), Namespace: clusterNamespace}, &kubeconfigSecret)
+	if err != nil {
+		return "", err
+	}
+	if len(kubeconfigSecret.Data["value"]) == 0 {
+		return "", fmt.Errorf("kubeconfig secret found for data not populated")
+	}
+
+	kubeconfig := clientcmdapi.Config{}
+	err = yaml.Unmarshal(kubeconfigSecret.Data["value"], &kubeconfig)
+	if err != nil {
+		return "", err
+	}
+
+	for i := range kubeconfig.Clusters {
+		kubecluster := &kubeconfig.Clusters[i]
+		u, err := url.Parse(kubecluster.Cluster.Server)
+		if err != nil {
+			return "", err
+		}
+
+		// Check if the server uses an IP address for the hostname, if so we need to replace it with the DNS hostname
+		if net.ParseIP(u.Hostname()) != nil {
+			// We need to build up the hostname from the base domain and cluster name
+			var clusterValuesCM corev1.ConfigMap
+			err := c.Get(ctx, types.NamespacedName{Name: fmt.Sprintf("%s-cluster-values", clusterName), Namespace: clusterNamespace}, &clusterValuesCM)
+			if err != nil {
+				return "", err
+			}
+
+			var clusterValues struct {
+				BaseDomain string `yaml:"baseDomain"`
+			}
+			err = yaml.Unmarshal([]byte(clusterValuesCM.Data["values"]), &clusterValues)
+			if err != nil {
+				return "", err
+			}
+
+			kubecluster.Cluster.Server = fmt.Sprintf("https://api.%s:%s", clusterValues.BaseDomain, u.Port())
+		}
+	}
+
+	kc, err := yaml.Marshal(kubeconfig)
+	if err != nil {
+		return "", err
+	}
+
+	return string(kc), nil
 }

@@ -149,7 +149,7 @@ func (f *Framework) DeleteCluster(ctx context.Context, cluster *application.Clus
 		return err
 	}
 
-	// Remove the finalizer from the bastion secret or the namespace delete gets blocked
+	// Remove the finalizer from the bastion secret (if it exists) or the namespace delete gets blocked
 	err = f.MC().Client.Patch(ctx,
 		&corev1.Secret{
 			ObjectMeta: metav1.ObjectMeta{
@@ -159,7 +159,7 @@ func (f *Framework) DeleteCluster(ctx context.Context, cluster *application.Clus
 		},
 		cr.RawPatch(types.MergePatchType, []byte(`{"metadata":{"finalizers":null}}`)),
 	)
-	if err != nil {
+	if cr.IgnoreNotFound(err) != nil {
 		return err
 	}
 

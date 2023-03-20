@@ -47,6 +47,7 @@ func TestWithFunctions(t *testing.T) {
 
 func TestLabels(t *testing.T) {
 	app, cm, err := New("installName", "appName").
+		WithVersion("1.2.3").
 		WithAppLabels(map[string]string{
 			"example": "test",
 		}).
@@ -75,7 +76,7 @@ func TestLabels(t *testing.T) {
 
 func TestWithValuesFile_NoTemplating(t *testing.T) {
 	fileName := path.Clean("./test_data/test_values.yaml")
-	app := New("installName", "appName")
+	app := New("installName", "appName").WithVersion("1.2.3")
 
 	app, err := app.WithValuesFile(fileName, nil)
 	if err != nil {
@@ -102,7 +103,7 @@ func TestWithValuesFile_NoTemplating(t *testing.T) {
 
 func TestWithValuesFile_WithTemplating(t *testing.T) {
 	fileName := path.Clean("./test_data/test_values.yaml")
-	app := New("installName", "appName")
+	app := New("installName", "appName").WithVersion("1.2.3")
 
 	app, err := app.WithValuesFile(fileName, &ValuesTemplateVars{
 		ClusterName: "example-cluster",
@@ -131,6 +132,7 @@ func TestWithValuesFile_WithTemplating(t *testing.T) {
 
 func TestMustWithValuesFile(t *testing.T) {
 	_, cm, err := New("installName", "appName").
+		WithVersion("1.2.3").
 		MustWithValuesFile(path.Clean("./test_data/test_values.yaml"), nil).
 		Build()
 	if err != nil {

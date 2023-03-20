@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Modify kubeconfig of workload clusters to use DNS hostname of server if an IP address is found (required for CAPG clusters)
+
 ## [0.0.1] - 2023-03-16
 
 - Added initial framework layout

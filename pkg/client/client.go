@@ -77,7 +77,10 @@ func NewFromRawKubeconfig(kubeconfig string) (*Client, error) {
 	return New(f.Name())
 }
 
-// CheckConnection attempts to connect to the clusters API server
+// CheckConnection attempts to connect to the clusters API server and returns an error if not successful.
+// A successful connection is defined as a valid response from the api-server but not necessarily a success response.
+// For example, both a "Not Found" and a "Forbidden" response from the server is still a valid, working connection to
+// the cluster and doesn't cause this function to return an error.
 func (c *Client) CheckConnection() error {
 	var ns corev1.NamespaceList
 	err := c.List(context.Background(), &ns)
@@ -90,8 +93,9 @@ func (c *Client) CheckConnection() error {
 	return err
 }
 
-// GetClusterKubeConfig retrieves the Kubeconfig from the secret associated with the provided cluster name
-// The server hostname used in the kubeconfig is modified to use the DNS name if it is found to be using an IP address
+// GetClusterKubeConfig retrieves the Kubeconfig from the secret associated with the provided cluster name.
+//
+// The server hostname used in the kubeconfig is modified to use the DNS name if it is found to be using an IP address.
 func (c *Client) GetClusterKubeConfig(ctx context.Context, clusterName string, clusterNamespace string) (string, error) {
 	var kubeconfigSecret corev1.Secret
 	err := c.Get(ctx, types.NamespacedName{Name: fmt.Sprintf("%s-kubeconfig", clusterName), Namespace: clusterNamespace}, &kubeconfigSecret)

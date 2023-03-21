@@ -76,6 +76,15 @@ func (f *Framework) WC(clusterName string) (*client.Client, error) {
 // ApplyCluster takes a Cluster object, applies it to the MC in the correct order and then waits for a valid Kubeconfig to be available
 //
 // A timeout can be provided via the given `ctx` value by using `context.WithTimeout()`
+//
+// Example:
+//
+//	timeoutCtx, cancelTimeout := context.WithTimeout(context.Background(), 20*time.Minute)
+//	defer cancelTimeout()
+//
+//	cluster := application.NewClusterApp(utils.GenerateRandomName("t"), application.ProviderAWS)
+//
+//	client, err := framework.ApplyCluster(timeoutCtx, cluster)
 func (f *Framework) ApplyCluster(ctx context.Context, cluster *application.Cluster) (*client.Client, error) {
 	err := f.CreateOrg(ctx, cluster.Organization)
 	if err != nil {
@@ -108,6 +117,13 @@ func (f *Framework) ApplyCluster(ctx context.Context, cluster *application.Clust
 // WaitForClusterReady watches for a Kubeconfig secret to be created on the MC and then waits until that cluster's api-server response successfully
 //
 // A timeout can be provided via the given `ctx` value by using `context.WithTimeout()`
+//
+// Example:
+//
+//	timeoutCtx, cancelTimeout := context.WithTimeout(context.Background(), 20*time.Minute)
+//	defer cancelTimeout()
+//
+//	wcClient, err := framework.WaitForClusterReady(timeoutCtx, "test-cluster", "default")
 func (f *Framework) WaitForClusterReady(ctx context.Context, clusterName string, namespace string) (*client.Client, error) {
 	err := wait.For(wait.IsClusterReadyCondition(ctx, f.MC(), clusterName, namespace, f.wcClients), wait.WithContext(ctx), wait.WithInterval(10*time.Second))
 	if err != nil {
@@ -118,6 +134,13 @@ func (f *Framework) WaitForClusterReady(ctx context.Context, clusterName string,
 }
 
 // WaitForControlPlane polls the provided cluster and waits until the provided number of Control Plane nodes are reporting as ready
+//
+// Example:
+//
+//	timeoutCtx, cancelTimeout := context.WithTimeout(context.Background(), 20*time.Minute)
+//	defer cancelTimeout()
+//
+//	err := framework.WaitForControlPlane(timeoutCtx, wcClient, 3)
 func (f *Framework) WaitForControlPlane(ctx context.Context, c *client.Client, expectedNodes int) error {
 	return wait.For(
 		wait.IsNumNodesReady(ctx, c, expectedNodes, &cr.MatchingLabels{"node-role.kubernetes.io/control-plane": ""}),

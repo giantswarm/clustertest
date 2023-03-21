@@ -6,6 +6,9 @@ import (
 	"text/template"
 )
 
+// ValuesTemplateVars is the properties made available to the Values string when templating.
+//
+// The Values string if parsed as a Go text template and will replace these properties if found.
 type ValuesTemplateVars struct {
 	ClusterName  string
 	Namespace    string

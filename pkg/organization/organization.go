@@ -15,6 +15,8 @@ func init() {
 }
 
 const (
+	// DeleteAnnotation is added to Organizations created during testing.
+	// This is to ensure only those with this annotation can be deleted to avoid accidentally deleting a shared Org.
 	DeleteAnnotation = "e2e-test-cleanup"
 )
 

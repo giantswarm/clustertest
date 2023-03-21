@@ -10,8 +10,9 @@ import (
 
 var (
 	// LogWriter is the io.Writer that log lines will be written too
-	LogWriter      io.Writer = os.Stdout
-	DisableLogging bool      = false
+	LogWriter io.Writer = os.Stdout
+	// DisableLogging will disable all logging from the test framework
+	DisableLogging bool = false
 )
 
 // Log writes out the provided message to the LogWriter

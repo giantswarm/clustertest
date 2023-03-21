@@ -46,6 +46,9 @@ func New(installName string, appName string) *Application {
 }
 
 // WithVersion sets the Version value
+//
+// If set to an empty string (the default) or to the value "latest" then
+// the version will be fetched from the latest release on GitHub.
 func (a *Application) WithVersion(version string) *Application {
 	a.Version = version
 	return a

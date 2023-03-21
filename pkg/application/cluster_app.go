@@ -19,7 +19,7 @@ type Cluster struct {
 	Organization   *organization.Org
 }
 
-// Provider is the supported cluster providers
+// Provider is the supported cluster provider name used to determine the cluster and default-apps to use
 type Provider string
 
 const (
@@ -50,13 +50,15 @@ func NewClusterApp(clusterName string, provider Provider) *Cluster {
 	}
 }
 
-// WithOrg sets the Organization for the cluster and updates the namespace to that for the org
+// WithOrg sets the Organization for the cluster and updates the namespace to that specified by the provided Org
 func (c *Cluster) WithOrg(org *organization.Org) *Cluster {
 	c.Organization = org
 	return c.WithNamespace(org.GetNamespace())
 }
 
 // WithNamespace sets the Namespace value
+//
+// Note: this may be overwritten if [Cluster.WithOrg] is used after.
 func (c *Cluster) WithNamespace(namespace string) *Cluster {
 	c.Namespace = namespace
 	c.ClusterApp = c.ClusterApp.WithNamespace(namespace)
@@ -65,6 +67,12 @@ func (c *Cluster) WithNamespace(namespace string) *Cluster {
 }
 
 // WithAppVersions sets the Version values
+//
+// If the versions are specified as empty string (the default) or the value "latest" then
+// the version will be fetched from the latest release on GitHub.
+//
+// If the version provided is suffixed with a commit sha then the `Catalog` use for the Apps
+// will be updated to `cluster-test`.
 func (c *Cluster) WithAppVersions(clusterVersion string, defaultAppsVersion string) *Cluster {
 	c.ClusterApp = c.ClusterApp.WithVersion(clusterVersion)
 	if isShaVersion.MatchString(clusterVersion) {

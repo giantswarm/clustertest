@@ -6,7 +6,9 @@ import (
 )
 
 const (
-	DefaultTimeout  = 1 * time.Hour
+	// DefaultTimeout is the default max time to wait before returning an error if a timeout is not provided
+	DefaultTimeout = 1 * time.Hour
+	// DefaultInterval is the polling interval to use if an interval is not provided
 	DefaultInterval = 10 * time.Second
 )
 
@@ -17,6 +19,7 @@ type Options struct {
 	Timeout  time.Duration
 }
 
+// Option is a function that can be optionally provided to override default options of a wait condition
 type Option func(*Options)
 
 // WithTimeout overrides the default timeout when waiting

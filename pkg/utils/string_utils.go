@@ -16,7 +16,7 @@ func GenerateRandomName(prefix string) string {
 	charset := []byte("abcdefghijklmnopqrstuvwxyz0123456789")
 	str := make([]byte, 10)
 	for i := range str {
-		str[i] = charset[rand.Intn(len(charset))]
+		str[i] = charset[rand.Intn(len(charset))] //nolint:gosec
 	}
 	return fmt.Sprintf("%s-%s", prefix, str)[:9]
 }

@@ -55,9 +55,9 @@ func New(kubeconfigPath string) (*Client, error) {
 	}
 
 	// Add known CRDs to scheme
-	applicationv1alpha1.AddToScheme(client.Scheme())
-	orgv1alpha1.AddToScheme(client.Scheme())
-	capi.AddToScheme(client.Scheme())
+	_ = applicationv1alpha1.AddToScheme(client.Scheme())
+	_ = orgv1alpha1.AddToScheme(client.Scheme())
+	_ = capi.AddToScheme(client.Scheme())
 
 	return &Client{client}, nil
 }

@@ -36,10 +36,10 @@ var isShaVersion = regexp.MustCompile(`(?m)^v?[0-9]+\.[0-9]+\.[0-9]+\-\w{40}`)
 
 // NewClusterApp generates a new Cluster object to handle creation of Cluster related apps
 func NewClusterApp(clusterName string, provider Provider) *Cluster {
-	clusterApp := New(clusterName, fmt.Sprintf("cluster-%s", provider))
-	defaultAppsApp := New(fmt.Sprintf("%s-default-apps", clusterName), fmt.Sprintf("default-apps-%s", provider))
-
 	org := organization.NewRandomOrg()
+
+	clusterApp := New(clusterName, fmt.Sprintf("cluster-%s", provider)).WithNamespace(org.GetNamespace())
+	defaultAppsApp := New(fmt.Sprintf("%s-default-apps", clusterName), fmt.Sprintf("default-apps-%s", provider)).WithNamespace(org.GetNamespace())
 
 	return &Cluster{
 		Name:           clusterName,

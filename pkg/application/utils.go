@@ -42,7 +42,7 @@ func parseTemplate(manifest string, config *ValuesTemplateVars) string {
 
 	ut := template.Must(template.New("values").Parse(manifest))
 	manifestBuffer := &bytes.Buffer{}
-	ut.Execute(manifestBuffer, *config)
+	_ = ut.Execute(manifestBuffer, *config)
 
 	return manifestBuffer.String()
 }

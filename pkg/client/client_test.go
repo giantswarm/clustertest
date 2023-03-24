@@ -53,7 +53,7 @@ func TestMain(m *testing.M) {
 	if !testing.Short() {
 		// Tear down Kind cluster
 		fmt.Println("Deleting test kind cluster")
-		provider.Delete(clusterName, kindKubeconfig)
+		_ = provider.Delete(clusterName, kindKubeconfig)
 		os.Remove(kindKubeconfig)
 	}
 

@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Lint issues (ignored returns)
+
+### Chore
+
+- Added CircleCI configuration for linting and unit tests
+- Added some ignores for nancy until a fix is available for the vulnerabilities
+
 ## [0.0.3] - 2023-03-24
 
 ### Fixed

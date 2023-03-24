@@ -11,7 +11,7 @@ import (
 )
 
 func init() {
-	orgv1alpha1.AddToScheme(scheme.Scheme)
+	_ = orgv1alpha1.AddToScheme(scheme.Scheme)
 }
 
 const (

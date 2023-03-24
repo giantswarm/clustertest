@@ -15,7 +15,7 @@ import (
 )
 
 func init() {
-	applicationv1alpha1.AddToScheme(scheme.Scheme)
+	_ = applicationv1alpha1.AddToScheme(scheme.Scheme)
 }
 
 // Application contains all details for creating an App and its values ConfigMap

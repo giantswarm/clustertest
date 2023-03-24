@@ -2,11 +2,37 @@ version: 2.1
 orbs:
   architect: giantswarm/architect@4.28.1
 
+
+jobs:
+  tests:
+    executor: architect/machine
+    machine:
+      image: 'ubuntu-2004:202010-01'
+    steps:
+      - checkout
+      - architect/machine-install-go
+      - architect/integration-test-install-tools:
+          apptestctl-version: v0.14.1
+          helm-version: v3.8.2
+          kubernetes-version: v1.21.1
+      - run:
+          name: "Install golang-lint"
+          command: |
+            curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.49.0
+            sudo cp $(go env GOPATH)/bin/golangci-lint /usr/local/bin/golangci-lint
+      - run:
+          name: "Install nancy"
+          command: |
+            curl -sSL -o nancy https://github.com/sonatype-nexus-community/nancy/releases/download/v1.0.37/nancy-v1.0.37-linux-amd64
+            chmod +x nancy
+            sudo cp nancy /usr/local/bin/nancy
+      - architect/go-test
+
+
 workflows:
   test:
     jobs:
-      - architect/go-test:
-          name: go-test
+      - tests:
           filters:
             tags:
               only: /^v.*/

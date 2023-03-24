@@ -1,0 +1,12 @@
+version: 2.1
+orbs:
+  architect: giantswarm/architect@4.28.1
+
+workflows:
+  test:
+    jobs:
+      - architect/go-test:
+          name: go-test
+          filters:
+            tags:
+              only: /^v.*/

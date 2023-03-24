@@ -58,6 +58,18 @@ func NewWithKubeconfig(kubeconfigPath string) (*Framework, error) {
 	}, nil
 }
 
+// UseContext changes the current context of the MC client to the provided name
+func (f *Framework) UseContext(contextName string) error {
+	mcClient, err := client.NewWithContext(f.mcKubeconfigPath, contextName)
+	if err != nil {
+		return err
+	}
+
+	f.mcClient = mcClient
+
+	return nil
+}
+
 // MC returns an initialized client for the Management Cluster
 func (f *Framework) MC() *client.Client {
 	return f.mcClient

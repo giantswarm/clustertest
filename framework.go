@@ -32,33 +32,27 @@ type Framework struct {
 	wcClients        map[string]*client.Client
 }
 
-// New initializes a new Framework instance using the kubeconfig found in the env var `E2E_KUBECONFIG`
-func New() (*Framework, error) {
+// New initializes a new Framework instance using the provided context from the kubeconfig found in the env var `E2E_KUBECONFIG`
+func New(contextName string) (*Framework, error) {
 	mcKubeconfig, ok := os.LookupEnv(KubeconfigEnvVar)
 	if !ok {
 		return nil, fmt.Errorf("no %s set", KubeconfigEnvVar)
 	}
 
-	framework, err := NewWithKubeconfig(mcKubeconfig)
-
-	return framework, err
-}
-
-// NewWithKubeconfig generates a new framework initialised with the Management Cluster provided as a Kubeconfig
-func NewWithKubeconfig(kubeconfigPath string) (*Framework, error) {
-	mcClient, err := client.New(kubeconfigPath)
+	mcClient, err := client.NewWithContext(mcKubeconfig, contextName)
 	if err != nil {
 		return nil, err
 	}
 
 	return &Framework{
-		mcKubeconfigPath: kubeconfigPath,
+		mcKubeconfigPath: mcKubeconfig,
 		mcClient:         mcClient,
 		wcClients:        map[string]*client.Client{},
 	}, nil
 }
 
-// UseContext changes the current context of the MC client to the provided name
+// UseContext changes the current context of the MC client to the provided name.
+// A context matching the given name must exist in the MCs kubeconfig file.
 func (f *Framework) UseContext(contextName string) error {
 	mcClient, err := client.NewWithContext(f.mcKubeconfigPath, contextName)
 	if err != nil {

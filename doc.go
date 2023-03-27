@@ -6,7 +6,7 @@
 //
 //	ctx := context.Background()
 //
-//	framework, err := clustertest.New()
+//	framework, err := clustertest.New("context_name")
 //	if err != nil {
 //		panic(err)
 //	}
@@ -28,7 +28,7 @@
 //		var err error
 //		ctx := context.Background()
 //
-//		framework, err = clustertest.New()
+//		framework, err = clustertest.New("context_name")
 //		if err != nil {
 //			panic(err)
 //		}

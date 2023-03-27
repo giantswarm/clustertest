@@ -28,7 +28,7 @@ Documentation can be found at: [pkg.go.dev/github.com/giantswarm/clustertest](ht
 ```go
 ctx := context.Background()
 
-framework, err := clustertest.New()
+framework, err := clustertest.New("capa_standard")
 if err != nil {
   panic(err)
 }

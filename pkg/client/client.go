@@ -32,13 +32,43 @@ type Client struct {
 // The creation of the client doesn't confirm connectivity to the cluster and REST discovery is set to lazy discovery
 // so the client can be created while the cluster is still being set up.
 func New(kubeconfigPath string) (*Client, error) {
+	return NewWithContext(kubeconfigPath, "")
+}
+
+// NewFromRawKubeconfig is like New but takes in the string contents of a Kubeconfig and creates a client for it
+//
+// The client is an extension of the client from controller-runtime and provides some additional helper functions.
+// The creation of the client doesn't confirm connectivity to the cluster and REST discovery is set to lazy discovery
+// so the client can be created while the cluster is still being set up.
+func NewFromRawKubeconfig(kubeconfig string) (*Client, error) {
+	f, err := os.CreateTemp("", "kubeconfig-")
+	if err != nil {
+		return nil, err
+	}
+	defer f.Close()
+	_, err = f.WriteString(kubeconfig)
+	if err != nil {
+		return nil, err
+	}
+
+	return NewWithContext(f.Name(), "")
+}
+
+// NewWithContext creates a new Kubernetes client for the provided kubeconfig file and changes the current context to the provided value
+//
+// The client is an extension of the client from controller-runtime and provides some additional helper functions.
+// The creation of the client doesn't confirm connectivity to the cluster and REST discovery is set to lazy discovery
+// so the client can be created while the cluster is still being set up.
+func NewWithContext(kubeconfigPath string, contextName string) (*Client, error) {
 	if kubeconfigPath == "" {
 		return nil, fmt.Errorf("a kubeconfig file must be provided")
 	}
 
 	cfg, err := clientcmd.NewNonInteractiveDeferredLoadingClientConfig(
 		&clientcmd.ClientConfigLoadingRules{ExplicitPath: kubeconfigPath},
-		&clientcmd.ConfigOverrides{},
+		&clientcmd.ConfigOverrides{
+			CurrentContext: contextName,
+		},
 	).ClientConfig()
 	if err != nil {
 		return nil, fmt.Errorf("failed to create config - %v", err)
@@ -60,21 +90,6 @@ func New(kubeconfigPath string) (*Client, error) {
 	_ = capi.AddToScheme(client.Scheme())
 
 	return &Client{client}, nil
-}
-
-// NewFromRawKubeconfig is like New but takes in the string contents of a Kubeconfig and creates a client for it
-func NewFromRawKubeconfig(kubeconfig string) (*Client, error) {
-	f, err := os.CreateTemp("", "kubeconfig-")
-	if err != nil {
-		return nil, err
-	}
-	defer f.Close()
-	_, err = f.WriteString(kubeconfig)
-	if err != nil {
-		return nil, err
-	}
-
-	return New(f.Name())
 }
 
 // CheckConnection attempts to connect to the clusters API server and returns an error if not successful.

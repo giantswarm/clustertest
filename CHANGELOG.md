@@ -11,6 +11,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Ability to use an MC kubeconfig with multiple contexts and switch between them
 
+### Removed
+
+- Removed `NewWithKubeconfig` function in favour of always using the env var for the path.
+
 ## [0.0.4] - 2023-03-24
 
 ### Fixed

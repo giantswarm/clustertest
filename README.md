@@ -18,6 +18,7 @@ go get github.com/giantswarm/clustertest
 - Wrapper types around Cluster apps (and their default-apps)
 - Management (creation and deletion) or Organization resources
 - Wait and polling helpers
+- Override App versions using environment variables. (See [`application` documentation](https://pkg.go.dev/github.com/giantswarm/clustertest/pkg/application) for details)
 
 ## Documentation
 

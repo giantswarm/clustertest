@@ -1,6 +1,7 @@
 package application
 
 import (
+	"os"
 	"path"
 	"strings"
 	"testing"
@@ -141,5 +142,40 @@ func TestMustWithValuesFile(t *testing.T) {
 
 	if v, ok := cm.Data["values"]; !ok || v == "" {
 		t.Fatal("Was expecting ConfigMap to have a populated values key in the data")
+	}
+}
+
+func TestWithVersion_Override(t *testing.T) {
+	overrideVersion := "v9.9.9"
+	os.Setenv("E2E_OVERRIDE_CLUSTER_AWS", overrideVersion)
+
+	// Test successful override
+	app, _, err := New("installName", "cluster-aws").WithVersion("").Build()
+	if err != nil {
+		t.Fatalf("Not expecting an error: %v", err)
+	}
+
+	if app.Spec.Version != overrideVersion {
+		t.Errorf("Was expecting version to be overridden. Expected: %s, Actual: %s", overrideVersion, app.Spec.Version)
+	}
+
+	// Test specified version
+	app, _, err = New("installName", "cluster-aws").WithVersion("v1.2.3").Build()
+	if err != nil {
+		t.Fatalf("Not expecting an error: %v", err)
+	}
+
+	if app.Spec.Version == overrideVersion {
+		t.Errorf("Was not expecting version to be overridden. Expected: %s, Actual: %s", "v1.2.3", app.Spec.Version)
+	}
+
+	// Test latest version
+	app, _, err = New("installName", "cluster-aws").WithVersion("latest").Build()
+	if err != nil {
+		t.Fatalf("Not expecting an error: %v", err)
+	}
+
+	if app.Spec.Version == overrideVersion {
+		t.Errorf("Was not expecting version to be overridden. Expected: (latest from GitHub), Actual: %s", app.Spec.Version)
 	}
 }

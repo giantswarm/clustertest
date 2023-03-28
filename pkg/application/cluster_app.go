@@ -2,7 +2,6 @@ package application
 
 import (
 	"fmt"
-	"regexp"
 
 	applicationv1alpha1 "github.com/giantswarm/apiextensions-application/api/v1alpha1"
 	corev1 "k8s.io/api/core/v1"
@@ -30,9 +29,6 @@ const (
 	ProviderOpenStack     Provider = "openstack"
 	ProviderVSphere       Provider = "vsphere"
 )
-
-// If commit SHA based version we'll change the catalog
-var isShaVersion = regexp.MustCompile(`(?m)^v?[0-9]+\.[0-9]+\.[0-9]+\-\w{40}`)
 
 // NewClusterApp generates a new Cluster object to handle creation of Cluster related apps
 func NewClusterApp(clusterName string, provider Provider) *Cluster {
@@ -68,22 +64,17 @@ func (c *Cluster) WithNamespace(namespace string) *Cluster {
 
 // WithAppVersions sets the Version values
 //
-// If the versions are specified as empty string (the default) or the value "latest" then
-// the version will be fetched from the latest release on GitHub.
+// If the versions are set to the value `latest` then the version will be fetched from
+// the latest release on GitHub.
+// If set to an empty string (the default) then the environment variables
+// will first be checked for a matching override var and if not found then
+// the logic will fall back to the same as `latest`.
 //
 // If the version provided is suffixed with a commit sha then the `Catalog` use for the Apps
 // will be updated to `cluster-test`.
 func (c *Cluster) WithAppVersions(clusterVersion string, defaultAppsVersion string) *Cluster {
 	c.ClusterApp = c.ClusterApp.WithVersion(clusterVersion)
-	if isShaVersion.MatchString(clusterVersion) {
-		c.ClusterApp = c.ClusterApp.WithCatalog("cluster-test")
-	}
-
 	c.DefaultAppsApp = c.DefaultAppsApp.WithVersion(defaultAppsVersion)
-	if isShaVersion.MatchString(defaultAppsVersion) {
-		c.DefaultAppsApp = c.DefaultAppsApp.WithCatalog("cluster-test")
-	}
-
 	return c
 }
 

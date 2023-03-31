@@ -48,12 +48,12 @@ func parseTemplate(manifest string, config *ValuesTemplateVars) string {
 	return manifestBuffer.String()
 }
 
-const VersionOverrideEnvPrefix = "E2E_OVERRIDE_VERSIONS"
+const VersionOverrideEnvVar = "E2E_OVERRIDE_VERSIONS"
 
 func getOverrideVersions() map[string]string {
 	versions := map[string]string{}
 
-	overrides := os.Getenv(VersionOverrideEnvPrefix)
+	overrides := os.Getenv(VersionOverrideEnvVar)
 	if overrides != "" {
 		overridesList := strings.Split(overrides, ",")
 		for _, pair := range overridesList {

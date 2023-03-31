@@ -3,6 +3,7 @@ package application
 import (
 	"bytes"
 	"os"
+	"strings"
 	"text/template"
 )
 
@@ -45,4 +46,28 @@ func parseTemplate(manifest string, config *ValuesTemplateVars) string {
 	_ = ut.Execute(manifestBuffer, *config)
 
 	return manifestBuffer.String()
+}
+
+const VersionOverrideEnvPrefix = "E2E_OVERRIDE_VERSIONS"
+
+func getOverrideVersions() map[string]string {
+	versions := map[string]string{}
+
+	overrides := os.Getenv(VersionOverrideEnvPrefix)
+	if overrides != "" {
+		overridesList := strings.Split(overrides, ",")
+		for _, pair := range overridesList {
+			parts := strings.Split(pair, "=")
+			if len(parts) == 2 {
+				versions[strings.TrimSpace(strings.ToLower(parts[0]))] = strings.TrimSpace(parts[1])
+			}
+		}
+	}
+
+	return versions
+}
+
+func getOverrideVersion(app string) (string, bool) {
+	ver := getOverrideVersions()[strings.ToLower(app)]
+	return ver, ver != ""
 }

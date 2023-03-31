@@ -1,6 +1,7 @@
 package application
 
 import (
+	"fmt"
 	"os"
 	"path"
 	"strings"
@@ -147,7 +148,7 @@ func TestMustWithValuesFile(t *testing.T) {
 
 func TestWithVersion_Override(t *testing.T) {
 	overrideVersion := "v9.9.9"
-	os.Setenv("E2E_OVERRIDE_CLUSTER_AWS", overrideVersion)
+	os.Setenv("E2E_OVERRIDE_VERSIONS", fmt.Sprintf("cluster-aws=%s", overrideVersion))
 
 	// Test successful override
 	app, _, err := New("installName", "cluster-aws").WithVersion("").Build()

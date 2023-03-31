@@ -4,9 +4,7 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"os"
 	"regexp"
-	"strings"
 
 	applicationv1alpha1 "github.com/giantswarm/apiextensions-application/api/v1alpha1"
 	templateapp "github.com/giantswarm/kubectl-gs/v2/pkg/template/app"
@@ -16,8 +14,6 @@ import (
 	"k8s.io/client-go/kubernetes/scheme"
 	"sigs.k8s.io/e2e-framework/klient/decoder"
 )
-
-const VersionOverrideEnvPrefix = "E2E_OVERRIDE_"
 
 // If commit SHA based version we'll change the catalog
 var isShaVersion = regexp.MustCompile(`(?m)^v?[0-9]+\.[0-9]+\.[0-9]+\-\w{40}`)
@@ -140,11 +136,11 @@ func (a *Application) Build() (*applicationv1alpha1.App, *corev1.ConfigMap, erro
 	switch a.Version {
 	case "":
 		// When the version is left blank we'll look for an override version from the env vars.
-		// The env var is made up of a standard prefix and a slightly modified app name.
-		// E.g. for `cluster-aws` the env var would be `E2E_OVERRIDE_CLUSTER_AWS`
+		// The env var `E2E_OVERRIDE_VERSIONS` is used to provide a comma seperated list
+		// of app version overrides in the format of `app-name=version`.
+		// E.g. for `cluster-aws` the env var might contain `cluster-aws=v1.2.3`
 		// If no matching env var is found we'll fallback to fetching the latest version
-		overrideEnvNameSuffix := strings.ReplaceAll(strings.ToUpper(a.AppName), "-", "_")
-		ver, ok := os.LookupEnv(VersionOverrideEnvPrefix + overrideEnvNameSuffix)
+		ver, ok := getOverrideVersion(a.AppName)
 		if ok {
 			a = a.WithVersion(ver)
 			break

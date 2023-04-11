@@ -66,6 +66,105 @@ func (f *Framework) WC(clusterName string) (*client.Client, error) {
 	return c, nil
 }
 
+func (f *Framework) LoadCluster(name, namespace string) (*application.Cluster, error) {
+	ctx := context.Background()
+
+	clusterApp := &applicationv1alpha1.App{}
+	err := f.mcClient.Get(
+		ctx,
+		types.NamespacedName{
+			Name:      name,
+			Namespace: namespace,
+		},
+		clusterApp,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	clusterValues := &corev1.ConfigMap{}
+	err = f.mcClient.Get(
+		ctx,
+		types.NamespacedName{
+			Name:      clusterApp.Spec.UserConfig.ConfigMap.Name,
+			Namespace: clusterApp.Spec.UserConfig.ConfigMap.Namespace,
+		},
+		clusterValues,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	defaultApps := &applicationv1alpha1.App{}
+	defaultAppsName := fmt.Sprintf("%s-default-apps", name)
+	err = f.mcClient.Get(
+		ctx,
+		types.NamespacedName{
+			Name:      defaultAppsName,
+			Namespace: namespace,
+		},
+		defaultApps,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	defaultAppsValues := &corev1.ConfigMap{}
+	err = f.mcClient.Get(
+		ctx,
+		types.NamespacedName{
+			Name:      defaultApps.Spec.UserConfig.ConfigMap.Name,
+			Namespace: defaultApps.Spec.UserConfig.ConfigMap.Namespace,
+		},
+		defaultAppsValues,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	kubeconfig, err := f.mcClient.GetClusterKubeConfig(ctx, name, namespace)
+	if err != nil {
+		return nil, err
+	}
+
+	wcClient, err := client.NewFromRawKubeconfig(string(kubeconfig))
+	if err != nil {
+		return nil, err
+	}
+
+	f.wcClients[name] = wcClient
+
+	return &application.Cluster{
+		Name:      name,
+		Namespace: name,
+		ClusterApp: &application.Application{
+			InstallName:     clusterApp.Name,
+			AppName:         clusterApp.Spec.Name,
+			Version:         clusterApp.Spec.Version,
+			Catalog:         clusterApp.Spec.Catalog,
+			Values:          clusterValues.Data["values"],
+			InCluster:       clusterApp.Spec.KubeConfig.InCluster,
+			Namespace:       namespace,
+			AppLabels:       clusterApp.Labels,
+			ConfigMapLabels: clusterValues.Labels,
+		},
+		DefaultAppsApp: &application.Application{
+			InstallName:     defaultApps.Name,
+			AppName:         defaultApps.Spec.Name,
+			Version:         defaultApps.Spec.Version,
+			Catalog:         defaultApps.Spec.Catalog,
+			Values:          defaultAppsValues.Data["values"],
+			InCluster:       defaultApps.Spec.KubeConfig.InCluster,
+			Namespace:       namespace,
+			AppLabels:       defaultApps.Labels,
+			ConfigMapLabels: defaultApps.Labels,
+		},
+		Organization: &organization.Org{
+			Name: namespace,
+		},
+	}, nil
+}
+
 // ApplyCluster takes a Cluster object, applies it to the MC in the correct order and then waits for a valid Kubeconfig to be available
 //
 // A timeout can be provided via the given `ctx` value by using `context.WithTimeout()`

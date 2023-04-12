@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Add `LoadCluster` function. This will return a Cluster object constructed
+  from an existing WC on the targeted MC (using the cluster and default-apps
+  App CRs). The cluster is specified with the `E2E_WC_NAME` and
+  `E2E_WC_NAMESPACE` env vars. It returns nil if they are not set.
+
 ## [0.0.7] - 2023-03-31
 
 ### Changed

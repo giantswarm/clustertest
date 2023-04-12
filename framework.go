@@ -22,7 +22,9 @@ import (
 )
 
 const (
-	KubeconfigEnvVar = "E2E_KUBECONFIG"
+	EnvKubeconfig               = "E2E_KUBECONFIG"
+	EnvWorkloadClusterName      = "E2E_WC_NAME"
+	EnvWorkloadClusterNamespace = "E2E_WC_NAMESPACE"
 )
 
 // Framework is the overall framework for testing of clusters
@@ -34,9 +36,9 @@ type Framework struct {
 
 // New initializes a new Framework instance using the provided context from the kubeconfig found in the env var `E2E_KUBECONFIG`
 func New(contextName string) (*Framework, error) {
-	mcKubeconfig, ok := os.LookupEnv(KubeconfigEnvVar)
+	mcKubeconfig, ok := os.LookupEnv(EnvKubeconfig)
 	if !ok {
-		return nil, fmt.Errorf("no %s set", KubeconfigEnvVar)
+		return nil, fmt.Errorf("no %s set", EnvKubeconfig)
 	}
 
 	mcClient, err := client.NewWithContext(mcKubeconfig, contextName)
@@ -66,63 +68,26 @@ func (f *Framework) WC(clusterName string) (*client.Client, error) {
 	return c, nil
 }
 
-func (f *Framework) LoadCluster(name, namespace string) (*application.Cluster, error) {
-	ctx := context.Background()
+func (f *Framework) LoadCluster() (*application.Cluster, error) {
+	name := os.Getenv(EnvWorkloadClusterName)
+	namespace := os.Getenv(EnvWorkloadClusterNamespace)
 
-	clusterApp := &applicationv1alpha1.App{}
-	err := f.mcClient.Get(
-		ctx,
-		types.NamespacedName{
-			Name:      name,
-			Namespace: namespace,
-		},
-		clusterApp,
-	)
+	if name == "" || namespace == "" {
+		return nil, nil
+	}
+
+	clusterApp, clusterValues, err := f.getAppAndValues(name, namespace)
 	if err != nil {
 		return nil, err
 	}
 
-	clusterValues := &corev1.ConfigMap{}
-	err = f.mcClient.Get(
-		ctx,
-		types.NamespacedName{
-			Name:      clusterApp.Spec.UserConfig.ConfigMap.Name,
-			Namespace: clusterApp.Spec.UserConfig.ConfigMap.Namespace,
-		},
-		clusterValues,
-	)
-	if err != nil {
-		return nil, err
-	}
-
-	defaultApps := &applicationv1alpha1.App{}
 	defaultAppsName := fmt.Sprintf("%s-default-apps", name)
-	err = f.mcClient.Get(
-		ctx,
-		types.NamespacedName{
-			Name:      defaultAppsName,
-			Namespace: namespace,
-		},
-		defaultApps,
-	)
+	defaultApps, defaultAppsValues, err := f.getAppAndValues(defaultAppsName, namespace)
 	if err != nil {
 		return nil, err
 	}
 
-	defaultAppsValues := &corev1.ConfigMap{}
-	err = f.mcClient.Get(
-		ctx,
-		types.NamespacedName{
-			Name:      defaultApps.Spec.UserConfig.ConfigMap.Name,
-			Namespace: defaultApps.Spec.UserConfig.ConfigMap.Namespace,
-		},
-		defaultAppsValues,
-	)
-	if err != nil {
-		return nil, err
-	}
-
-	kubeconfig, err := f.mcClient.GetClusterKubeConfig(ctx, name, namespace)
+	kubeconfig, err := f.mcClient.GetClusterKubeConfig(context.Background(), name, namespace)
 	if err != nil {
 		return nil, err
 	}
@@ -163,6 +128,38 @@ func (f *Framework) LoadCluster(name, namespace string) (*application.Cluster, e
 			Name: namespace,
 		},
 	}, nil
+}
+
+func (f *Framework) getAppAndValues(name, namespace string) (*applicationv1alpha1.App, *corev1.ConfigMap, error) {
+	ctx := context.Background()
+
+	app := &applicationv1alpha1.App{}
+	err := f.mcClient.Get(
+		ctx,
+		types.NamespacedName{
+			Name:      name,
+			Namespace: namespace,
+		},
+		app,
+	)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	values := &corev1.ConfigMap{}
+	err = f.mcClient.Get(
+		ctx,
+		types.NamespacedName{
+			Name:      app.Spec.UserConfig.ConfigMap.Name,
+			Namespace: app.Spec.UserConfig.ConfigMap.Namespace,
+		},
+		values,
+	)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return app, values, nil
 }
 
 // ApplyCluster takes a Cluster object, applies it to the MC in the correct order and then waits for a valid Kubeconfig to be available

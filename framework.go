@@ -68,6 +68,23 @@ func (f *Framework) WC(clusterName string) (*client.Client, error) {
 	return c, nil
 }
 
+// LoadCluster will construct a Cluster struct using a Workload Cluster's
+// cluster and default-apps App CRs on the targeted Management Cluster. The
+// name and namespace where the cluster are installed need to be provided with
+// the E2E_WC_NAME and E2E_WC_NAMESPACE env vars.
+//
+// If one of the env vars are not set, a nil Cluster and error will be
+// returned.
+//
+// Example:
+//
+//	cluster, err := framework.LoadCluster()
+//	if err != nil {
+//		// handle error
+//	}
+//	if cluster == nil {
+//		// handle cluster not provided
+//	}
 func (f *Framework) LoadCluster() (*application.Cluster, error) {
 	name := os.Getenv(EnvWorkloadClusterName)
 	namespace := os.Getenv(EnvWorkloadClusterNamespace)
@@ -128,38 +145,6 @@ func (f *Framework) LoadCluster() (*application.Cluster, error) {
 			Name: namespace,
 		},
 	}, nil
-}
-
-func (f *Framework) getAppAndValues(name, namespace string) (*applicationv1alpha1.App, *corev1.ConfigMap, error) {
-	ctx := context.Background()
-
-	app := &applicationv1alpha1.App{}
-	err := f.mcClient.Get(
-		ctx,
-		types.NamespacedName{
-			Name:      name,
-			Namespace: namespace,
-		},
-		app,
-	)
-	if err != nil {
-		return nil, nil, err
-	}
-
-	values := &corev1.ConfigMap{}
-	err = f.mcClient.Get(
-		ctx,
-		types.NamespacedName{
-			Name:      app.Spec.UserConfig.ConfigMap.Name,
-			Namespace: app.Spec.UserConfig.ConfigMap.Namespace,
-		},
-		values,
-	)
-	if err != nil {
-		return nil, nil, err
-	}
-
-	return app, values, nil
 }
 
 // ApplyCluster takes a Cluster object, applies it to the MC in the correct order and then waits for a valid Kubeconfig to be available
@@ -324,4 +309,36 @@ func (f *Framework) DeleteOrg(ctx context.Context, org *organization.Org) error 
 	}
 
 	return nil
+}
+
+func (f *Framework) getAppAndValues(name, namespace string) (*applicationv1alpha1.App, *corev1.ConfigMap, error) {
+	ctx := context.Background()
+
+	app := &applicationv1alpha1.App{}
+	err := f.mcClient.Get(
+		ctx,
+		types.NamespacedName{
+			Name:      name,
+			Namespace: namespace,
+		},
+		app,
+	)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	values := &corev1.ConfigMap{}
+	err = f.mcClient.Get(
+		ctx,
+		types.NamespacedName{
+			Name:      app.Spec.UserConfig.ConfigMap.Name,
+			Namespace: app.Spec.UserConfig.ConfigMap.Namespace,
+		},
+		values,
+	)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return app, values, nil
 }

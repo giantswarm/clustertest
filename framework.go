@@ -73,7 +73,7 @@ func (f *Framework) WC(clusterName string) (*client.Client, error) {
 // name and namespace where the cluster are installed need to be provided with
 // the E2E_WC_NAME and E2E_WC_NAMESPACE env vars.
 //
-// If one of the env vars are not set, a nil Cluster and error will be
+// If one of the env vars are not set, a nil Cluster and nil error will be
 // returned.
 //
 // Example:

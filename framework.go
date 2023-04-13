@@ -22,7 +22,9 @@ import (
 )
 
 const (
-	KubeconfigEnvVar = "E2E_KUBECONFIG"
+	EnvKubeconfig               = "E2E_KUBECONFIG"
+	EnvWorkloadClusterName      = "E2E_WC_NAME"
+	EnvWorkloadClusterNamespace = "E2E_WC_NAMESPACE"
 )
 
 // Framework is the overall framework for testing of clusters
@@ -34,9 +36,9 @@ type Framework struct {
 
 // New initializes a new Framework instance using the provided context from the kubeconfig found in the env var `E2E_KUBECONFIG`
 func New(contextName string) (*Framework, error) {
-	mcKubeconfig, ok := os.LookupEnv(KubeconfigEnvVar)
+	mcKubeconfig, ok := os.LookupEnv(EnvKubeconfig)
 	if !ok {
-		return nil, fmt.Errorf("no %s set", KubeconfigEnvVar)
+		return nil, fmt.Errorf("no %s set", EnvKubeconfig)
 	}
 
 	mcClient, err := client.NewWithContext(mcKubeconfig, contextName)
@@ -64,6 +66,85 @@ func (f *Framework) WC(clusterName string) (*client.Client, error) {
 		return nil, fmt.Errorf("workload cluster not found for name %s", clusterName)
 	}
 	return c, nil
+}
+
+// LoadCluster will construct a Cluster struct using a Workload Cluster's
+// cluster and default-apps App CRs on the targeted Management Cluster. The
+// name and namespace where the cluster are installed need to be provided with
+// the E2E_WC_NAME and E2E_WC_NAMESPACE env vars.
+//
+// If one of the env vars are not set, a nil Cluster and nil error will be
+// returned.
+//
+// Example:
+//
+//	cluster, err := framework.LoadCluster()
+//	if err != nil {
+//		// handle error
+//	}
+//	if cluster == nil {
+//		// handle cluster not provided
+//	}
+func (f *Framework) LoadCluster() (*application.Cluster, error) {
+	name := os.Getenv(EnvWorkloadClusterName)
+	namespace := os.Getenv(EnvWorkloadClusterNamespace)
+
+	if name == "" || namespace == "" {
+		return nil, nil
+	}
+
+	clusterApp, clusterValues, err := f.GetAppAndValues(name, namespace)
+	if err != nil {
+		return nil, err
+	}
+
+	defaultAppsName := fmt.Sprintf("%s-default-apps", name)
+	defaultApps, defaultAppsValues, err := f.GetAppAndValues(defaultAppsName, namespace)
+	if err != nil {
+		return nil, err
+	}
+
+	kubeconfig, err := f.mcClient.GetClusterKubeConfig(context.Background(), name, namespace)
+	if err != nil {
+		return nil, err
+	}
+
+	wcClient, err := client.NewFromRawKubeconfig(string(kubeconfig))
+	if err != nil {
+		return nil, err
+	}
+
+	f.wcClients[name] = wcClient
+
+	return &application.Cluster{
+		Name:      name,
+		Namespace: name,
+		ClusterApp: &application.Application{
+			InstallName:     clusterApp.Name,
+			AppName:         clusterApp.Spec.Name,
+			Version:         clusterApp.Spec.Version,
+			Catalog:         clusterApp.Spec.Catalog,
+			Values:          clusterValues.Data["values"],
+			InCluster:       clusterApp.Spec.KubeConfig.InCluster,
+			Namespace:       namespace,
+			AppLabels:       clusterApp.Labels,
+			ConfigMapLabels: clusterValues.Labels,
+		},
+		DefaultAppsApp: &application.Application{
+			InstallName:     defaultApps.Name,
+			AppName:         defaultApps.Spec.Name,
+			Version:         defaultApps.Spec.Version,
+			Catalog:         defaultApps.Spec.Catalog,
+			Values:          defaultAppsValues.Data["values"],
+			InCluster:       defaultApps.Spec.KubeConfig.InCluster,
+			Namespace:       namespace,
+			AppLabels:       defaultApps.Labels,
+			ConfigMapLabels: defaultApps.Labels,
+		},
+		Organization: &organization.Org{
+			Name: namespace,
+		},
+	}, nil
 }
 
 // ApplyCluster takes a Cluster object, applies it to the MC in the correct order and then waits for a valid Kubeconfig to be available
@@ -228,4 +309,38 @@ func (f *Framework) DeleteOrg(ctx context.Context, org *organization.Org) error 
 	}
 
 	return nil
+}
+
+// GetAppAndValues will return the specified App CR and uservalues ConfigMap
+// from the Management Cluster
+func (f *Framework) GetAppAndValues(name, namespace string) (*applicationv1alpha1.App, *corev1.ConfigMap, error) {
+	ctx := context.Background()
+
+	app := &applicationv1alpha1.App{}
+	err := f.mcClient.Get(
+		ctx,
+		types.NamespacedName{
+			Name:      name,
+			Namespace: namespace,
+		},
+		app,
+	)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	values := &corev1.ConfigMap{}
+	err = f.mcClient.Get(
+		ctx,
+		types.NamespacedName{
+			Name:      app.Spec.UserConfig.ConfigMap.Name,
+			Namespace: app.Spec.UserConfig.ConfigMap.Namespace,
+		},
+		values,
+	)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return app, values, nil
 }

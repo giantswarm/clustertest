@@ -21,6 +21,27 @@
 //	// Run tests...
 //
 //	err = framework.DeleteCluster(ctx, cluster)
+
+// # Example using an existing Workload Cluster
+//
+//	ctx := context.Background()
+//
+//	framework, err := clustertest.New("context_name")
+//	if err != nil {
+//		panic(err)
+//	}
+//
+//	// The E2E_WC_NAME and E2E_WC_NAMESPACE env vars must be exported
+//	cluster, err := framework.LoadCluster()
+//	if err != nil {
+//		panic(err)
+//	}
+//	if cluster == nil {
+//		// Handle the case where the env vars aren't provided
+//	}
+//
+//	// Run tests...
+//	// No need to clean up as the user is responsible for the cluster
 //
 // # Example Using Ginkgo
 //

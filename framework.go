@@ -93,13 +93,13 @@ func (f *Framework) LoadCluster() (*application.Cluster, error) {
 		return nil, nil
 	}
 
-	clusterApp, clusterValues, err := f.getAppAndValues(name, namespace)
+	clusterApp, clusterValues, err := f.GetAppAndValues(name, namespace)
 	if err != nil {
 		return nil, err
 	}
 
 	defaultAppsName := fmt.Sprintf("%s-default-apps", name)
-	defaultApps, defaultAppsValues, err := f.getAppAndValues(defaultAppsName, namespace)
+	defaultApps, defaultAppsValues, err := f.GetAppAndValues(defaultAppsName, namespace)
 	if err != nil {
 		return nil, err
 	}
@@ -311,7 +311,9 @@ func (f *Framework) DeleteOrg(ctx context.Context, org *organization.Org) error 
 	return nil
 }
 
-func (f *Framework) getAppAndValues(name, namespace string) (*applicationv1alpha1.App, *corev1.ConfigMap, error) {
+// GetAppAndValues will return the specified App CR and uservalues ConfigMap
+// from the Management Cluster
+func (f *Framework) GetAppAndValues(name, namespace string) (*applicationv1alpha1.App, *corev1.ConfigMap, error) {
 	ctx := context.Background()
 
 	app := &applicationv1alpha1.App{}

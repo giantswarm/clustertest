@@ -2,6 +2,7 @@ package wait
 
 import (
 	"context"
+	"time"
 
 	"github.com/giantswarm/clustertest/pkg/client"
 	"github.com/giantswarm/clustertest/pkg/logger"
@@ -13,6 +14,32 @@ import (
 
 // WaitCondition is a function performing a condition check for if we need to keep waiting
 type WaitCondition func() (done bool, err error)
+
+// Consistent is a modifier for functions. It will return a function that will
+// perform the provided action and return an error if that action doesn't
+// consistently pass. You can configure the attempts and interval between
+// attempts. This can be used in Ginkgo's Eventually to verify that something
+// will eventually be consistent.
+func Consistent(action func() error, attempts int, pollInterval time.Duration) func() error {
+	return func() error {
+		ticker := time.NewTicker(pollInterval)
+		for range ticker.C {
+			if attempts <= 0 {
+				ticker.Stop()
+				break
+			}
+
+			err := action()
+			if err != nil {
+				return err
+			}
+
+			attempts--
+		}
+
+		return nil
+	}
+}
 
 // IsClusterReadyCondition returns a WaitCondition to check when a cluster is considered ready and accessible
 func IsClusterReadyCondition(ctx context.Context, kubeClient *client.Client, clusterName string, namespace string, clientMap map[string]*client.Client) WaitCondition {

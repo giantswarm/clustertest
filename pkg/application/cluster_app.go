@@ -106,6 +106,12 @@ func (c *Cluster) WithAppValuesFile(clusterValuesFile string, defaultAppsValuesF
 	return c
 }
 
+// WithUserConfigSecret sets the name of the referenced Secret under userConfig section
+func (c *Cluster) WithUserConfigSecret(secretName string) *Cluster {
+	c.ClusterApp = c.ClusterApp.WithUserConfigSecretName(secretName)
+	return c
+}
+
 // Build defaults and populates some required values on the apps then generated the App and Configmap pairs for both the
 // cluster and default-apps apps.
 func (c *Cluster) Build() (*applicationv1alpha1.App, *corev1.ConfigMap, *applicationv1alpha1.App, *corev1.ConfigMap, error) {

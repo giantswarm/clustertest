@@ -24,13 +24,14 @@ func init() {
 
 // Application contains all details for creating an App and its values ConfigMap
 type Application struct {
-	InstallName string
-	AppName     string
-	Version     string
-	Catalog     string
-	Values      string
-	InCluster   bool
-	Namespace   string
+	InstallName          string
+	AppName              string
+	Version              string
+	Catalog              string
+	Values               string
+	InCluster            bool
+	Namespace            string
+	UserConfigSecretName string
 
 	AppLabels       map[string]string
 	ConfigMapLabels map[string]string
@@ -131,6 +132,12 @@ func (a *Application) WithConfigMapLabels(labels map[string]string) *Application
 	return a
 }
 
+// WithUserConfigSecretName sets the provided name of the secret as UserConfigSecretName
+func (a *Application) WithUserConfigSecretName(name string) *Application {
+	a.UserConfigSecretName = name
+	return a
+}
+
 // Build generates the App and ConfigMap resources
 func (a *Application) Build() (*applicationv1alpha1.App, *corev1.ConfigMap, error) {
 	switch a.Version {
@@ -167,6 +174,7 @@ func (a *Application) Build() (*applicationv1alpha1.App, *corev1.ConfigMap, erro
 		InCluster:               a.InCluster,
 		Namespace:               a.Namespace,
 		UserConfigConfigMapName: fmt.Sprintf("%s-userconfig", a.InstallName),
+		UserConfigSecretName:    a.UserConfigSecretName,
 		Version:                 a.Version,
 	})
 	if err != nil {

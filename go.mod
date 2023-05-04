@@ -4,14 +4,10 @@ go 1.19
 
 require (
 	github.com/giantswarm/apiextensions-application v0.6.0
-	github.com/giantswarm/kubeconfig/v4 v4.1.0
 	github.com/giantswarm/kubectl-gs/v2 v2.32.0
-	github.com/giantswarm/microerror v0.4.0
 	github.com/giantswarm/organization-operator v1.0.5
 	github.com/google/go-github/v50 v50.1.0
 	github.com/mittwald/go-helm-client v0.12.1
-	gopkg.in/yaml.v2 v2.4.0
-	helm.sh/helm/v3 v3.11.3
 	k8s.io/api v0.26.3
 	k8s.io/apimachinery v0.26.3
 	k8s.io/client-go v0.26.3
@@ -56,19 +52,16 @@ require (
 	github.com/fatih/color v1.14.1 // indirect
 	github.com/fsnotify/fsnotify v1.6.0 // indirect
 	github.com/giantswarm/k8smetadata v0.19.0 // indirect
-	github.com/giantswarm/micrologger v1.0.0 // indirect
+	github.com/giantswarm/microerror v0.4.0 // indirect
 	github.com/giantswarm/release-operator/v4 v4.0.0 // indirect
 	github.com/go-errors/errors v1.4.2 // indirect
 	github.com/go-gorp/gorp/v3 v3.1.0 // indirect
-	github.com/go-kit/log v0.2.1 // indirect
-	github.com/go-logfmt/logfmt v0.5.1 // indirect
 	github.com/go-logr/logr v1.2.3 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
 	github.com/go-logr/zapr v1.2.3 // indirect
 	github.com/go-openapi/jsonpointer v0.19.5 // indirect
 	github.com/go-openapi/jsonreference v0.20.0 // indirect
 	github.com/go-openapi/swag v0.22.3 // indirect
-	github.com/go-stack/stack v1.8.1 // indirect
 	github.com/gobwas/glob v0.2.3 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
@@ -155,7 +148,9 @@ require (
 	google.golang.org/grpc v1.53.0 // indirect
 	google.golang.org/protobuf v1.28.1 // indirect
 	gopkg.in/inf.v0 v0.9.1 // indirect
+	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
+	helm.sh/helm/v3 v3.11.3 // indirect
 	k8s.io/apiextensions-apiserver v0.26.3 // indirect
 	k8s.io/apiserver v0.26.3 // indirect
 	k8s.io/cli-runtime v0.26.3 // indirect

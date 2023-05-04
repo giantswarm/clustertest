@@ -11,7 +11,6 @@ import (
 	"github.com/giantswarm/clustertest/pkg/organization"
 	"github.com/giantswarm/clustertest/pkg/wait"
 
-	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 
 	applicationv1alpha1 "github.com/giantswarm/apiextensions-application/api/v1alpha1"
@@ -118,7 +117,7 @@ func (f *Framework) LoadCluster() (*application.Cluster, error) {
 
 	return &application.Cluster{
 		Name:      name,
-		Namespace: name,
+		Namespace: namespace,
 		ClusterApp: &application.Application{
 			InstallName:     clusterApp.Name,
 			AppName:         clusterApp.Spec.Name,
@@ -225,7 +224,7 @@ func (f *Framework) WaitForControlPlane(ctx context.Context, c *client.Client, e
 // DeleteCluster removes the Cluster app from the MC
 func (f *Framework) DeleteCluster(ctx context.Context, cluster *application.Cluster) error {
 	app := applicationv1alpha1.App{
-		ObjectMeta: v1.ObjectMeta{
+		ObjectMeta: metav1.ObjectMeta{
 			Name:      cluster.Name,
 			Namespace: cluster.Namespace,
 		},

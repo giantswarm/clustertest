@@ -3,9 +3,9 @@ package client
 import (
 	"context"
 	"fmt"
-	"io/ioutil"
 	"net"
 	"net/url"
+	"os"
 
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/rest"
@@ -68,7 +68,7 @@ func NewWithContext(kubeconfigPath string, contextName string) (*Client, error) 
 		return nil, fmt.Errorf("a kubeconfig file must be provided")
 	}
 
-	configBytes, err := ioutil.ReadFile(kubeconfigPath)
+	configBytes, err := os.ReadFile(kubeconfigPath)
 	if err != nil {
 		return nil, fmt.Errorf("failed to read kubeconfig file")
 	}

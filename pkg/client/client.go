@@ -184,6 +184,11 @@ func (c *Client) GetClusterKubeConfig(ctx context.Context, clusterName string, c
 // name and namespace and it will Unmarshal the values into the provided values
 // struct.
 func (c *Client) GetHelmValues(name, namespace string, values interface{}) error {
+	rv := reflect.ValueOf(values)
+	if rv.Kind() != reflect.Pointer || rv.IsNil() {
+		return fmt.Errorf("Values must be a pointer, instead got %v", reflect.TypeOf(values))
+	}
+
 	helmClient, err := c.getHelmClient(namespace)
 	if err != nil {
 		return err

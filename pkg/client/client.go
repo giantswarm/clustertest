@@ -6,6 +6,7 @@ import (
 	"net"
 	"net/url"
 	"os"
+	"reflect"
 
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/rest"
@@ -186,7 +187,7 @@ func (c *Client) GetClusterKubeConfig(ctx context.Context, clusterName string, c
 func (c *Client) GetHelmValues(name, namespace string, values interface{}) error {
 	rv := reflect.ValueOf(values)
 	if rv.Kind() != reflect.Pointer || rv.IsNil() {
-		return fmt.Errorf("Values must be a pointer, instead got %v", reflect.TypeOf(values))
+		return fmt.Errorf("values must be a pointer, instead got %v", reflect.TypeOf(values))
 	}
 
 	helmClient, err := c.getHelmClient(namespace)

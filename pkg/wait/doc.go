@@ -17,10 +17,10 @@
 //		return nil, err
 //	}
 //
-// # Example using Gomega's `Eventually` with the `IsNumNodesReady` condition
+// # Example using Gomega's `Eventually` with the `AreNumNodesReady` condition
 //
 //	Eventually(
-//		wait.IsNumNodesReady(ctx, client, 3, &cr.MatchingLabels{"node-role.kubernetes.io/control-plane": ""}),
+//		wait.AreNumNodesReady(ctx, client, 3, &cr.MatchingLabels{"node-role.kubernetes.io/control-plane": ""}),
 //		20*time.Minute,
 //		30*time.Second,
 //	).Should(BeTrue())

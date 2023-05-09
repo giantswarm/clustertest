@@ -216,7 +216,7 @@ func (f *Framework) WaitForClusterReady(ctx context.Context, clusterName string,
 //	err := framework.WaitForControlPlane(timeoutCtx, wcClient, 3)
 func (f *Framework) WaitForControlPlane(ctx context.Context, c *client.Client, expectedNodes int) error {
 	return wait.For(
-		wait.IsNumNodesReady(ctx, c, expectedNodes, &cr.MatchingLabels{"node-role.kubernetes.io/control-plane": ""}),
+		wait.AreNumNodesReady(ctx, c, expectedNodes, &cr.MatchingLabels{"node-role.kubernetes.io/control-plane": ""}),
 		wait.WithContext(ctx), wait.WithInterval(30*time.Second),
 	)
 }

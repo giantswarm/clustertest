@@ -65,7 +65,7 @@
 //			Expect(err).To(BeNil())
 //
 //			Eventually(
-//				wait.IsNumNodesReady(ctx, client, 3, &cr.MatchingLabels{"node-role.kubernetes.io/control-plane": ""}),
+//				wait.AreNumNodesReady(ctx, client, 3, &cr.MatchingLabels{"node-role.kubernetes.io/control-plane": ""}),
 //				20*time.Minute,
 //				30*time.Second,
 //			).Should(BeTrue())

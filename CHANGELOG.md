@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Add `GetHelmValues` function to controller-runtime client wrapper. This will
+  get the full values for a Helm release and unmarshal them into a user
+  provided struct.
+
 ## [0.0.9] - 2023-04-26
 
 ### Added

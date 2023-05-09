@@ -6,8 +6,10 @@ import (
 	"net"
 	"net/url"
 	"os"
+	"reflect"
 
 	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/kubectl/pkg/scheme"
 	"sigs.k8s.io/controller-runtime/pkg/client/apiutil"
@@ -15,6 +17,7 @@ import (
 
 	applicationv1alpha1 "github.com/giantswarm/apiextensions-application/api/v1alpha1"
 	orgv1alpha1 "github.com/giantswarm/organization-operator/api/v1alpha1"
+	helmclient "github.com/mittwald/go-helm-client"
 	corev1 "k8s.io/api/core/v1"
 	clientcmdapi "k8s.io/client-go/tools/clientcmd/api/v1"
 	capi "sigs.k8s.io/cluster-api/api/v1beta1"
@@ -24,6 +27,9 @@ import (
 // Client extends the client from controller-runtime
 type Client struct {
 	cr.Client
+
+	config  []byte
+	context string
 }
 
 // New creates a new Kubernetes client for the provided kubeconfig file
@@ -41,17 +47,16 @@ func New(kubeconfigPath string) (*Client, error) {
 // The creation of the client doesn't confirm connectivity to the cluster and REST discovery is set to lazy discovery
 // so the client can be created while the cluster is still being set up.
 func NewFromRawKubeconfig(kubeconfig string) (*Client, error) {
-	f, err := os.CreateTemp("", "kubeconfig-")
+	clientConfig, err := clientcmd.NewClientConfigFromBytes([]byte(kubeconfig))
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to create config - %v", err)
 	}
-	defer f.Close()
-	_, err = f.WriteString(kubeconfig)
+	restConfig, err := clientConfig.ClientConfig()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to create rest config - %v", err)
 	}
 
-	return NewWithContext(f.Name(), "")
+	return newClient(restConfig, []byte(kubeconfig), "")
 }
 
 // NewWithContext creates a new Kubernetes client for the provided kubeconfig file and changes the current context to the provided value
@@ -64,6 +69,11 @@ func NewWithContext(kubeconfigPath string, contextName string) (*Client, error) 
 		return nil, fmt.Errorf("a kubeconfig file must be provided")
 	}
 
+	configBytes, err := os.ReadFile(kubeconfigPath)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read kubeconfig file")
+	}
+
 	cfg, err := clientcmd.NewNonInteractiveDeferredLoadingClientConfig(
 		&clientcmd.ClientConfigLoadingRules{ExplicitPath: kubeconfigPath},
 		&clientcmd.ConfigOverrides{
@@ -74,12 +84,16 @@ func NewWithContext(kubeconfigPath string, contextName string) (*Client, error) 
 		return nil, fmt.Errorf("failed to create config - %v", err)
 	}
 
-	mapper, err := apiutil.NewDynamicRESTMapper(cfg, apiutil.WithLazyDiscovery)
+	return newClient(cfg, configBytes, contextName)
+}
+
+func newClient(config *rest.Config, configBytes []byte, contextName string) (*Client, error) {
+	mapper, err := apiutil.NewDynamicRESTMapper(config, apiutil.WithLazyDiscovery)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create new dynamic client - %v", err)
 	}
 
-	client, err := cr.New(cfg, cr.Options{Scheme: scheme.Scheme, Mapper: mapper})
+	client, err := cr.New(config, cr.Options{Scheme: scheme.Scheme, Mapper: mapper})
 	if err != nil {
 		return nil, fmt.Errorf("failed to create new client - %v", err)
 	}
@@ -89,7 +103,11 @@ func NewWithContext(kubeconfigPath string, contextName string) (*Client, error) 
 	_ = orgv1alpha1.AddToScheme(client.Scheme())
 	_ = capi.AddToScheme(client.Scheme())
 
-	return &Client{client}, nil
+	return &Client{
+		Client:  client,
+		config:  configBytes,
+		context: contextName,
+	}, nil
 }
 
 // CheckConnection attempts to connect to the clusters API server and returns an error if not successful.
@@ -161,4 +179,48 @@ func (c *Client) GetClusterKubeConfig(ctx context.Context, clusterName string, c
 	}
 
 	return string(kc), nil
+}
+
+// GetHelmValues retrieves the helm values of a Helm release in the provided
+// name and namespace and it will Unmarshal the values into the provided values
+// struct.
+func (c *Client) GetHelmValues(name, namespace string, values interface{}) error {
+	rv := reflect.ValueOf(values)
+	if rv.Kind() != reflect.Pointer || rv.IsNil() {
+		return fmt.Errorf("values must be a pointer, instead got %v", reflect.TypeOf(values))
+	}
+
+	helmClient, err := c.getHelmClient(namespace)
+	if err != nil {
+		return err
+	}
+
+	rawValues, err := helmClient.GetReleaseValues(name, true)
+	if err != nil {
+		return err
+	}
+
+	yamlValues, err := yaml.Marshal(rawValues)
+	if err != nil {
+		return err
+	}
+
+	return yaml.Unmarshal(yamlValues, values)
+}
+
+func (c *Client) getHelmClient(releaseNamespace string) (helmclient.Client, error) {
+	opt := &helmclient.KubeConfClientOptions{
+		Options: &helmclient.Options{
+			Namespace: releaseNamespace,
+		},
+		KubeContext: c.context,
+		KubeConfig:  c.config,
+	}
+
+	helmClient, err := helmclient.NewClientFromKubeConf(opt)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create helm client: %w", err)
+	}
+
+	return helmClient, nil
 }

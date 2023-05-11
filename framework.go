@@ -304,7 +304,15 @@ func (f *Framework) DeleteOrg(ctx context.Context, org *organization.Org) error 
 	}
 
 	if organization.SafeToDelete(*orgCR) {
-		return f.MC().Client.Delete(ctx, orgCR, &cr.DeleteOptions{})
+		err = f.MC().Client.Delete(ctx, orgCR, &cr.DeleteOptions{})
+		if err != nil {
+			return err
+		}
+
+		err = wait.For(wait.IsResourceDeleted(ctx, f.MC(), orgCR), wait.WithContext(ctx))
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil

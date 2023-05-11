@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Wait for successful Org deletion when deleting cluster
+
 ## [0.0.10] - 2023-05-10
 
 ### Added
@@ -19,7 +23,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Add `Consistently` function. This takes in a function that returns an error and 
+- Add `Consistently` function. This takes in a function that returns an error and
   runs it for a specified period, stopping on the first error.
 
 ## [0.0.8] - 2023-04-13

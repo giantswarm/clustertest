@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"net"
 	"net/url"
-	"os"
 	"reflect"
 
 	"k8s.io/apimachinery/pkg/types"
@@ -28,8 +27,7 @@ import (
 type Client struct {
 	cr.Client
 
-	config  []byte
-	context string
+	config *rest.Config
 }
 
 // New creates a new Kubernetes client for the provided kubeconfig file
@@ -56,7 +54,7 @@ func NewFromRawKubeconfig(kubeconfig string) (*Client, error) {
 		return nil, fmt.Errorf("failed to create rest config - %v", err)
 	}
 
-	return newClient(restConfig, []byte(kubeconfig), "")
+	return newClient(restConfig)
 }
 
 // NewWithContext creates a new Kubernetes client for the provided kubeconfig file and changes the current context to the provided value
@@ -69,11 +67,6 @@ func NewWithContext(kubeconfigPath string, contextName string) (*Client, error) 
 		return nil, fmt.Errorf("a kubeconfig file must be provided")
 	}
 
-	configBytes, err := os.ReadFile(kubeconfigPath)
-	if err != nil {
-		return nil, fmt.Errorf("failed to read kubeconfig file")
-	}
-
 	cfg, err := clientcmd.NewNonInteractiveDeferredLoadingClientConfig(
 		&clientcmd.ClientConfigLoadingRules{ExplicitPath: kubeconfigPath},
 		&clientcmd.ConfigOverrides{
@@ -84,10 +77,10 @@ func NewWithContext(kubeconfigPath string, contextName string) (*Client, error) 
 		return nil, fmt.Errorf("failed to create config - %v", err)
 	}
 
-	return newClient(cfg, configBytes, contextName)
+	return newClient(cfg)
 }
 
-func newClient(config *rest.Config, configBytes []byte, contextName string) (*Client, error) {
+func newClient(config *rest.Config) (*Client, error) {
 	mapper, err := apiutil.NewDynamicRESTMapper(config, apiutil.WithLazyDiscovery)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create new dynamic client - %v", err)
@@ -104,9 +97,8 @@ func newClient(config *rest.Config, configBytes []byte, contextName string) (*Cl
 	_ = capi.AddToScheme(client.Scheme())
 
 	return &Client{
-		Client:  client,
-		config:  configBytes,
-		context: contextName,
+		Client: client,
+		config: config,
 	}, nil
 }
 
@@ -209,15 +201,14 @@ func (c *Client) GetHelmValues(name, namespace string, values interface{}) error
 }
 
 func (c *Client) getHelmClient(releaseNamespace string) (helmclient.Client, error) {
-	opt := &helmclient.KubeConfClientOptions{
+	opt := &helmclient.RestConfClientOptions{
 		Options: &helmclient.Options{
 			Namespace: releaseNamespace,
 		},
-		KubeContext: c.context,
-		KubeConfig:  c.config,
+		RestConfig: c.config,
 	}
 
-	helmClient, err := helmclient.NewClientFromKubeConf(opt)
+	helmClient, err := helmclient.NewClientFromRestConf(opt)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create helm client: %w", err)
 	}

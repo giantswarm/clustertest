@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.0.12] - 2023-05-16
 
+### Added
+
+- Builder for specifying extraConfigs for (cluster) app called `WithExtraConfigs`.
+
 ### Changed
 
 - Add DefaultAppsValues

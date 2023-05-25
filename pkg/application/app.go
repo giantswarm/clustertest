@@ -32,6 +32,7 @@ type Application struct {
 	InCluster            bool
 	Namespace            string
 	UserConfigSecretName string
+	ExtraConfigs         []applicationv1alpha1.AppExtraConfig
 
 	AppLabels       map[string]string
 	ConfigMapLabels map[string]string
@@ -138,6 +139,12 @@ func (a *Application) WithUserConfigSecretName(name string) *Application {
 	return a
 }
 
+// WithExtraConfigs sets the array of AppExtraConfigs to .spec.extraConfigs
+func (a *Application) WithExtraConfigs(extraConfigs []applicationv1alpha1.AppExtraConfig) *Application {
+	a.ExtraConfigs = extraConfigs
+	return a
+}
+
 // Build generates the App and ConfigMap resources
 func (a *Application) Build() (*applicationv1alpha1.App, *corev1.ConfigMap, error) {
 	switch a.Version {
@@ -207,6 +214,9 @@ func (a *Application) Build() (*applicationv1alpha1.App, *corev1.ConfigMap, erro
 	}
 	if a.ConfigMapLabels != nil {
 		configmap.SetLabels(a.ConfigMapLabels)
+	}
+	if len(a.ExtraConfigs) > 0 {
+		app.Spec.ExtraConfigs = a.ExtraConfigs
 	}
 
 	return app, configmap, nil

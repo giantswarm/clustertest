@@ -112,6 +112,12 @@ func (c *Cluster) WithUserConfigSecret(secretName string) *Cluster {
 	return c
 }
 
+// WithExtraConfigs sets the array of AppExtraConfigs to .spec.extraConfigs
+func (c *Cluster) WithExtraConfigs(extraConfigs []applicationv1alpha1.AppExtraConfig) *Cluster {
+	c.ClusterApp = c.ClusterApp.WithExtraConfigs(extraConfigs)
+	return c
+}
+
 // Build defaults and populates some required values on the apps then generated the App and Configmap pairs for both the
 // cluster and default-apps apps.
 func (c *Cluster) Build() (*applicationv1alpha1.App, *corev1.ConfigMap, *applicationv1alpha1.App, *corev1.ConfigMap, error) {

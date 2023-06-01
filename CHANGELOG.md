@@ -10,7 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Add DoesNotHaveLabels controller-runtime ListOption. This will check if a
-  lebel does not exist on an option when listing and deleting Objects.
+  label does not exist on an option when listing and deleting Objects.
 
 ### Changed
 

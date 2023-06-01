@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Add DoesNotHaveLabels controller-runtime ListOption. This will check if a
+  label does not exist on an option when listing and deleting Objects.
+
+### Changed
+
+- AreNumNodesReady and AreNumNodesReadyWithinRange now accept variadic
+  arguments as list options.
+
 ## [0.0.13] - 2023-05-25
 
 ## [0.0.12] - 2023-05-16

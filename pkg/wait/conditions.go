@@ -107,31 +107,31 @@ func DoesResourceExist(ctx context.Context, kubeClient *client.Client, resource 
 	}
 }
 
-// AreNumNodesReadyWithinRange returns a WaitCondition that checks if the number of ready nodes matching the given labels is within the expected range
-func AreNumNodesReadyWithinRange(ctx context.Context, kubeClient *client.Client, expectedNodes Range, labels *cr.MatchingLabels) WaitCondition {
+// AreNumNodesReadyWithinRange returns a WaitCondition that checks if the number of ready nodes are within the expected range. It also receives a variadic arguments for list options
+func AreNumNodesReadyWithinRange(ctx context.Context, kubeClient *client.Client, expectedNodes Range, listOptions ...cr.ListOption) WaitCondition {
 	condition := func(readyNodes int) bool {
 		logger.Log("%d nodes ready, expecting between %d and %d", readyNodes, expectedNodes.Min, expectedNodes.Max)
 		return expectedNodes.Min > readyNodes || expectedNodes.Max < readyNodes
 	}
-	return checkNodesReady(ctx, kubeClient, condition, labels)
+	return checkNodesReady(ctx, kubeClient, condition, listOptions...)
 }
 
-// AreNumNodesReady returns a WaitCondition that checks if the number of ready nodes matching the given labels equals or exceeds the expectedNodes value
-func AreNumNodesReady(ctx context.Context, kubeClient *client.Client, expectedNodes int, labels *cr.MatchingLabels) WaitCondition {
+// AreNumNodesReady returns a WaitCondition that checks if the number of ready nodes equals or exceeds the expectedNodes value. It also receives a variadic arguments for list options
+func AreNumNodesReady(ctx context.Context, kubeClient *client.Client, expectedNodes int, listOptions ...cr.ListOption) WaitCondition {
 	condition := func(readyNodes int) bool {
 		logger.Log("%d nodes ready, expecting %d", readyNodes, expectedNodes)
 		return readyNodes < expectedNodes
 	}
 
-	return checkNodesReady(ctx, kubeClient, condition, labels)
+	return checkNodesReady(ctx, kubeClient, condition, listOptions...)
 }
 
-func checkNodesReady(ctx context.Context, kubeClient *client.Client, condition func(int) bool, labels *cr.MatchingLabels) WaitCondition {
+func checkNodesReady(ctx context.Context, kubeClient *client.Client, condition func(int) bool, labels ...cr.ListOption) WaitCondition {
 	return func() (bool, error) {
 		logger.Log("Checking for ready nodes")
 
 		nodes := &corev1.NodeList{}
-		err := kubeClient.List(ctx, nodes, labels)
+		err := kubeClient.List(ctx, nodes, labels...)
 		if err != nil {
 			return false, err
 		}

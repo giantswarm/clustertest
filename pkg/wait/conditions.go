@@ -108,7 +108,7 @@ func DoesResourceExist(ctx context.Context, kubeClient *client.Client, resource 
 }
 
 // AreNumNodesReadyWithinRange returns a WaitCondition that checks if the number of ready nodes matching the given labels is within the expected range
-func AreNumNodesReadyWithinRange(ctx context.Context, kubeClient *client.Client, expectedNodes Range, labels *cr.MatchingLabels) WaitCondition {
+func AreNumNodesReadyWithinRange(ctx context.Context, kubeClient *client.Client, expectedNodes Range, labels cr.ListOption) WaitCondition {
 	condition := func(readyNodes int) bool {
 		logger.Log("%d nodes ready, expecting between %d and %d", readyNodes, expectedNodes.Min, expectedNodes.Max)
 		return expectedNodes.Min > readyNodes || expectedNodes.Max < readyNodes
@@ -126,7 +126,7 @@ func AreNumNodesReady(ctx context.Context, kubeClient *client.Client, expectedNo
 	return checkNodesReady(ctx, kubeClient, condition, labels)
 }
 
-func checkNodesReady(ctx context.Context, kubeClient *client.Client, condition func(int) bool, labels *cr.MatchingLabels) WaitCondition {
+func checkNodesReady(ctx context.Context, kubeClient *client.Client, condition func(int) bool, labels cr.ListOption) WaitCondition {
 	return func() (bool, error) {
 		logger.Log("Checking for ready nodes")
 

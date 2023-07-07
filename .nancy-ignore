@@ -1,18 +1,5 @@
 # golang/github.com/hashicorp/vault/api@v1.5.0
-CVE-2022-36129 until=2023-06-30
+CVE-2022-36129 until=2023-09-30
 
-# github.com/opencontainers/runc@v1.1.2
-CVE-2023-27561 until=2023-06-30
-CVE-2023-28642 until=2023-06-30
-CVE-2023-25809 until=2023-06-30
-
-# k8s.io/apiserver@v0.26.1
-sonatype-2022-6522 until=2023-06-30
-CVE-2020-8561 until=2023-06-30
-
-# github.com/hashicorp/consul/sdk@v0.1.1
-# github.com/hashicorp/consul/api@v1.1.0
-CVE-2022-29153 until=2023-06-30
-
-#github.com/cloudflare/circl@v1.1.0
-CVE-2023-1732
+# k8s.io/apiserver@v0.27.3 doesn't have any implications in our code
+CVE-2020-8561

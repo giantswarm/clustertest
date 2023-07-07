@@ -2,6 +2,13 @@ module github.com/giantswarm/clustertest
 
 go 1.19
 
+replace (
+	github.com/cloudflare/circl v1.1.0 => github.com/cloudflare/circl v1.3.3
+	github.com/hashicorp/vault/api v1.5.0 => github.com/hashicorp/vault/api v1.9.2
+	github.com/opencontainers/runc v1.1.4 => github.com/opencontainers/runc v1.1.7
+	github.com/rubenv/sql-migrate v1.3.1 => github.com/rubenv/sql-migrate v1.5.1
+)
+
 require (
 	github.com/giantswarm/apiextensions-application v0.6.0
 	github.com/giantswarm/kubectl-gs/v2 v2.32.0

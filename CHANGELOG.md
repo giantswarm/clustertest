@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Add base domain to ClusterValues
+
+### Changed
+
+- Bumped go modules
+
 ## [0.0.14] - 2023-06-01
 
 ### Added

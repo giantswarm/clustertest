@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- If a `GITHUB_TOKEN` env var is found, use it when making API calls to GitHub
+
 ## [0.0.15] - 2023-07-07
 
 ### Added

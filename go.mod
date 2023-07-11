@@ -15,6 +15,7 @@ require (
 	github.com/giantswarm/organization-operator v1.0.5
 	github.com/google/go-github/v50 v50.1.0
 	github.com/mittwald/go-helm-client v0.12.1
+	golang.org/x/oauth2 v0.6.0
 	k8s.io/api v0.26.3
 	k8s.io/apimachinery v0.26.3
 	k8s.io/client-go v0.26.3
@@ -143,7 +144,6 @@ require (
 	go.uber.org/zap v1.24.0 // indirect
 	golang.org/x/crypto v0.5.0 // indirect
 	golang.org/x/net v0.8.0 // indirect
-	golang.org/x/oauth2 v0.6.0 // indirect
 	golang.org/x/sync v0.1.0 // indirect
 	golang.org/x/sys v0.6.0 // indirect
 	golang.org/x/term v0.6.0 // indirect

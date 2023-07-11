@@ -4,10 +4,13 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"net/http"
+	"os"
 	"regexp"
 
 	applicationv1alpha1 "github.com/giantswarm/apiextensions-application/api/v1alpha1"
 	templateapp "github.com/giantswarm/kubectl-gs/v2/pkg/template/app"
+	"golang.org/x/oauth2"
 	corev1 "k8s.io/api/core/v1"
 
 	"github.com/google/go-github/v50/github"
@@ -162,7 +165,13 @@ func (a *Application) Build() (*applicationv1alpha1.App, *corev1.ConfigMap, erro
 		fallthrough
 	case "latest":
 		ctx := context.Background()
-		gh := github.NewClient(nil)
+		var ghHTTPClient *http.Client
+		if os.Getenv("GITHUB_TOKEN") != "" {
+			ghHTTPClient = oauth2.NewClient(ctx, oauth2.StaticTokenSource(
+				&oauth2.Token{AccessToken: os.Getenv("GITHUB_TOKEN")},
+			))
+		}
+		gh := github.NewClient(ghHTTPClient)
 		releases, _, err := gh.Repositories.ListReleases(ctx, "giantswarm", a.AppName, &github.ListOptions{PerPage: 1})
 		if err != nil {
 			return nil, nil, err

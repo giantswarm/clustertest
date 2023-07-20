@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Improved log message when waiting for resource to be created/deleted so that it includes the kind of resource being waited for
+
 ## [0.0.16] - 2023-07-11
 
 ### Added

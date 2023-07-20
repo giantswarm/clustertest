@@ -83,7 +83,7 @@ func IsClusterReadyCondition(ctx context.Context, kubeClient *client.Client, clu
 // IsResourceDeleted returns a WaitCondition that checks if the given resource has been deleted from the cluster yet
 func IsResourceDeleted(ctx context.Context, kubeClient *client.Client, resource cr.Object) WaitCondition {
 	return func() (bool, error) {
-		logger.Log("Checking if resource '%s' still exists", resource.GetName())
+		logger.Log("Checking if %s '%s' still exists", resource.GetObjectKind().GroupVersionKind().Kind, resource.GetName())
 		err := kubeClient.Client.Get(ctx, cr.ObjectKeyFromObject(resource), resource, &cr.GetOptions{})
 		if cr.IgnoreNotFound(err) != nil {
 			return false, err
@@ -99,7 +99,7 @@ func IsResourceDeleted(ctx context.Context, kubeClient *client.Client, resource 
 func DoesResourceExist(ctx context.Context, kubeClient *client.Client, resource cr.Object) WaitCondition {
 	return func() (bool, error) {
 		if err := kubeClient.Client.Get(ctx, cr.ObjectKeyFromObject(resource), resource); err != nil {
-			logger.Log("Waiting for resource '%s' to be created", resource.GetName())
+			logger.Log("Waiting for %s '%s' to be created", resource.GetObjectKind().GroupVersionKind().Kind, resource.GetName())
 			return false, nil
 		}
 

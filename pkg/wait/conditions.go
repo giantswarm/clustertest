@@ -10,6 +10,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	cr "sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/client/apiutil"
 )
 
 type Range struct {
@@ -83,7 +84,7 @@ func IsClusterReadyCondition(ctx context.Context, kubeClient *client.Client, clu
 // IsResourceDeleted returns a WaitCondition that checks if the given resource has been deleted from the cluster yet
 func IsResourceDeleted(ctx context.Context, kubeClient *client.Client, resource cr.Object) WaitCondition {
 	return func() (bool, error) {
-		logger.Log("Checking if %s '%s' still exists", resource.GetObjectKind().GroupVersionKind().Kind, resource.GetName())
+		logger.Log("Checking if %s '%s' still exists", getResourceKind(kubeClient, resource), resource.GetName())
 		err := kubeClient.Client.Get(ctx, cr.ObjectKeyFromObject(resource), resource, &cr.GetOptions{})
 		if cr.IgnoreNotFound(err) != nil {
 			return false, err
@@ -99,7 +100,7 @@ func IsResourceDeleted(ctx context.Context, kubeClient *client.Client, resource 
 func DoesResourceExist(ctx context.Context, kubeClient *client.Client, resource cr.Object) WaitCondition {
 	return func() (bool, error) {
 		if err := kubeClient.Client.Get(ctx, cr.ObjectKeyFromObject(resource), resource); err != nil {
-			logger.Log("Waiting for %s '%s' to be created", resource.GetObjectKind().GroupVersionKind().Kind, resource.GetName())
+			logger.Log("Waiting for %s '%s' to be created", getResourceKind(kubeClient, resource), resource.GetName())
 			return false, nil
 		}
 
@@ -152,4 +153,13 @@ func checkNodesReady(ctx context.Context, kubeClient *client.Client, condition f
 
 		return true, nil
 	}
+}
+
+func getResourceKind(kubeClient *client.Client, resource cr.Object) string {
+	gvk, _ := apiutil.GVKForObject(resource, kubeClient.Client.Scheme())
+	kind := "resource"
+	if gvk.Kind != "" {
+		kind = gvk.Kind
+	}
+	return kind
 }

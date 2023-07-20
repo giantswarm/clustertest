@@ -14,11 +14,11 @@ require (
 	github.com/giantswarm/kubectl-gs/v2 v2.39.0
 	github.com/giantswarm/organization-operator v1.4.0
 	github.com/google/go-github/v50 v50.2.0
-	github.com/mittwald/go-helm-client v0.12.1
+	github.com/mittwald/go-helm-client v0.12.2
 	golang.org/x/oauth2 v0.10.0
-	k8s.io/api v0.26.3
-	k8s.io/apimachinery v0.26.3
-	k8s.io/client-go v0.26.3
+	k8s.io/api v0.27.1
+	k8s.io/apimachinery v0.27.1
+	k8s.io/client-go v0.27.1
 	k8s.io/kubectl v0.26.1
 	sigs.k8s.io/cluster-api v1.4.0-beta.2
 	sigs.k8s.io/controller-runtime v0.14.5
@@ -69,8 +69,8 @@ require (
 	github.com/go-logr/logr v1.2.3 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
 	github.com/go-logr/zapr v1.2.3 // indirect
-	github.com/go-openapi/jsonpointer v0.19.5 // indirect
-	github.com/go-openapi/jsonreference v0.20.0 // indirect
+	github.com/go-openapi/jsonpointer v0.19.6 // indirect
+	github.com/go-openapi/jsonreference v0.20.1 // indirect
 	github.com/go-openapi/swag v0.22.3 // indirect
 	github.com/gobwas/glob v0.2.3 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
@@ -165,10 +165,10 @@ require (
 	k8s.io/cli-runtime v0.26.3 // indirect
 	k8s.io/component-base v0.26.3 // indirect
 	k8s.io/klog/v2 v2.90.1 // indirect
-	k8s.io/kube-openapi v0.0.0-20221012153701-172d655c2280 // indirect
+	k8s.io/kube-openapi v0.0.0-20230308215209-15aac26d736a // indirect
 	k8s.io/utils v0.0.0-20230505201702-9f6742963106 // indirect
 	oras.land/oras-go v1.2.2 // indirect
-	sigs.k8s.io/json v0.0.0-20220713155537-f223a00ba0e2 // indirect
+	sigs.k8s.io/json v0.0.0-20221116044647-bc3834ca7abd // indirect
 	sigs.k8s.io/kustomize/api v0.12.1 // indirect
 	sigs.k8s.io/kustomize/kyaml v0.13.9 // indirect
 	sigs.k8s.io/structured-merge-diff/v4 v4.2.3 // indirect

@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Support a `GITHUB_TOKEN_FILE` environment variable that points to a file location containing the GitHub token
+
 ## [0.1.0] - 2023-07-27
 
 ### Added

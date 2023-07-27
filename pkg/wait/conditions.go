@@ -2,13 +2,16 @@ package wait
 
 import (
 	"context"
+	"strings"
 	"time"
 
 	"github.com/giantswarm/clustertest/pkg/client"
 	"github.com/giantswarm/clustertest/pkg/logger"
 
+	applicationv1alpha1 "github.com/giantswarm/apiextensions-application/api/v1alpha1"
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
+	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	cr "sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/client/apiutil"
 )
@@ -125,6 +128,44 @@ func AreNumNodesReady(ctx context.Context, kubeClient *client.Client, expectedNo
 	}
 
 	return checkNodesReady(ctx, kubeClient, condition, listOptions...)
+}
+
+// IsAppStatus returns a WaitCondition that checks if an app has the expected release status
+func IsAppStatus(ctx context.Context, kubeClient *client.Client, appName string, appNamespace string, expectedStatus string) WaitCondition {
+	return func() (bool, error) {
+		app := &applicationv1alpha1.App{
+			ObjectMeta: v1.ObjectMeta{
+				Name:      appName,
+				Namespace: appNamespace,
+			},
+		}
+		if err := kubeClient.Client.Get(ctx, cr.ObjectKeyFromObject(app), app); err != nil {
+			return false, err
+		}
+
+		actualStatus := app.Status.Release.Status
+		logger.Log("Checking if App status for %s is equal to '%s': %s", appName, expectedStatus, actualStatus)
+		return expectedStatus == actualStatus, nil
+	}
+}
+
+// IsAppVersion returns a WaitCondition that checks if an app has the expected release status. This check ignores any `v` prefix on the version.
+func IsAppVersion(ctx context.Context, kubeClient *client.Client, appName string, appNamespace string, expectedVersion string) WaitCondition {
+	return func() (bool, error) {
+		app := &applicationv1alpha1.App{
+			ObjectMeta: v1.ObjectMeta{
+				Name:      appName,
+				Namespace: appNamespace,
+			},
+		}
+		if err := kubeClient.Client.Get(ctx, cr.ObjectKeyFromObject(app), app); err != nil {
+			return false, err
+		}
+
+		actualVersion := app.Status.Version
+		logger.Log("Checking if App version for %s is equal to '%s': %s", appName, expectedVersion, actualVersion)
+		return strings.TrimPrefix(expectedVersion, "v") == strings.TrimPrefix(actualVersion, "v"), nil
+	}
 }
 
 func checkNodesReady(ctx context.Context, kubeClient *client.Client, condition func(int) bool, labels ...cr.ListOption) WaitCondition {

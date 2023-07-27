@@ -7,12 +7,15 @@ import (
 	"net/url"
 	"reflect"
 
+	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/kubectl/pkg/scheme"
 	"sigs.k8s.io/controller-runtime/pkg/client/apiutil"
 	"sigs.k8s.io/yaml"
+
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 
 	applicationv1alpha1 "github.com/giantswarm/apiextensions-application/api/v1alpha1"
 	orgv1alpha1 "github.com/giantswarm/organization-operator/api/v1alpha1"
@@ -214,4 +217,25 @@ func (c *Client) getHelmClient(releaseNamespace string) (helmclient.Client, erro
 	}
 
 	return helmClient, nil
+}
+
+// CreateOrUpdate attempts first to create the object given but if an AlreadyExists error
+// is returned it instead updates the existing resource.
+func (c *Client) CreateOrUpdate(ctx context.Context, obj cr.Object) error {
+	existingObj := unstructured.Unstructured{}
+	existingObj.SetGroupVersionKind(obj.GetObjectKind().GroupVersionKind())
+
+	err := c.Get(ctx, cr.ObjectKeyFromObject(obj), &existingObj)
+	switch {
+	case err == nil:
+		// Update:
+		obj.SetResourceVersion(existingObj.GetResourceVersion())
+		obj.SetUID(existingObj.GetUID())
+		return c.Patch(ctx, obj, cr.MergeFrom(existingObj.DeepCopy()))
+	case errors.IsNotFound(err):
+		// Create:
+		return c.Create(ctx, obj)
+	default:
+		return err
+	}
 }

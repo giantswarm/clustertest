@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- `CreateOrUpdate` function added to the kube client that allows you to create or overwrite the given resource in the cluster.
+- `IsAppStatus` and `IsAppVersion` wait conditions to check for an app being in an expected release status and expected version deployed.
+- `GetApp` function to get an App resource from the MC
+- `GetConfigMap` function to get a ConfigMap from the MC
+
+### Changed
+
+- `ApplyCluster` can now be called again with an updated Cluster resource to update the Apps in the MC
+- `GetAppAndValues` now takes in a context argument to be consistent with the other helper functions
+
 ## [0.0.18] - 2023-07-20
 
 ### Fixed

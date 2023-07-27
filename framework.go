@@ -85,6 +85,7 @@ func (f *Framework) WC(clusterName string) (*client.Client, error) {
 //		// handle cluster not provided
 //	}
 func (f *Framework) LoadCluster() (*application.Cluster, error) {
+	ctx := context.Background()
 	name := os.Getenv(EnvWorkloadClusterName)
 	namespace := os.Getenv(EnvWorkloadClusterNamespace)
 
@@ -92,13 +93,13 @@ func (f *Framework) LoadCluster() (*application.Cluster, error) {
 		return nil, nil
 	}
 
-	clusterApp, clusterValues, err := f.GetAppAndValues(name, namespace)
+	clusterApp, clusterValues, err := f.GetAppAndValues(ctx, name, namespace)
 	if err != nil {
 		return nil, err
 	}
 
 	defaultAppsName := fmt.Sprintf("%s-default-apps", name)
-	defaultApps, defaultAppsValues, err := f.GetAppAndValues(defaultAppsName, namespace)
+	defaultApps, defaultAppsValues, err := f.GetAppAndValues(ctx, defaultAppsName, namespace)
 	if err != nil {
 		return nil, err
 	}
@@ -170,17 +171,17 @@ func (f *Framework) ApplyCluster(ctx context.Context, cluster *application.Clust
 	}
 
 	// Apply Cluster resources
-	if err := f.MC().Client.Create(ctx, clusterCM); err != nil {
+	if err := f.MC().CreateOrUpdate(ctx, clusterCM); err != nil {
 		return nil, fmt.Errorf("failed to apply cluster configmap: %v", err)
 	}
-	if err := f.MC().Client.Create(ctx, clusterApplication); err != nil {
+	if err := f.MC().CreateOrUpdate(ctx, clusterApplication); err != nil {
 		return nil, fmt.Errorf("failed to apply cluster app CR: %v", err)
 	}
 	// Apply Default Apps resources
-	if err := f.MC().Client.Create(ctx, defaultAppsCM); err != nil {
+	if err := f.MC().CreateOrUpdate(ctx, defaultAppsCM); err != nil {
 		return nil, fmt.Errorf("failed to apply default-apps configmap: %v", err)
 	}
-	if err := f.MC().Client.Create(ctx, defaultAppsApplication); err != nil {
+	if err := f.MC().CreateOrUpdate(ctx, defaultAppsApplication); err != nil {
 		return nil, fmt.Errorf("failed to apply default-apps app CR: %v", err)
 	}
 
@@ -318,33 +319,29 @@ func (f *Framework) DeleteOrg(ctx context.Context, org *organization.Org) error 
 	return nil
 }
 
+// GetApp gets the App resource from the cluster
+func (f *Framework) GetApp(ctx context.Context, name, namespace string) (*applicationv1alpha1.App, error) {
+	app := &applicationv1alpha1.App{}
+	err := f.mcClient.Get(ctx, types.NamespacedName{Name: name, Namespace: namespace}, app)
+	return app, err
+}
+
+// GetConfigMap gets a ConfigMap from the cluster
+func (f *Framework) GetConfigMap(ctx context.Context, name, namespace string) (*corev1.ConfigMap, error) {
+	cm := &corev1.ConfigMap{}
+	err := f.mcClient.Get(ctx, types.NamespacedName{Name: name, Namespace: namespace}, cm)
+	return cm, err
+}
+
 // GetAppAndValues will return the specified App CR and uservalues ConfigMap
 // from the Management Cluster
-func (f *Framework) GetAppAndValues(name, namespace string) (*applicationv1alpha1.App, *corev1.ConfigMap, error) {
-	ctx := context.Background()
-
-	app := &applicationv1alpha1.App{}
-	err := f.mcClient.Get(
-		ctx,
-		types.NamespacedName{
-			Name:      name,
-			Namespace: namespace,
-		},
-		app,
-	)
+func (f *Framework) GetAppAndValues(ctx context.Context, name, namespace string) (*applicationv1alpha1.App, *corev1.ConfigMap, error) {
+	app, err := f.GetApp(ctx, name, namespace)
 	if err != nil {
 		return nil, nil, err
 	}
 
-	values := &corev1.ConfigMap{}
-	err = f.mcClient.Get(
-		ctx,
-		types.NamespacedName{
-			Name:      app.Spec.UserConfig.ConfigMap.Name,
-			Namespace: app.Spec.UserConfig.ConfigMap.Namespace,
-		},
-		values,
-	)
+	values, err := f.GetConfigMap(ctx, app.Spec.UserConfig.ConfigMap.Name, app.Spec.UserConfig.ConfigMap.Namespace)
 	if err != nil {
 		return nil, nil, err
 	}

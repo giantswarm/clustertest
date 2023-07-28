@@ -5,7 +5,6 @@ import (
 	"context"
 	"fmt"
 	"net/http"
-	"os"
 	"regexp"
 
 	applicationv1alpha1 "github.com/giantswarm/apiextensions-application/api/v1alpha1"
@@ -16,6 +15,8 @@ import (
 	"github.com/google/go-github/v53/github"
 	"k8s.io/client-go/kubernetes/scheme"
 	"sigs.k8s.io/e2e-framework/klient/decoder"
+
+	"github.com/giantswarm/clustertest/pkg/utils"
 )
 
 // If commit SHA based version we'll change the catalog
@@ -166,9 +167,10 @@ func (a *Application) Build() (*applicationv1alpha1.App, *corev1.ConfigMap, erro
 	case "latest":
 		ctx := context.Background()
 		var ghHTTPClient *http.Client
-		if os.Getenv("GITHUB_TOKEN") != "" {
+		githubToken := utils.GetGitHubToken()
+		if githubToken != "" {
 			ghHTTPClient = oauth2.NewClient(ctx, oauth2.StaticTokenSource(
-				&oauth2.Token{AccessToken: os.Getenv("GITHUB_TOKEN")},
+				&oauth2.Token{AccessToken: githubToken},
 			))
 		}
 		gh := github.NewClient(ghHTTPClient)

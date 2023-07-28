@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.1] - 2023-07-28
+
 ### Added
 
 - Support a `GITHUB_TOKEN_FILE` environment variable that points to a file location containing the GitHub token
@@ -159,7 +161,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added initial framework layout
 - Added Kubernetes client extended from controller-runtime client
 
-[Unreleased]: https://github.com/giantswarm/clustertest/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/giantswarm/clustertest/compare/v0.1.1...HEAD
+[0.1.1]: https://github.com/giantswarm/clustertest/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/giantswarm/clustertest/compare/v0.0.18...v0.1.0
 [0.0.18]: https://github.com/giantswarm/clustertest/compare/v0.0.17...v0.0.18
 [0.0.17]: https://github.com/giantswarm/clustertest/compare/v0.0.16...v0.0.17

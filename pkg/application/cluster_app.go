@@ -84,8 +84,8 @@ func (c *Cluster) WithAppVersions(clusterVersion string, defaultAppsVersion stri
 func (c *Cluster) WithAppValues(clusterValues string, defaultAppsValues string, templateValues *TemplateValues) *Cluster {
 	c.setDefaultTemplateValues(templateValues)
 
-	c.ClusterApp = c.ClusterApp.WithValues(clusterValues, templateValues)
-	c.DefaultAppsApp = c.DefaultAppsApp.WithValues(defaultAppsValues, templateValues)
+	c.ClusterApp = c.ClusterApp.MustWithValues(clusterValues, templateValues)
+	c.DefaultAppsApp = c.DefaultAppsApp.MustWithValues(defaultAppsValues, templateValues)
 	return c
 }
 

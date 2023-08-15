@@ -85,8 +85,24 @@ func (a *Application) WithCatalog(catalog string) *Application {
 // WithValues sets the Values value
 //
 // The values supports templating using Go template strings and uses values provided in `config` to replace placeholders.
-func (a *Application) WithValues(values string, config *TemplateValues) *Application {
-	a.Values = parseTemplate(values, config)
+func (a *Application) WithValues(values string, config *TemplateValues) (*Application, error) {
+	values, err := parseTemplate(values, config)
+	if err != nil {
+		return nil, err
+	}
+	a.Values = values
+
+	return a, nil
+}
+
+// MustWithValues wraps around WithValues but panics if an error occurs.
+// It is intended to allow for chaining functions when you're sure the file will template successfully.
+func (a *Application) MustWithValues(values string, config *TemplateValues) *Application {
+	_, err := a.WithValues(values, config)
+	if err != nil {
+		panic(err)
+	}
+
 	return a
 }
 
@@ -105,11 +121,11 @@ func (a *Application) WithValuesFile(filePath string, config *TemplateValues) (*
 // MustWithValuesFile wraps around WithValuesFile but panics if an error occurs.
 // It is intended to allow for chaining functions when you're sure the file will template successfully.
 func (a *Application) MustWithValuesFile(filePath string, config *TemplateValues) *Application {
-	values, err := parseTemplateFile(filePath, config)
+	_, err := a.WithValuesFile(filePath, config)
 	if err != nil {
 		panic(err)
 	}
-	a.Values = values
+
 	return a
 }
 

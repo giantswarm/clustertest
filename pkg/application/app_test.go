@@ -20,7 +20,7 @@ func TestWithFunctions(t *testing.T) {
 	app := New(installName, appName).
 		WithVersion(version).
 		WithCatalog(catalog).
-		WithValues(values, nil).
+		MustWithValues(values, nil).
 		WithInCluster(inCluster).
 		WithNamespace(namespace)
 

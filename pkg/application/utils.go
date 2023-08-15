@@ -38,17 +38,20 @@ func parseTemplateFile(path string, config *TemplateValues) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	return parseTemplate(string(manifest), config), nil
+	return parseTemplate(string(manifest), config)
 }
 
-func parseTemplate(manifest string, config *TemplateValues) string {
+func parseTemplate(manifest string, config *TemplateValues) (string, error) {
 	config = defaultTemplateVars(config)
 
 	ut := template.Must(template.New("values").Parse(manifest))
 	manifestBuffer := &bytes.Buffer{}
-	_ = ut.Execute(manifestBuffer, config)
+	err := ut.Execute(manifestBuffer, config)
+	if err != nil {
+		return "", err
+	}
 
-	return manifestBuffer.String()
+	return manifestBuffer.String(), nil
 }
 
 const VersionOverrideEnvVar = "E2E_OVERRIDE_VERSIONS"

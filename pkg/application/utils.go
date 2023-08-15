@@ -7,49 +7,33 @@ import (
 	"text/template"
 )
 
-type TemplateValues interface {
-	GetDefaultValues() DefaultTemplateValues
-	SetDefaultValues(DefaultTemplateValues)
-}
-
-// DefaultTemplateValues is the properties made available to the Values string when templating.
+// TemplateValues is the properties made available to the Values string when templating.
 //
 // The Values string if parsed as a Go text template and will replace these properties if found.
-type DefaultTemplateValues struct {
+type TemplateValues struct {
 	ClusterName  string
 	Namespace    string
 	Organization string
+
+	ExtraValues map[string]string
 }
 
-func (v *DefaultTemplateValues) GetDefaultValues() DefaultTemplateValues {
-	return *v
-}
-
-func (v *DefaultTemplateValues) SetDefaultValues(overrides DefaultTemplateValues) {
-	v.ClusterName = overrides.ClusterName
-	v.Namespace = overrides.Namespace
-	v.Organization = overrides.Organization
-}
-
-func defaultTemplateVars(config TemplateValues) TemplateValues {
+func defaultTemplateVars(config *TemplateValues) *TemplateValues {
 	if config == nil {
-		config = &DefaultTemplateValues{}
+		config = &TemplateValues{}
 	}
 
-	defaults := config.GetDefaultValues()
-	if defaults.Namespace == "" {
-		defaults.Namespace = "org-giantswarm"
+	if config.Namespace == "" {
+		config.Namespace = "org-giantswarm"
 	}
-	if defaults.Organization == "" {
-		defaults.Organization = "giantswarm"
+	if config.Organization == "" {
+		config.Organization = "giantswarm"
 	}
-
-	config.SetDefaultValues(defaults)
 
 	return config
 }
 
-func parseTemplateFile(path string, config TemplateValues) (string, error) {
+func parseTemplateFile(path string, config *TemplateValues) (string, error) {
 	manifest, err := os.ReadFile(path)
 	if err != nil {
 		return "", err
@@ -57,7 +41,7 @@ func parseTemplateFile(path string, config TemplateValues) (string, error) {
 	return parseTemplate(string(manifest), config), nil
 }
 
-func parseTemplate(manifest string, config TemplateValues) string {
+func parseTemplate(manifest string, config *TemplateValues) string {
 	config = defaultTemplateVars(config)
 
 	ut := template.Must(template.New("values").Parse(manifest))

@@ -107,7 +107,7 @@ func TestWithValuesFile_WithTemplating(t *testing.T) {
 	fileName := path.Clean("./test_data/test_values.yaml")
 	app := New("installName", "appName").WithVersion("1.2.3")
 
-	app, err := app.WithValuesFile(fileName, &DefaultTemplateValues{
+	app, err := app.WithValuesFile(fileName, &TemplateValues{
 		ClusterName: "example-cluster",
 	})
 	if err != nil {

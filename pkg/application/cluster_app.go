@@ -81,28 +81,31 @@ func (c *Cluster) WithAppVersions(clusterVersion string, defaultAppsVersion stri
 // WithAppValues sets the App Values values
 //
 // The values supports templating using Go template strings to replace things like the cluster name and namespace
-func (c *Cluster) WithAppValues(clusterValues string, defaultAppsValues string) *Cluster {
-	config := &ValuesTemplateVars{
+func (c *Cluster) WithAppValues(clusterValues string, defaultAppsValues string, templateValues TemplateValues) *Cluster {
+	config := DefaultTemplateValues{
 		ClusterName:  c.Name,
 		Namespace:    c.Namespace,
 		Organization: c.Organization.Name,
 	}
-	c.ClusterApp = c.ClusterApp.WithValues(clusterValues, config)
-	c.DefaultAppsApp = c.DefaultAppsApp.WithValues(defaultAppsValues, config)
+	templateValues.SetDefaultValues(config)
+	c.ClusterApp = c.ClusterApp.WithValues(clusterValues, templateValues)
+	c.DefaultAppsApp = c.DefaultAppsApp.WithValues(defaultAppsValues, templateValues)
 	return c
 }
 
 // WithAppValuesFile sets the App Values values from the provided file paths
 //
 // The values supports templating using Go template strings to replace things like the cluster name and namespace
-func (c *Cluster) WithAppValuesFile(clusterValuesFile string, defaultAppsValuesFile string) *Cluster {
-	config := &ValuesTemplateVars{
+func (c *Cluster) WithAppValuesFile(clusterValuesFile string, defaultAppsValuesFile string, templateValues TemplateValues) *Cluster {
+	config := DefaultTemplateValues{
 		ClusterName:  c.Name,
 		Namespace:    c.Namespace,
 		Organization: c.Organization.Name,
 	}
-	c.ClusterApp = c.ClusterApp.MustWithValuesFile(clusterValuesFile, config)
-	c.DefaultAppsApp = c.DefaultAppsApp.MustWithValuesFile(defaultAppsValuesFile, config)
+	templateValues.SetDefaultValues(config)
+
+	c.ClusterApp = c.ClusterApp.MustWithValuesFile(clusterValuesFile, templateValues)
+	c.DefaultAppsApp = c.DefaultAppsApp.MustWithValuesFile(defaultAppsValuesFile, templateValues)
 	return c
 }
 

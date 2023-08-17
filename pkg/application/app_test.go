@@ -20,7 +20,7 @@ func TestWithFunctions(t *testing.T) {
 	app := New(installName, appName).
 		WithVersion(version).
 		WithCatalog(catalog).
-		WithValues(values, nil).
+		MustWithValues(values, nil).
 		WithInCluster(inCluster).
 		WithNamespace(namespace)
 
@@ -107,7 +107,7 @@ func TestWithValuesFile_WithTemplating(t *testing.T) {
 	fileName := path.Clean("./test_data/test_values.yaml")
 	app := New("installName", "appName").WithVersion("1.2.3")
 
-	app, err := app.WithValuesFile(fileName, &ValuesTemplateVars{
+	app, err := app.WithValuesFile(fileName, &TemplateValues{
 		ClusterName: "example-cluster",
 	})
 	if err != nil {

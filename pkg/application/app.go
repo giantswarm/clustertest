@@ -85,15 +85,31 @@ func (a *Application) WithCatalog(catalog string) *Application {
 // WithValues sets the Values value
 //
 // The values supports templating using Go template strings and uses values provided in `config` to replace placeholders.
-func (a *Application) WithValues(values string, config *ValuesTemplateVars) *Application {
-	a.Values = parseTemplate(values, config)
+func (a *Application) WithValues(values string, config *TemplateValues) (*Application, error) {
+	values, err := parseTemplate(values, config)
+	if err != nil {
+		return nil, err
+	}
+	a.Values = values
+
+	return a, nil
+}
+
+// MustWithValues wraps around WithValues but panics if an error occurs.
+// It is intended to allow for chaining functions when you're sure the file will template successfully.
+func (a *Application) MustWithValues(values string, config *TemplateValues) *Application {
+	_, err := a.WithValues(values, config)
+	if err != nil {
+		panic(err)
+	}
+
 	return a
 }
 
 // WithValuesFile sets the Values property based on the contents found in the provided file path
 //
 // The file supports templating using Go template strings and uses values provided in `config` to replace placeholders.
-func (a *Application) WithValuesFile(filePath string, config *ValuesTemplateVars) (*Application, error) {
+func (a *Application) WithValuesFile(filePath string, config *TemplateValues) (*Application, error) {
 	values, err := parseTemplateFile(filePath, config)
 	if err != nil {
 		return nil, err
@@ -104,12 +120,12 @@ func (a *Application) WithValuesFile(filePath string, config *ValuesTemplateVars
 
 // MustWithValuesFile wraps around WithValuesFile but panics if an error occurs.
 // It is intended to allow for chaining functions when you're sure the file will template successfully.
-func (a *Application) MustWithValuesFile(filePath string, config *ValuesTemplateVars) *Application {
-	values, err := parseTemplateFile(filePath, config)
+func (a *Application) MustWithValuesFile(filePath string, config *TemplateValues) *Application {
+	_, err := a.WithValuesFile(filePath, config)
 	if err != nil {
 		panic(err)
 	}
-	a.Values = values
+
 	return a
 }
 

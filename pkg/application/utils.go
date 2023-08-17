@@ -7,19 +7,22 @@ import (
 	"text/template"
 )
 
-// ValuesTemplateVars is the properties made available to the Values string when templating.
+// TemplateValues is the properties made available to the Values string when templating.
 //
 // The Values string if parsed as a Go text template and will replace these properties if found.
-type ValuesTemplateVars struct {
+type TemplateValues struct {
 	ClusterName  string
 	Namespace    string
 	Organization string
+
+	ExtraValues map[string]string
 }
 
-func defaultTemplateVars(config *ValuesTemplateVars) *ValuesTemplateVars {
+func defaultTemplateVars(config *TemplateValues) *TemplateValues {
 	if config == nil {
-		config = &ValuesTemplateVars{}
+		config = &TemplateValues{}
 	}
+
 	if config.Namespace == "" {
 		config.Namespace = "org-giantswarm"
 	}
@@ -30,22 +33,25 @@ func defaultTemplateVars(config *ValuesTemplateVars) *ValuesTemplateVars {
 	return config
 }
 
-func parseTemplateFile(path string, config *ValuesTemplateVars) (string, error) {
+func parseTemplateFile(path string, config *TemplateValues) (string, error) {
 	manifest, err := os.ReadFile(path)
 	if err != nil {
 		return "", err
 	}
-	return parseTemplate(string(manifest), config), nil
+	return parseTemplate(string(manifest), config)
 }
 
-func parseTemplate(manifest string, config *ValuesTemplateVars) string {
+func parseTemplate(manifest string, config *TemplateValues) (string, error) {
 	config = defaultTemplateVars(config)
 
 	ut := template.Must(template.New("values").Parse(manifest))
 	manifestBuffer := &bytes.Buffer{}
-	_ = ut.Execute(manifestBuffer, *config)
+	err := ut.Execute(manifestBuffer, config)
+	if err != nil {
+		return "", err
+	}
 
-	return manifestBuffer.String()
+	return manifestBuffer.String(), nil
 }
 
 const VersionOverrideEnvVar = "E2E_OVERRIDE_VERSIONS"

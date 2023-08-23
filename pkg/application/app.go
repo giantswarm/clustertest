@@ -250,3 +250,8 @@ func (a *Application) Build() (*applicationv1alpha1.App, *corev1.ConfigMap, erro
 
 	return app, configmap, nil
 }
+
+// GetNamespace returns the app namespace.
+func (a *Application) GetNamespace() string {
+	return a.Organization.GetNamespace()
+}

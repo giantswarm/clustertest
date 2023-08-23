@@ -183,7 +183,7 @@ func (f *Framework) ApplyCluster(ctx context.Context, cluster *application.Clust
 		return nil, fmt.Errorf("failed to apply default-apps app CR: %v", err)
 	}
 
-	return f.WaitForClusterReady(ctx, cluster.Name, cluster.Organization.GetNamespace())
+	return f.WaitForClusterReady(ctx, cluster.Name, cluster.GetNamespace())
 }
 
 // WaitForClusterReady watches for a Kubeconfig secret to be created on the MC and then waits until that cluster's api-server response successfully
@@ -225,7 +225,7 @@ func (f *Framework) DeleteCluster(ctx context.Context, cluster *application.Clus
 	app := applicationv1alpha1.App{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      cluster.Name,
-			Namespace: cluster.Organization.GetNamespace(),
+			Namespace: cluster.GetNamespace(),
 		},
 	}
 	err := f.MC().Client.Delete(ctx, &app)
@@ -236,7 +236,7 @@ func (f *Framework) DeleteCluster(ctx context.Context, cluster *application.Clus
 	clusterResource := &capi.Cluster{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      cluster.Name,
-			Namespace: cluster.Organization.GetNamespace(),
+			Namespace: cluster.GetNamespace(),
 		},
 	}
 	err = wait.For(wait.IsResourceDeleted(ctx, f.MC(), clusterResource), wait.WithContext(ctx))
@@ -249,7 +249,7 @@ func (f *Framework) DeleteCluster(ctx context.Context, cluster *application.Clus
 		&corev1.Secret{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      fmt.Sprintf("%s-bastion-ignition", cluster.Name),
-				Namespace: cluster.Organization.GetNamespace(),
+				Namespace: cluster.GetNamespace(),
 			},
 		},
 		cr.RawPatch(types.MergePatchType, []byte(`{"metadata":{"finalizers":null}}`)),

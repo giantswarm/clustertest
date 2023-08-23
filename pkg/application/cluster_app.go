@@ -144,3 +144,8 @@ func (c *Cluster) Build() (*applicationv1alpha1.App, *corev1.ConfigMap, *applica
 
 	return clusterApplication, clusterCM, defaultAppsApplication, defaultAppsCM, nil
 }
+
+// GetNamespace returns the cluster organization namespace.
+func (c *Cluster) GetNamespace() string {
+	return c.Organization.GetNamespace()
+}

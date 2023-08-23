@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Allow setting the `Organization` when modeling an `Application`, as that's what will be used by `kubectl-gs` to determine the app namespace.
+
 ## [0.2.0] - 2023-08-17
 
 - Support passing additional template values to Application. This changes the signature of `WithValues` and `WithValuesFile` when creating ClusterApps.

@@ -6,6 +6,8 @@ import (
 	"path"
 	"strings"
 	"testing"
+
+	"github.com/giantswarm/clustertest/pkg/organization"
 )
 
 func TestWithFunctions(t *testing.T) {
@@ -15,14 +17,14 @@ func TestWithFunctions(t *testing.T) {
 	catalog := "catalog"
 	values := "values"
 	inCluster := false
-	namespace := "namespace"
+	org := organization.New("giantswarm")
 
 	app := New(installName, appName).
 		WithVersion(version).
 		WithCatalog(catalog).
 		MustWithValues(values, nil).
 		WithInCluster(inCluster).
-		WithNamespace(namespace)
+		WithOrganization(*org)
 
 	if app.InstallName != installName {
 		t.Errorf("InstallName not as expected. Expected: %s, Actual: %s", installName, app.InstallName)
@@ -42,8 +44,30 @@ func TestWithFunctions(t *testing.T) {
 	if app.InCluster != inCluster {
 		t.Errorf("InCluster not as expected. Expected: %t, Actual: %t", inCluster, app.InCluster)
 	}
-	if app.Namespace != namespace {
-		t.Errorf("Namespace not as expected. Expected: %s, Actual: %s", namespace, app.Namespace)
+	if app.Organization.Name != org.Name {
+		t.Errorf("Organization not as expected. Expected: %s, Actual: %s", org.Name, app.Organization.Name)
+	}
+}
+
+func TestOrganizationNamespace(t *testing.T) {
+	installName := "installName"
+	appName := "appName"
+	version := "version"
+	values := "values"
+	org := organization.New("giantswarm")
+
+	app, _, err := New(installName, appName).
+		WithVersion(version).
+		MustWithValues(values, nil).
+		WithOrganization(*org).
+		Build()
+
+	if err != nil {
+		t.Fatalf("Not expecting an error: %v", err)
+	}
+
+	if app.Namespace != org.GetNamespace() {
+		t.Errorf("Namespace not as expected. Expected: %s, Actual: %s", org.GetNamespace(), app.Namespace)
 	}
 }
 

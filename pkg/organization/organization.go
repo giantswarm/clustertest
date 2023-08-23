@@ -2,6 +2,7 @@ package organization
 
 import (
 	"fmt"
+	"strings"
 
 	templateorg "github.com/giantswarm/kubectl-gs/v2/pkg/template/organization"
 	orgv1alpha1 "github.com/giantswarm/organization-operator/api/v1alpha1"
@@ -37,6 +38,14 @@ func New(name string) *Org {
 	return &Org{
 		Name:      name,
 		namespace: fmt.Sprintf("org-%s", name),
+	}
+}
+
+// NewFromNamespace returns a new Org, taking the name from the passed namespace.
+func NewFromNamespace(namespace string) *Org {
+	return &Org{
+		Name:      strings.TrimPrefix(namespace, "org-"),
+		namespace: namespace,
 	}
 }
 

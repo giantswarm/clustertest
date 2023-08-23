@@ -12,7 +12,6 @@ import (
 // Cluster is a wrapper around Cluster and Default-apps Apps that makes creating them together easier
 type Cluster struct {
 	Name           string
-	Namespace      string
 	ClusterApp     *Application
 	DefaultAppsApp *Application
 	Organization   *organization.Org
@@ -34,12 +33,11 @@ const (
 func NewClusterApp(clusterName string, provider Provider) *Cluster {
 	org := organization.NewRandomOrg()
 
-	clusterApp := New(clusterName, fmt.Sprintf("cluster-%s", provider)).WithNamespace(org.GetNamespace())
-	defaultAppsApp := New(fmt.Sprintf("%s-default-apps", clusterName), fmt.Sprintf("default-apps-%s", provider)).WithNamespace(org.GetNamespace())
+	clusterApp := New(clusterName, fmt.Sprintf("cluster-%s", provider)).WithOrganization(*org)
+	defaultAppsApp := New(fmt.Sprintf("%s-default-apps", clusterName), fmt.Sprintf("default-apps-%s", provider)).WithOrganization(*org)
 
 	return &Cluster{
 		Name:           clusterName,
-		Namespace:      org.GetNamespace(),
 		ClusterApp:     clusterApp,
 		DefaultAppsApp: defaultAppsApp,
 		Organization:   org,
@@ -49,16 +47,8 @@ func NewClusterApp(clusterName string, provider Provider) *Cluster {
 // WithOrg sets the Organization for the cluster and updates the namespace to that specified by the provided Org
 func (c *Cluster) WithOrg(org *organization.Org) *Cluster {
 	c.Organization = org
-	return c.WithNamespace(org.GetNamespace())
-}
-
-// WithNamespace sets the Namespace value
-//
-// Note: this may be overwritten if [Cluster.WithOrg] is used after.
-func (c *Cluster) WithNamespace(namespace string) *Cluster {
-	c.Namespace = namespace
-	c.ClusterApp = c.ClusterApp.WithNamespace(namespace)
-	c.DefaultAppsApp = c.DefaultAppsApp.WithNamespace(namespace)
+	c.ClusterApp = c.ClusterApp.WithOrganization(*org)
+	c.DefaultAppsApp = c.DefaultAppsApp.WithOrganization(*org)
 	return c
 }
 
@@ -102,7 +92,7 @@ func (c *Cluster) WithAppValuesFile(clusterValuesFile string, defaultAppsValuesF
 
 func (c *Cluster) setDefaultTemplateValues(templateValues *TemplateValues) {
 	templateValues.ClusterName = c.Name
-	templateValues.Namespace = c.Namespace
+	templateValues.Namespace = c.Organization.GetNamespace()
 	templateValues.Organization = c.Organization.Name
 }
 
@@ -150,7 +140,12 @@ func (c *Cluster) Build() (*applicationv1alpha1.App, *corev1.ConfigMap, *applica
 
 	// Add missing config
 	defaultAppsApplication.Spec.Config.ConfigMap.Name = fmt.Sprintf("%s-cluster-values", c.Name)
-	defaultAppsApplication.Spec.Config.ConfigMap.Namespace = c.Namespace
+	defaultAppsApplication.Spec.Config.ConfigMap.Namespace = c.DefaultAppsApp.Organization.GetNamespace()
 
 	return clusterApplication, clusterCM, defaultAppsApplication, defaultAppsCM, nil
+}
+
+// GetNamespace returns the cluster organization namespace.
+func (c *Cluster) GetNamespace() string {
+	return c.Organization.GetNamespace()
 }

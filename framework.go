@@ -88,6 +88,7 @@ func (f *Framework) LoadCluster() (*application.Cluster, error) {
 	ctx := context.Background()
 	name := os.Getenv(EnvWorkloadClusterName)
 	namespace := os.Getenv(EnvWorkloadClusterNamespace)
+	org := organization.NewFromNamespace(namespace)
 
 	if name == "" || namespace == "" {
 		return nil, nil
@@ -117,8 +118,7 @@ func (f *Framework) LoadCluster() (*application.Cluster, error) {
 	f.wcClients[name] = wcClient
 
 	return &application.Cluster{
-		Name:      name,
-		Namespace: namespace,
+		Name: name,
 		ClusterApp: &application.Application{
 			InstallName:     clusterApp.Name,
 			AppName:         clusterApp.Spec.Name,
@@ -126,7 +126,7 @@ func (f *Framework) LoadCluster() (*application.Cluster, error) {
 			Catalog:         clusterApp.Spec.Catalog,
 			Values:          clusterValues.Data["values"],
 			InCluster:       clusterApp.Spec.KubeConfig.InCluster,
-			Namespace:       namespace,
+			Organization:    *org,
 			AppLabels:       clusterApp.Labels,
 			ConfigMapLabels: clusterValues.Labels,
 		},
@@ -137,13 +137,11 @@ func (f *Framework) LoadCluster() (*application.Cluster, error) {
 			Catalog:         defaultApps.Spec.Catalog,
 			Values:          defaultAppsValues.Data["values"],
 			InCluster:       defaultApps.Spec.KubeConfig.InCluster,
-			Namespace:       namespace,
+			Organization:    *org,
 			AppLabels:       defaultApps.Labels,
 			ConfigMapLabels: defaultApps.Labels,
 		},
-		Organization: &organization.Org{
-			Name: namespace,
-		},
+		Organization: org,
 	}, nil
 }
 
@@ -185,7 +183,7 @@ func (f *Framework) ApplyCluster(ctx context.Context, cluster *application.Clust
 		return nil, fmt.Errorf("failed to apply default-apps app CR: %v", err)
 	}
 
-	return f.WaitForClusterReady(ctx, cluster.Name, cluster.Namespace)
+	return f.WaitForClusterReady(ctx, cluster.Name, cluster.GetNamespace())
 }
 
 // WaitForClusterReady watches for a Kubeconfig secret to be created on the MC and then waits until that cluster's api-server response successfully
@@ -227,7 +225,7 @@ func (f *Framework) DeleteCluster(ctx context.Context, cluster *application.Clus
 	app := applicationv1alpha1.App{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      cluster.Name,
-			Namespace: cluster.Namespace,
+			Namespace: cluster.GetNamespace(),
 		},
 	}
 	err := f.MC().Client.Delete(ctx, &app)
@@ -238,7 +236,7 @@ func (f *Framework) DeleteCluster(ctx context.Context, cluster *application.Clus
 	clusterResource := &capi.Cluster{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      cluster.Name,
-			Namespace: cluster.Namespace,
+			Namespace: cluster.GetNamespace(),
 		},
 	}
 	err = wait.For(wait.IsResourceDeleted(ctx, f.MC(), clusterResource), wait.WithContext(ctx))
@@ -251,7 +249,7 @@ func (f *Framework) DeleteCluster(ctx context.Context, cluster *application.Clus
 		&corev1.Secret{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      fmt.Sprintf("%s-bastion-ignition", cluster.Name),
-				Namespace: cluster.Namespace,
+				Namespace: cluster.GetNamespace(),
 			},
 		},
 		cr.RawPatch(types.MergePatchType, []byte(`{"metadata":{"finalizers":null}}`)),

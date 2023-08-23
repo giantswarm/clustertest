@@ -12,7 +12,6 @@ import (
 // Cluster is a wrapper around Cluster and Default-apps Apps that makes creating them together easier
 type Cluster struct {
 	Name           string
-	Namespace      string
 	ClusterApp     *Application
 	DefaultAppsApp *Application
 	Organization   *organization.Org
@@ -39,11 +38,16 @@ func NewClusterApp(clusterName string, provider Provider) *Cluster {
 
 	return &Cluster{
 		Name:           clusterName,
-		Namespace:      org.GetNamespace(),
 		ClusterApp:     clusterApp,
 		DefaultAppsApp: defaultAppsApp,
 		Organization:   org,
 	}
+}
+
+// WithOrg sets the Organization for the cluster and updates the namespace to that specified by the provided Org
+func (c *Cluster) WithOrg(org *organization.Org) *Cluster {
+	c.Organization = org
+	return c
 }
 
 // WithAppVersions sets the Version values
@@ -86,7 +90,7 @@ func (c *Cluster) WithAppValuesFile(clusterValuesFile string, defaultAppsValuesF
 
 func (c *Cluster) setDefaultTemplateValues(templateValues *TemplateValues) {
 	templateValues.ClusterName = c.Name
-	templateValues.Namespace = c.Namespace
+	templateValues.Namespace = c.Organization.GetNamespace()
 	templateValues.Organization = c.Organization.Name
 }
 
@@ -134,7 +138,7 @@ func (c *Cluster) Build() (*applicationv1alpha1.App, *corev1.ConfigMap, *applica
 
 	// Add missing config
 	defaultAppsApplication.Spec.Config.ConfigMap.Name = fmt.Sprintf("%s-cluster-values", c.Name)
-	defaultAppsApplication.Spec.Config.ConfigMap.Namespace = c.Namespace
+	defaultAppsApplication.Spec.Config.ConfigMap.Namespace = c.Organization.GetNamespace()
 
 	return clusterApplication, clusterCM, defaultAppsApplication, defaultAppsCM, nil
 }

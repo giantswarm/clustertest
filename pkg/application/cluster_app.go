@@ -47,6 +47,8 @@ func NewClusterApp(clusterName string, provider Provider) *Cluster {
 // WithOrg sets the Organization for the cluster and updates the namespace to that specified by the provided Org
 func (c *Cluster) WithOrg(org *organization.Org) *Cluster {
 	c.Organization = org
+	c.ClusterApp = c.ClusterApp.WithOrganization(*org)
+	c.DefaultAppsApp = c.DefaultAppsApp.WithOrganization(*org)
 	return c
 }
 
@@ -138,7 +140,7 @@ func (c *Cluster) Build() (*applicationv1alpha1.App, *corev1.ConfigMap, *applica
 
 	// Add missing config
 	defaultAppsApplication.Spec.Config.ConfigMap.Name = fmt.Sprintf("%s-cluster-values", c.Name)
-	defaultAppsApplication.Spec.Config.ConfigMap.Namespace = c.Organization.GetNamespace()
+	defaultAppsApplication.Spec.Config.ConfigMap.Namespace = c.DefaultAppsApp.Organization.GetNamespace()
 
 	return clusterApplication, clusterCM, defaultAppsApplication, defaultAppsCM, nil
 }

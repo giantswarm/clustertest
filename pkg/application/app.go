@@ -16,6 +16,7 @@ import (
 	"k8s.io/client-go/kubernetes/scheme"
 	"sigs.k8s.io/e2e-framework/klient/decoder"
 
+	"github.com/giantswarm/clustertest/pkg/organization"
 	"github.com/giantswarm/clustertest/pkg/utils"
 )
 
@@ -34,7 +35,7 @@ type Application struct {
 	Catalog              string
 	Values               string
 	InCluster            bool
-	Namespace            string
+	Organization         organization.Org
 	UserConfigSecretName string
 	ExtraConfigs         []applicationv1alpha1.AppExtraConfig
 
@@ -45,13 +46,13 @@ type Application struct {
 // New creates a new Application
 func New(installName string, appName string) *Application {
 	return &Application{
-		InstallName: installName,
-		AppName:     appName,
-		Version:     "",
-		Catalog:     "cluster",
-		Values:      "\n",
-		InCluster:   true,
-		Namespace:   "org-giantswarm",
+		InstallName:  installName,
+		AppName:      appName,
+		Version:      "",
+		Catalog:      "cluster",
+		Values:       "\n",
+		InCluster:    true,
+		Organization: *organization.New("giantswarm"),
 	}
 }
 
@@ -129,9 +130,9 @@ func (a *Application) MustWithValuesFile(filePath string, config *TemplateValues
 	return a
 }
 
-// WithNamespace sets the Namespace value
-func (a *Application) WithNamespace(namespace string) *Application {
-	a.Namespace = namespace
+// WithOrganization sets the Organization value
+func (a *Application) WithOrganization(organization organization.Org) *Application {
+	a.Organization = organization
 	return a
 }
 
@@ -206,7 +207,8 @@ func (a *Application) Build() (*applicationv1alpha1.App, *corev1.ConfigMap, erro
 		Name:                    a.AppName,
 		Catalog:                 a.Catalog,
 		InCluster:               a.InCluster,
-		Namespace:               a.Namespace,
+		Namespace:               a.Organization.GetNamespace(),
+		Organization:            a.Organization.Name,
 		UserConfigConfigMapName: fmt.Sprintf("%s-userconfig", a.InstallName),
 		UserConfigSecretName:    a.UserConfigSecretName,
 		Version:                 a.Version,
@@ -229,7 +231,7 @@ func (a *Application) Build() (*applicationv1alpha1.App, *corev1.ConfigMap, erro
 
 	configmap, err := templateapp.NewConfigMap(templateapp.UserConfig{
 		Name:      fmt.Sprintf("%s-userconfig", a.InstallName),
-		Namespace: a.Namespace,
+		Namespace: a.Organization.GetNamespace(),
 		Data:      a.Values,
 	})
 	if err != nil {

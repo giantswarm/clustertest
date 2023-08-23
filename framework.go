@@ -88,6 +88,7 @@ func (f *Framework) LoadCluster() (*application.Cluster, error) {
 	ctx := context.Background()
 	name := os.Getenv(EnvWorkloadClusterName)
 	namespace := os.Getenv(EnvWorkloadClusterNamespace)
+	org := organization.NewFromNamespace(namespace)
 
 	if name == "" || namespace == "" {
 		return nil, nil
@@ -126,7 +127,7 @@ func (f *Framework) LoadCluster() (*application.Cluster, error) {
 			Catalog:         clusterApp.Spec.Catalog,
 			Values:          clusterValues.Data["values"],
 			InCluster:       clusterApp.Spec.KubeConfig.InCluster,
-			Namespace:       namespace,
+			Organization:    *org,
 			AppLabels:       clusterApp.Labels,
 			ConfigMapLabels: clusterValues.Labels,
 		},
@@ -137,13 +138,11 @@ func (f *Framework) LoadCluster() (*application.Cluster, error) {
 			Catalog:         defaultApps.Spec.Catalog,
 			Values:          defaultAppsValues.Data["values"],
 			InCluster:       defaultApps.Spec.KubeConfig.InCluster,
-			Namespace:       namespace,
+			Organization:    *org,
 			AppLabels:       defaultApps.Labels,
 			ConfigMapLabels: defaultApps.Labels,
 		},
-		Organization: &organization.Org{
-			Name: namespace,
-		},
+		Organization: org,
 	}, nil
 }
 

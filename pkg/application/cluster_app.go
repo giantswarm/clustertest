@@ -34,8 +34,8 @@ const (
 func NewClusterApp(clusterName string, provider Provider) *Cluster {
 	org := organization.NewRandomOrg()
 
-	clusterApp := New(clusterName, fmt.Sprintf("cluster-%s", provider)).WithNamespace(org.GetNamespace())
-	defaultAppsApp := New(fmt.Sprintf("%s-default-apps", clusterName), fmt.Sprintf("default-apps-%s", provider)).WithNamespace(org.GetNamespace())
+	clusterApp := New(clusterName, fmt.Sprintf("cluster-%s", provider)).WithOrganization(*org)
+	defaultAppsApp := New(fmt.Sprintf("%s-default-apps", clusterName), fmt.Sprintf("default-apps-%s", provider)).WithOrganization(*org)
 
 	return &Cluster{
 		Name:           clusterName,
@@ -44,22 +44,6 @@ func NewClusterApp(clusterName string, provider Provider) *Cluster {
 		DefaultAppsApp: defaultAppsApp,
 		Organization:   org,
 	}
-}
-
-// WithOrg sets the Organization for the cluster and updates the namespace to that specified by the provided Org
-func (c *Cluster) WithOrg(org *organization.Org) *Cluster {
-	c.Organization = org
-	return c.WithNamespace(org.GetNamespace())
-}
-
-// WithNamespace sets the Namespace value
-//
-// Note: this may be overwritten if [Cluster.WithOrg] is used after.
-func (c *Cluster) WithNamespace(namespace string) *Cluster {
-	c.Namespace = namespace
-	c.ClusterApp = c.ClusterApp.WithNamespace(namespace)
-	c.DefaultAppsApp = c.DefaultAppsApp.WithNamespace(namespace)
-	return c
 }
 
 // WithAppVersions sets the Version values

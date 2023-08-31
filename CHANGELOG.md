@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Correctly handle both types of NodePools in our values yaml
+
 ## [0.3.0] - 2023-08-24
 
 ### Changed

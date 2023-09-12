@@ -157,13 +157,8 @@ func IsAllAppStatus(ctx context.Context, kubeClient *client.Client, appNamespace
 		isSuccess := true
 
 		for _, namespacedName := range appNamespacedNames {
-			app := &applicationv1alpha1.App{
-				ObjectMeta: v1.ObjectMeta{
-					Name:      namespacedName.Name,
-					Namespace: namespacedName.Namespace,
-				},
-			}
-			if err = kubeClient.Client.Get(ctx, cr.ObjectKeyFromObject(app), app); err != nil {
+			app := &applicationv1alpha1.App{}
+			if err = kubeClient.Client.Get(ctx, namespacedName, app); err != nil {
 				logger.Log("Failed to get App %s: %s", namespacedName.Name, err)
 				isSuccess = false
 				continue

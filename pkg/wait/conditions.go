@@ -12,6 +12,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/types"
 	cr "sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/client/apiutil"
 )
@@ -146,6 +147,35 @@ func IsAppStatus(ctx context.Context, kubeClient *client.Client, appName string,
 		actualStatus := app.Status.Release.Status
 		logger.Log("Checking if App status for %s is equal to '%s': %s", appName, expectedStatus, actualStatus)
 		return expectedStatus == actualStatus, nil
+	}
+}
+
+// IsAllAppStatus returns a WaitCondition that checks if all the apps provided currently have the provided expected status
+func IsAllAppStatus(ctx context.Context, kubeClient *client.Client, appNamespacedNames []types.NamespacedName, expectedStatus string) WaitCondition {
+	return func() (bool, error) {
+		var err error
+		isSuccess := true
+
+		for _, namespacedName := range appNamespacedNames {
+			app := &applicationv1alpha1.App{
+				ObjectMeta: v1.ObjectMeta{
+					Name:      namespacedName.Name,
+					Namespace: namespacedName.Namespace,
+				},
+			}
+			if err = kubeClient.Client.Get(ctx, cr.ObjectKeyFromObject(app), app); err != nil {
+				isSuccess = false
+				continue
+			}
+
+			actualStatus := app.Status.Release.Status
+			logger.Log("Checking if App status for %s is equal to '%s': %s", namespacedName.Name, expectedStatus, actualStatus)
+			if expectedStatus != actualStatus {
+				isSuccess = false
+			}
+		}
+
+		return isSuccess, err
 	}
 }
 

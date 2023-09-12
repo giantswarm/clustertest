@@ -164,6 +164,7 @@ func IsAllAppStatus(ctx context.Context, kubeClient *client.Client, appNamespace
 				},
 			}
 			if err = kubeClient.Client.Get(ctx, cr.ObjectKeyFromObject(app), app); err != nil {
+				logger.Log("Failed to get App %s: %s", namespacedName.Name, err)
 				isSuccess = false
 				continue
 			}

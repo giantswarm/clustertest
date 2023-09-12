@@ -131,6 +131,11 @@ func AreNumNodesReady(ctx context.Context, kubeClient *client.Client, expectedNo
 	return checkNodesReady(ctx, kubeClient, condition, listOptions...)
 }
 
+// IsAppDeployed returns a WaitCondition that checks if an app has a deployed status
+func IsAppDeployed(ctx context.Context, kubeClient *client.Client, appName string, appNamespace string) WaitCondition {
+	return IsAppStatus(ctx, kubeClient, appName, appNamespace, "deployed")
+}
+
 // IsAppStatus returns a WaitCondition that checks if an app has the expected release status
 func IsAppStatus(ctx context.Context, kubeClient *client.Client, appName string, appNamespace string, expectedStatus string) WaitCondition {
 	return func() (bool, error) {
@@ -148,6 +153,11 @@ func IsAppStatus(ctx context.Context, kubeClient *client.Client, appName string,
 		logger.Log("Checking if App status for %s is equal to '%s': %s", appName, expectedStatus, actualStatus)
 		return expectedStatus == actualStatus, nil
 	}
+}
+
+// IsAllAppDeployed returns a WaitCondition that checks if all the apps provided have a deployed status
+func IsAllAppDeployed(ctx context.Context, kubeClient *client.Client, appNamespacedNames []types.NamespacedName) WaitCondition {
+	return IsAllAppStatus(ctx, kubeClient, appNamespacedNames, "deployed")
 }
 
 // IsAllAppStatus returns a WaitCondition that checks if all the apps provided currently have the provided expected status

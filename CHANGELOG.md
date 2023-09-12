@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Added `IsAllAppStatus` wait condition for checking a list of apps all have an expected status (e.g. "deployed")
+- Added `IsAppDeployed` and `IsAllAppDeployed` helper functions that wrap around `IsAppStatus` and `IsAllAppStatus`
 
 ## [0.3.1] - 2023-08-31
 

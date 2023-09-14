@@ -204,3 +204,35 @@ func TestWithVersion_Override(t *testing.T) {
 		t.Errorf("Was not expecting version to be overridden. Expected: (latest from GitHub), Actual: %s", app.Spec.Version)
 	}
 }
+
+func TestWithVersion_SuffixVariations(t *testing.T) {
+	// Test latest version with matching repo name
+	app, _, err := New("installName", "cluster-aws").WithVersion("latest").Build()
+	if err != nil {
+		t.Fatalf("Not expecting an error: %v", err)
+	}
+
+	if app.Spec.Version == "" {
+		t.Errorf("Was expecting a version from GitHub. Expected: (latest from GitHub), Actual: %s", app.Spec.Version)
+	}
+
+	// Test latest version with extra `-app` suffix not found on repo
+	app, _, err = New("installName", "cluster-aws-app").WithVersion("latest").Build()
+	if err != nil {
+		t.Fatalf("Not expecting an error: %v", err)
+	}
+
+	if app.Spec.Version == "" {
+		t.Errorf("Was expecting a version from GitHub. Expected: (latest from GitHub), Actual: %s", app.Spec.Version)
+	}
+
+	// Test latest version with missing `-app` suffix that is found on repo
+	app, _, err = New("installName", "ingress-nginx").WithVersion("latest").Build()
+	if err != nil {
+		t.Fatalf("Not expecting an error: %v", err)
+	}
+
+	if app.Spec.Version == "" {
+		t.Errorf("Was expecting a version from GitHub. Expected: (latest from GitHub), Actual: %s", app.Spec.Version)
+	}
+}

@@ -278,7 +278,7 @@ func TestBuild_WCAppInstall(t *testing.T) {
 		WithVersion(version).
 		WithInCluster(false).
 		WithClusterName(clusterName).
-		WithNamespace(namespace)
+		WithInstallNamespace(namespace)
 
 	app, _, err := appBuilder.Build()
 	if err != nil {
@@ -307,6 +307,7 @@ func TestBuild_WCAppInstall(t *testing.T) {
 	if app.Spec.Namespace != namespace {
 		t.Errorf("Was expecting the App specs namespace to be '%s', but was '%s'", namespace, app.Spec.Namespace)
 	}
+
 	if app.ObjectMeta.Namespace != org.GetNamespace() {
 		t.Errorf("Was expecting the App CR namespace to be '%s', but was '%s'", org.GetNamespace(), app.ObjectMeta.Namespace)
 	}

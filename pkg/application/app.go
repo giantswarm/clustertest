@@ -35,7 +35,7 @@ type Application struct {
 	UserConfigSecretName string
 	ExtraConfigs         []applicationv1alpha1.AppExtraConfig
 	RepoName             string
-	Namespace            string
+	InstallNamespace     string
 
 	AppLabels       map[string]string
 	ConfigMapLabels map[string]string
@@ -44,16 +44,16 @@ type Application struct {
 // New creates a new Application
 func New(installName string, appName string) *Application {
 	return &Application{
-		InstallName:  installName,
-		AppName:      appName,
-		RepoName:     appName,
-		ClusterName:  "",
-		Version:      "",
-		Catalog:      "cluster",
-		Values:       "\n",
-		InCluster:    true,
-		Organization: *organization.New("giantswarm"),
-		Namespace:    "org-giantswarm",
+		InstallName:      installName,
+		AppName:          appName,
+		RepoName:         appName,
+		ClusterName:      "",
+		Version:          "",
+		Catalog:          "cluster",
+		Values:           "\n",
+		InCluster:        true,
+		Organization:     *organization.New("giantswarm"),
+		InstallNamespace: "org-giantswarm",
 	}
 }
 
@@ -132,11 +132,8 @@ func (a *Application) MustWithValuesFile(filePath string, config *TemplateValues
 }
 
 // WithOrganization sets the Organization value
-//
-// Note: This also updates the install namespace to be that of the Organization
 func (a *Application) WithOrganization(organization organization.Org) *Application {
 	a.Organization = organization
-	a = a.WithNamespace(organization.GetNamespace())
 	return a
 }
 
@@ -186,10 +183,10 @@ func (a *Application) WithClusterName(clusterName string) *Application {
 	return a
 }
 
-// WithNamespace sets the namespace that the App will eventually be installed into.
+// WithInstallNamespace sets the namespace that the App will eventually be installed into.
 // This can be different to the namespace the App CR is in.
-func (a *Application) WithNamespace(namespace string) *Application {
-	a.Namespace = namespace
+func (a *Application) WithInstallNamespace(namespace string) *Application {
+	a.InstallNamespace = namespace
 	return a
 }
 
@@ -221,13 +218,19 @@ func (a *Application) Build() (*applicationv1alpha1.App, *corev1.ConfigMap, erro
 		return nil, nil, fmt.Errorf("a `ClusterName` must be provided when `InCluster` is set to `false`")
 	}
 
+	// Use the install namespace if provided, otherwise default to the Orgs namespace
+	namespace := a.InstallNamespace
+	if namespace == "" {
+		namespace = a.Organization.GetNamespace()
+	}
+
 	appTemplate, err := templateapp.NewAppCR(templateapp.Config{
 		AppName:                 a.InstallName,
 		Name:                    a.AppName,
 		Catalog:                 a.Catalog,
 		InCluster:               a.InCluster,
 		Cluster:                 a.ClusterName,
-		Namespace:               a.Namespace,
+		Namespace:               namespace,
 		Organization:            a.Organization.Name,
 		UserConfigConfigMapName: fmt.Sprintf("%s-userconfig", a.InstallName),
 		UserConfigSecretName:    a.UserConfigSecretName,

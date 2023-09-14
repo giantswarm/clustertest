@@ -183,7 +183,7 @@ func (a *Application) WithClusterName(clusterName string) *Application {
 	return a
 }
 
-// WithInstallNamespace sets the namespace that the App will eventually be installed into.
+// WithInstallNamespace sets the namespace used by helm to install the chart
 // This can be different to the namespace the App CR is in.
 func (a *Application) WithInstallNamespace(namespace string) *Application {
 	a.InstallNamespace = namespace

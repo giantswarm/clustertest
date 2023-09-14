@@ -30,10 +30,12 @@ type Application struct {
 	Catalog              string
 	Values               string
 	InCluster            bool
+	ClusterName          string
 	Organization         organization.Org
 	UserConfigSecretName string
 	ExtraConfigs         []applicationv1alpha1.AppExtraConfig
 	RepoName             string
+	Namespace            string
 
 	AppLabels       map[string]string
 	ConfigMapLabels map[string]string
@@ -45,11 +47,13 @@ func New(installName string, appName string) *Application {
 		InstallName:  installName,
 		AppName:      appName,
 		RepoName:     appName,
+		ClusterName:  "",
 		Version:      "",
 		Catalog:      "cluster",
 		Values:       "\n",
 		InCluster:    true,
 		Organization: *organization.New("giantswarm"),
+		Namespace:    "org-giantswarm",
 	}
 }
 
@@ -128,8 +132,11 @@ func (a *Application) MustWithValuesFile(filePath string, config *TemplateValues
 }
 
 // WithOrganization sets the Organization value
+//
+// Note: This also updates the install namespace to be that of the Organization
 func (a *Application) WithOrganization(organization organization.Org) *Application {
 	a.Organization = organization
+	a = a.WithNamespace(organization.GetNamespace())
 	return a
 }
 
@@ -172,6 +179,20 @@ func (a *Application) WithRepoName(repoName string) *Application {
 	return a
 }
 
+// WithClusterName sets the name of the cluster the app with be installed into.
+// This is used for populating the appropriate labels on the App resources.
+func (a *Application) WithClusterName(clusterName string) *Application {
+	a.ClusterName = clusterName
+	return a
+}
+
+// WithNamespace sets the namespace that the App will eventually be installed into.
+// This can be different to the namespace the App CR is in.
+func (a *Application) WithNamespace(namespace string) *Application {
+	a.Namespace = namespace
+	return a
+}
+
 // Build generates the App and ConfigMap resources
 func (a *Application) Build() (*applicationv1alpha1.App, *corev1.ConfigMap, error) {
 	switch a.Version {
@@ -196,12 +217,17 @@ func (a *Application) Build() (*applicationv1alpha1.App, *corev1.ConfigMap, erro
 		a = a.WithVersion(latestVersion)
 	}
 
+	if !a.InCluster && a.ClusterName == "" {
+		return nil, nil, fmt.Errorf("a `ClusterName` must be provided when `InCluster` is set to `false`")
+	}
+
 	appTemplate, err := templateapp.NewAppCR(templateapp.Config{
 		AppName:                 a.InstallName,
 		Name:                    a.AppName,
 		Catalog:                 a.Catalog,
 		InCluster:               a.InCluster,
-		Namespace:               a.Organization.GetNamespace(),
+		Cluster:                 a.ClusterName,
+		Namespace:               a.Namespace,
 		Organization:            a.Organization.Name,
 		UserConfigConfigMapName: fmt.Sprintf("%s-userconfig", a.InstallName),
 		UserConfigSecretName:    a.UserConfigSecretName,
@@ -221,6 +247,11 @@ func (a *Application) Build() (*applicationv1alpha1.App, *corev1.ConfigMap, erro
 	}
 	if a.AppLabels != nil {
 		app.SetLabels(a.AppLabels)
+	}
+
+	if !app.Spec.KubeConfig.InCluster {
+		// We need to fix the kubeconfig context name to match the format that is used by CAPI
+		app.Spec.KubeConfig.Context.Name = fmt.Sprintf("%s-admin@%s", a.ClusterName, a.ClusterName)
 	}
 
 	configmap, err := templateapp.NewConfigMap(templateapp.UserConfig{

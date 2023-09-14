@@ -260,3 +260,55 @@ func TestWithRepoName(t *testing.T) {
 		t.Fatalf("Was expecting an error: %v", err)
 	}
 }
+
+// Note: This test is taken from https://github.com/giantswarm/cluster-test-suites/blob/14031305332e9c1c8c979e451ebdf3b813374573/common/hello.go#L139-L178
+// We want to ensure the logic in clustertest now handles installing Apps into WCs without the need for workarounds
+func TestBuild_WCAppInstall(t *testing.T) {
+	var (
+		clusterName = "t-123456"
+		appName     = "ingress-nginx"
+		namespace   = "kube-system"
+		version     = "2.0.0"
+		org         = organization.New("org-t-123456")
+	)
+
+	appBuilder := New(fmt.Sprintf("%s-%s", clusterName, appName), appName).
+		WithCatalog("giantswarm").
+		WithOrganization(*org).
+		WithVersion(version).
+		WithInCluster(false).
+		WithClusterName(clusterName).
+		WithNamespace(namespace)
+
+	app, _, err := appBuilder.Build()
+	if err != nil {
+		t.Fatalf("Not expecting an error: %v", err)
+	}
+
+	expectedConfigMapName := fmt.Sprintf("%s-cluster-values", clusterName)
+	if app.Spec.Config.ConfigMap.Name != expectedConfigMapName {
+		t.Errorf("Was expecting the Apps configmap name to be '%s', but was '%s'", expectedConfigMapName, app.Spec.Config.ConfigMap.Name)
+	}
+
+	if app.Spec.Config.ConfigMap.Namespace != org.GetNamespace() {
+		t.Errorf("Was expecting the Apps configmap namespace to be '%s', but was '%s'", org.GetNamespace(), app.Spec.Config.ConfigMap.Namespace)
+	}
+
+	expectedContextName := fmt.Sprintf("%s-admin@%s", clusterName, clusterName)
+	if app.Spec.KubeConfig.Context.Name != expectedContextName {
+		t.Errorf("Was expecting the Apps kubeconfig context name to be '%s', but was '%s'", expectedContextName, app.Spec.KubeConfig.Context.Name)
+	}
+
+	expectedKubeconfigSecretName := fmt.Sprintf("%s-kubeconfig", clusterName)
+	if app.Spec.KubeConfig.Secret.Name != expectedKubeconfigSecretName {
+		t.Errorf("Was expecting the Apps kubeconfig secret name to be '%s', but was '%s'", expectedKubeconfigSecretName, app.Spec.KubeConfig.Secret.Name)
+	}
+
+	if app.Spec.Namespace != namespace {
+		t.Errorf("Was expecting the App specs namespace to be '%s', but was '%s'", namespace, app.Spec.Namespace)
+	}
+	if app.ObjectMeta.Namespace != org.GetNamespace() {
+		t.Errorf("Was expecting the App CR namespace to be '%s', but was '%s'", org.GetNamespace(), app.ObjectMeta.Namespace)
+	}
+
+}

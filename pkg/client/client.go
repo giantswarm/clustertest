@@ -24,6 +24,8 @@ import (
 	clientcmdapi "k8s.io/client-go/tools/clientcmd/api/v1"
 	capi "sigs.k8s.io/cluster-api/api/v1beta1"
 	cr "sigs.k8s.io/controller-runtime/pkg/client"
+
+	"github.com/giantswarm/clustertest/pkg/application"
 )
 
 // Client extends the client from controller-runtime
@@ -238,4 +240,28 @@ func (c *Client) CreateOrUpdate(ctx context.Context, obj cr.Object) error {
 	default:
 		return err
 	}
+}
+
+// DeployApp takes an Application and applies its manifests to the cluster in the correct order,
+// ensuring the ConfigMap is made available first.
+func (c *Client) DeployApp(ctx context.Context, app application.Application) error {
+	appCR, configMap, err := app.Build()
+	if err != nil {
+		return err
+	}
+
+	return c.DeployAppManifests(ctx, appCR, configMap)
+}
+
+// DeployAppManifests takes an applications App CR and ConfigMap manifests and ensures
+// they are applied in the correct order, with the ConfigMap being added first.
+func (c *Client) DeployAppManifests(ctx context.Context, appCR *applicationv1alpha1.App, configMap *corev1.ConfigMap) error {
+	if err := c.CreateOrUpdate(ctx, configMap); err != nil {
+		return fmt.Errorf("failed to apply cluster configmap: %v", err)
+	}
+	if err := c.CreateOrUpdate(ctx, appCR); err != nil {
+		return fmt.Errorf("failed to apply cluster app CR: %v", err)
+	}
+
+	return nil
 }

@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Added `WithInstallNamespace` and `WithClusterName` to Application to support installing apps into workload clusters
 - Added error handler to ensure a `ClusterName` is provided with an Application if `InCluster` is set to `false`
+- Added `DeployApp` and `DeployAppManifests` helpers to ensure that App CRs and their ConfigMaps are installed in the correct order.
 
 ### Fixed
 

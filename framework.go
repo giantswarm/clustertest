@@ -169,18 +169,13 @@ func (f *Framework) ApplyCluster(ctx context.Context, cluster *application.Clust
 	}
 
 	// Apply Cluster resources
-	if err := f.MC().CreateOrUpdate(ctx, clusterCM); err != nil {
-		return nil, fmt.Errorf("failed to apply cluster configmap: %v", err)
+	if err := f.MC().DeployAppManifests(ctx, clusterApplication, clusterCM); err != nil {
+		return nil, fmt.Errorf("failed to apply cluster resources: %v", err)
 	}
-	if err := f.MC().CreateOrUpdate(ctx, clusterApplication); err != nil {
-		return nil, fmt.Errorf("failed to apply cluster app CR: %v", err)
-	}
+
 	// Apply Default Apps resources
-	if err := f.MC().CreateOrUpdate(ctx, defaultAppsCM); err != nil {
-		return nil, fmt.Errorf("failed to apply default-apps configmap: %v", err)
-	}
-	if err := f.MC().CreateOrUpdate(ctx, defaultAppsApplication); err != nil {
-		return nil, fmt.Errorf("failed to apply default-apps app CR: %v", err)
+	if err := f.MC().DeployAppManifests(ctx, defaultAppsApplication, defaultAppsCM); err != nil {
+		return nil, fmt.Errorf("failed to apply cluster resources: %v", err)
 	}
 
 	return f.WaitForClusterReady(ctx, cluster.Name, cluster.GetNamespace())

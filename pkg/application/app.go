@@ -33,6 +33,7 @@ type Application struct {
 	Organization         organization.Org
 	UserConfigSecretName string
 	ExtraConfigs         []applicationv1alpha1.AppExtraConfig
+	RepoName             string
 
 	AppLabels       map[string]string
 	ConfigMapLabels map[string]string
@@ -43,6 +44,7 @@ func New(installName string, appName string) *Application {
 	return &Application{
 		InstallName:  installName,
 		AppName:      appName,
+		RepoName:     appName,
 		Version:      "",
 		Catalog:      "cluster",
 		Values:       "\n",
@@ -161,6 +163,15 @@ func (a *Application) WithExtraConfigs(extraConfigs []applicationv1alpha1.AppExt
 	return a
 }
 
+// WithRepoName sets the GitHub repository name associated with this application
+//
+// This is usually not needed and currently only required if using the `latest` version
+// and the repo name is vastly different to the App name (not just the `-app` suffix)
+func (a *Application) WithRepoName(repoName string) *Application {
+	a.RepoName = repoName
+	return a
+}
+
 // Build generates the App and ConfigMap resources
 func (a *Application) Build() (*applicationv1alpha1.App, *corev1.ConfigMap, error) {
 	switch a.Version {
@@ -177,7 +188,7 @@ func (a *Application) Build() (*applicationv1alpha1.App, *corev1.ConfigMap, erro
 		}
 		fallthrough
 	case "latest":
-		latestVersion, err := getLatestReleaseVersion(a.AppName)
+		latestVersion, err := getLatestReleaseVersion(a.RepoName)
 		if err != nil {
 			return nil, nil, err
 		}

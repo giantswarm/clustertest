@@ -236,3 +236,27 @@ func TestWithVersion_SuffixVariations(t *testing.T) {
 		t.Errorf("Was expecting a version from GitHub. Expected: (latest from GitHub), Actual: %s", app.Spec.Version)
 	}
 }
+
+func TestWithRepoName(t *testing.T) {
+	// Overriding the repo name with a valid repo should correctly be able to fetch the latest version from the releases of that repo
+	app, _, err := New("installName", "my-custom-cluster-aws-app-name").
+		WithRepoName("cluster-aws").
+		WithVersion("latest").
+		Build()
+	if err != nil {
+		t.Fatalf("Not expecting an error: %v", err)
+	}
+
+	if app.Spec.Version == "" {
+		t.Errorf("Was expecting a version from GitHub. Expected: (latest from GitHub), Actual: %s", app.Spec.Version)
+	}
+
+	// Overriding the repo with a non-existent name should return an error when attempting to get the latest version
+	_, _, err = New("installName", "cluster-aws").
+		WithRepoName("not-a-real-repo-name").
+		WithVersion("latest").
+		Build()
+	if err == nil {
+		t.Fatalf("Was expecting an error: %v", err)
+	}
+}

@@ -2,22 +2,17 @@ package application
 
 import (
 	"bytes"
-	"context"
 	"fmt"
-	"net/http"
 	"regexp"
 
 	applicationv1alpha1 "github.com/giantswarm/apiextensions-application/api/v1alpha1"
 	templateapp "github.com/giantswarm/kubectl-gs/v2/pkg/template/app"
-	"golang.org/x/oauth2"
 	corev1 "k8s.io/api/core/v1"
 
-	"github.com/google/go-github/v55/github"
 	"k8s.io/client-go/kubernetes/scheme"
 	"sigs.k8s.io/e2e-framework/klient/decoder"
 
 	"github.com/giantswarm/clustertest/pkg/organization"
-	"github.com/giantswarm/clustertest/pkg/utils"
 )
 
 // If commit SHA based version we'll change the catalog
@@ -182,24 +177,12 @@ func (a *Application) Build() (*applicationv1alpha1.App, *corev1.ConfigMap, erro
 		}
 		fallthrough
 	case "latest":
-		ctx := context.Background()
-		var ghHTTPClient *http.Client
-		githubToken := utils.GetGitHubToken()
-		if githubToken != "" {
-			ghHTTPClient = oauth2.NewClient(ctx, oauth2.StaticTokenSource(
-				&oauth2.Token{AccessToken: githubToken},
-			))
-		}
-		gh := github.NewClient(ghHTTPClient)
-		releases, _, err := gh.Repositories.ListReleases(ctx, "giantswarm", a.AppName, &github.ListOptions{PerPage: 1})
+		latestVersion, err := getLatestReleaseVersion(a.AppName)
 		if err != nil {
 			return nil, nil, err
 		}
-		if len(releases) == 0 {
-			return nil, nil, fmt.Errorf("unable to get latest release of %s", a.AppName)
-		}
 
-		a = a.WithVersion(*releases[0].TagName)
+		a = a.WithVersion(latestVersion)
 	}
 
 	appTemplate, err := templateapp.NewAppCR(templateapp.Config{

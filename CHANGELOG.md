@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Check for `-app` suffix variations when failing to lookup an apps releases
+
 ## [0.4.0] - 2023-09-12
 
 ### Added

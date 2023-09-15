@@ -13,6 +13,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Correctly set the namespace on Applications
 
+### Added
+
+- Added a `GetInstallNamespace` helper function for Application
+
 ## [0.6.0] - 2023-09-14
 
 ### Added

@@ -217,19 +217,13 @@ func (a *Application) Build() (*applicationv1alpha1.App, *corev1.ConfigMap, erro
 		return nil, nil, fmt.Errorf("a `ClusterName` must be provided when `InCluster` is set to `false`")
 	}
 
-	// Use the install namespace if provided, otherwise default to the Orgs namespace
-	namespace := a.InstallNamespace
-	if namespace == "" {
-		namespace = a.Organization.GetNamespace()
-	}
-
 	appTemplate, err := templateapp.NewAppCR(templateapp.Config{
 		AppName:                 a.InstallName,
 		Name:                    a.AppName,
 		Catalog:                 a.Catalog,
 		InCluster:               a.InCluster,
 		Cluster:                 a.ClusterName,
-		Namespace:               namespace,
+		Namespace:               a.GetInstallNamespace(),
 		Organization:            a.Organization.Name,
 		UserConfigConfigMapName: fmt.Sprintf("%s-userconfig", a.InstallName),
 		UserConfigSecretName:    a.UserConfigSecretName,
@@ -258,7 +252,7 @@ func (a *Application) Build() (*applicationv1alpha1.App, *corev1.ConfigMap, erro
 
 	configmap, err := templateapp.NewConfigMap(templateapp.UserConfig{
 		Name:      fmt.Sprintf("%s-userconfig", a.InstallName),
-		Namespace: namespace,
+		Namespace: a.GetNamespace(),
 		Data:      a.Values,
 	})
 	if err != nil {
@@ -278,7 +272,20 @@ func (a *Application) Build() (*applicationv1alpha1.App, *corev1.ConfigMap, erro
 	return app, configmap, nil
 }
 
-// GetNamespace returns the app namespace.
+// GetNamespace returns the namespace the App CR will be applied in.
 func (a *Application) GetNamespace() string {
+	if a.InCluster {
+		return a.GetInstallNamespace()
+	}
+
 	return a.Organization.GetNamespace()
+}
+
+// GetInstallNamespace returns the namespace the Helm chart will be installed into.
+func (a *Application) GetInstallNamespace() string {
+	installNamespace := a.InstallNamespace
+	if installNamespace == "" {
+		installNamespace = a.Organization.GetNamespace()
+	}
+	return installNamespace
 }

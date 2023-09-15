@@ -44,16 +44,15 @@ type Application struct {
 // New creates a new Application
 func New(installName string, appName string) *Application {
 	return &Application{
-		InstallName:      installName,
-		AppName:          appName,
-		RepoName:         appName,
-		ClusterName:      "",
-		Version:          "",
-		Catalog:          "cluster",
-		Values:           "\n",
-		InCluster:        true,
-		Organization:     *organization.New("giantswarm"),
-		InstallNamespace: "org-giantswarm",
+		InstallName:  installName,
+		AppName:      appName,
+		RepoName:     appName,
+		ClusterName:  "",
+		Version:      "",
+		Catalog:      "cluster",
+		Values:       "\n",
+		InCluster:    true,
+		Organization: *organization.New("giantswarm"),
 	}
 }
 
@@ -259,7 +258,7 @@ func (a *Application) Build() (*applicationv1alpha1.App, *corev1.ConfigMap, erro
 
 	configmap, err := templateapp.NewConfigMap(templateapp.UserConfig{
 		Name:      fmt.Sprintf("%s-userconfig", a.InstallName),
-		Namespace: a.Organization.GetNamespace(),
+		Namespace: namespace,
 		Data:      a.Values,
 	})
 	if err != nil {

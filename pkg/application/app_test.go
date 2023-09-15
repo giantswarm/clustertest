@@ -311,5 +311,91 @@ func TestBuild_WCAppInstall(t *testing.T) {
 	if app.ObjectMeta.Namespace != org.GetNamespace() {
 		t.Errorf("Was expecting the App CR namespace to be '%s', but was '%s'", org.GetNamespace(), app.ObjectMeta.Namespace)
 	}
+}
 
+func TestGetNamespace(t *testing.T) {
+	org := organization.New("t-123456")
+	baseApp := func() *Application {
+		return New("in-cluster-org-namespace", "example-app").
+			WithVersion("1.0.0").
+			WithOrganization(*org)
+	}
+
+	type errorTestCases struct {
+		description       string
+		app               *Application
+		expectedNamespace string
+	}
+
+	for _, scenario := range []errorTestCases{
+		{
+			description:       "in cluster with org namespace",
+			app:               baseApp().WithInCluster(true),
+			expectedNamespace: org.GetNamespace(),
+		},
+		{
+			description:       "in cluster with custom install namespace",
+			app:               baseApp().WithInCluster(true).WithInstallNamespace("my-namespace"),
+			expectedNamespace: "my-namespace",
+		},
+		{
+			description:       "out cluster with custom install namespace",
+			app:               baseApp().WithInCluster(false).WithClusterName("my-cluster").WithInstallNamespace("my-namespace"),
+			expectedNamespace: org.GetNamespace(),
+		},
+		{
+			description:       "out cluster with org namespace",
+			app:               baseApp().WithInCluster(false).WithClusterName("my-cluster"),
+			expectedNamespace: org.GetNamespace(),
+		},
+	} {
+		t.Run(scenario.description, func(t *testing.T) {
+			if scenario.app.GetNamespace() != scenario.expectedNamespace {
+				t.Errorf("Expected the app namespace to be '%s' but instead got '%s'", scenario.expectedNamespace, scenario.app.GetNamespace())
+			}
+		})
+	}
+}
+func TestGetInstallNamespace(t *testing.T) {
+	org := organization.New("t-123456")
+	baseApp := func() *Application {
+		return New("in-cluster-org-namespace", "example-app").
+			WithVersion("1.0.0").
+			WithOrganization(*org)
+	}
+
+	type errorTestCases struct {
+		description       string
+		app               *Application
+		expectedNamespace string
+	}
+
+	for _, scenario := range []errorTestCases{
+		{
+			description:       "in cluster with org namespace",
+			app:               baseApp().WithInCluster(true),
+			expectedNamespace: org.GetNamespace(),
+		},
+		{
+			description:       "in cluster with custom install namespace",
+			app:               baseApp().WithInCluster(true).WithInstallNamespace("my-namespace"),
+			expectedNamespace: "my-namespace",
+		},
+		{
+			description:       "out cluster with custom install namespace",
+			app:               baseApp().WithInCluster(false).WithClusterName("my-cluster").WithInstallNamespace("my-namespace"),
+			expectedNamespace: "my-namespace",
+		},
+		{
+			description:       "out cluster with org namespace",
+			app:               baseApp().WithInCluster(false).WithClusterName("my-cluster"),
+			expectedNamespace: org.GetNamespace(),
+		},
+	} {
+		t.Run(scenario.description, func(t *testing.T) {
+			if scenario.app.GetInstallNamespace() != scenario.expectedNamespace {
+				t.Errorf("Expected the app namespace to be '%s' but instead got '%s'", scenario.expectedNamespace, scenario.app.GetInstallNamespace())
+			}
+		})
+	}
 }

@@ -265,3 +265,20 @@ func (c *Client) DeployAppManifests(ctx context.Context, appCR *applicationv1alp
 
 	return nil
 }
+
+// DeleteApp removes an App CR and its ConfigMap from the cluster
+func (c *Client) DeleteApp(ctx context.Context, app application.Application) error {
+	appCR, configMap, err := app.Build()
+	if err != nil {
+		return err
+	}
+
+	if err := c.Delete(ctx, appCR); err != nil {
+		return fmt.Errorf("failed to delete app CR: %v", err)
+	}
+	if err := c.Delete(ctx, configMap); err != nil {
+		return fmt.Errorf("failed to delete app CR: %v", err)
+	}
+
+	return nil
+}

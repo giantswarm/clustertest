@@ -13,6 +13,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Correctly set the namespace on Applications
 
+### Added
+
+- Added a `GetInstallNamespace` helper function for Application
+- Added `DeleteApp` helper function to remove an App CR and its ConfigMap from the cluster
+
 ## [0.6.0] - 2023-09-14
 
 ### Added

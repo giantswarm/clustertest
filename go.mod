@@ -11,7 +11,7 @@ replace (
 
 require (
 	github.com/giantswarm/apiextensions-application v0.6.0
-	github.com/giantswarm/kubectl-gs/v2 v2.41.0
+	github.com/giantswarm/kubectl-gs/v2 v2.41.1
 	github.com/giantswarm/organization-operator v1.4.0
 	github.com/google/go-github/v55 v55.0.0
 	github.com/mittwald/go-helm-client v0.12.1
@@ -61,7 +61,7 @@ require (
 	github.com/exponent-io/jsonpath v0.0.0-20210407135951-1de76d718b3f // indirect
 	github.com/fatih/color v1.15.0 // indirect
 	github.com/fsnotify/fsnotify v1.6.0 // indirect
-	github.com/giantswarm/k8smetadata v0.21.0 // indirect
+	github.com/giantswarm/k8smetadata v0.22.0 // indirect
 	github.com/giantswarm/microerror v0.4.0 // indirect
 	github.com/giantswarm/release-operator/v4 v4.1.0 // indirect
 	github.com/go-errors/errors v1.4.2 // indirect

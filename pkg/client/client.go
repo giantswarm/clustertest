@@ -6,6 +6,7 @@ import (
 	"net"
 	"net/url"
 	"reflect"
+	"strings"
 
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/types"
@@ -149,8 +150,7 @@ func (c *Client) GetClusterKubeConfig(ctx context.Context, clusterName string, c
 			return "", err
 		}
 
-		// Check if the server uses an IP address for the hostname, if so we need to replace it with the DNS hostname
-		if net.ParseIP(u.Hostname()) != nil {
+		if c.needsToUpdateServerHostname(u.Hostname()) {
 			// We need to build up the hostname from the base domain and cluster name
 			var clusterValuesCM corev1.ConfigMap
 			err := c.Get(ctx, types.NamespacedName{Name: fmt.Sprintf("%s-cluster-values", clusterName), Namespace: clusterNamespace}, &clusterValuesCM)
@@ -176,6 +176,14 @@ func (c *Client) GetClusterKubeConfig(ctx context.Context, clusterName string, c
 	}
 
 	return string(kc), nil
+}
+
+// needsToUpdateServerHostname returns true when the server address needs to be updated so that we can reach the server through our VPN.
+// Currently, there are two scenarios where this happens
+// - CAPA: the server is a hostname pointing to an AWS ELB hostname
+// - CAPG: the server is an IP
+func (c *Client) needsToUpdateServerHostname(hostname string) bool {
+	return net.ParseIP(hostname) != nil || strings.Contains(hostname, "elb.amazonaws.com")
 }
 
 // GetHelmValues retrieves the helm values of a Helm release in the provided

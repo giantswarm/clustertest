@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Modify kubeconfig of workload clusters to use DNS hostname of server also when an AWS ELB dns is found.
+
 ## [0.7.0] - 2023-09-15
 
 ## [0.6.1] - 2023-09-15

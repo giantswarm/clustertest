@@ -6,6 +6,7 @@ import (
 	"net"
 	"net/url"
 	"reflect"
+	"strings"
 
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/types"
@@ -149,8 +150,8 @@ func (c *Client) GetClusterKubeConfig(ctx context.Context, clusterName string, c
 			return "", err
 		}
 
-		// Check if the server uses an IP address for the hostname, if so we need to replace it with the DNS hostname
-		if net.ParseIP(u.Hostname()) != nil {
+		// Check if the server uses an IP address for the hostname, or it's the ELB dns, if so we need to replace it with the custom DNS hostname we create
+		if net.ParseIP(u.Hostname()) != nil || strings.Contains(u.Hostname(), "elb.amazonaws.com") {
 			// We need to build up the hostname from the base domain and cluster name
 			var clusterValuesCM corev1.ConfigMap
 			err := c.Get(ctx, types.NamespacedName{Name: fmt.Sprintf("%s-cluster-values", clusterName), Namespace: clusterNamespace}, &clusterValuesCM)

@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.9.0] - 2023-10-05
+
 ### Changed
 
 - Reduce the `DefaultTimeout` value from 60 min to 30 min
@@ -225,7 +227,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added initial framework layout
 - Added Kubernetes client extended from controller-runtime client
 
-[Unreleased]: https://github.com/giantswarm/clustertest/compare/v0.8.0...HEAD
+[Unreleased]: https://github.com/giantswarm/clustertest/compare/v0.9.0...HEAD
+[0.9.0]: https://github.com/giantswarm/clustertest/compare/v0.8.0...v0.9.0
 [0.8.0]: https://github.com/giantswarm/clustertest/compare/v0.7.0...v0.8.0
 [0.7.0]: https://github.com/giantswarm/clustertest/compare/v0.6.1...v0.7.0
 [0.6.1]: https://github.com/giantswarm/clustertest/compare/v0.6.0...v0.6.1

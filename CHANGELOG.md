@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Added `GetExpectedControlPlaneReplicas` function to get expected number of control plane nodes from `KubeadmControlPlane` resource
+
 ## [0.9.0] - 2023-10-05
 
 ### Changed

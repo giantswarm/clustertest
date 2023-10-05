@@ -24,6 +24,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	clientcmdapi "k8s.io/client-go/tools/clientcmd/api/v1"
 	capi "sigs.k8s.io/cluster-api/api/v1beta1"
+	kubeadm "sigs.k8s.io/cluster-api/controlplane/kubeadm/api/v1beta1"
 	cr "sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/giantswarm/clustertest/pkg/application"
@@ -101,6 +102,7 @@ func newClient(config *rest.Config) (*Client, error) {
 	_ = applicationv1alpha1.AddToScheme(client.Scheme())
 	_ = orgv1alpha1.AddToScheme(client.Scheme())
 	_ = capi.AddToScheme(client.Scheme())
+	_ = kubeadm.AddToScheme(client.Scheme())
 
 	return &Client{
 		Client: client,

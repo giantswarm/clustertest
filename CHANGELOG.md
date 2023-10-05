@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Reduce the `DefaultTimeout` value from 60 min to 30 min
+
 ## [0.8.0] - 2023-09-27
 
 ### Changed

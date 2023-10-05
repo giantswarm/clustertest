@@ -7,7 +7,7 @@ import (
 
 const (
 	// DefaultTimeout is the default max time to wait before returning an error if a timeout is not provided
-	DefaultTimeout = 1 * time.Hour
+	DefaultTimeout = 30 * time.Minute
 	// DefaultInterval is the polling interval to use if an interval is not provided
 	DefaultInterval = 10 * time.Second
 )

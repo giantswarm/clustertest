@@ -11,7 +11,7 @@ replace (
 
 require (
 	github.com/giantswarm/apiextensions-application v0.6.0
-	github.com/giantswarm/kubectl-gs/v2 v2.41.1
+	github.com/giantswarm/kubectl-gs/v2 v2.42.0
 	github.com/giantswarm/organization-operator v1.6.0
 	github.com/google/go-github/v55 v55.0.0
 	github.com/mittwald/go-helm-client v0.12.1
@@ -90,7 +90,7 @@ require (
 	github.com/hashicorp/errwrap v1.1.0 // indirect
 	github.com/hashicorp/go-multierror v1.1.1 // indirect
 	github.com/huandu/xstrings v1.4.0 // indirect
-	github.com/imdario/mergo v0.3.13 // indirect
+	github.com/imdario/mergo v0.3.16 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
 	github.com/jmoiron/sqlx v1.3.5 // indirect
 	github.com/josharian/intern v1.0.0 // indirect

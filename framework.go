@@ -17,6 +17,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	capi "sigs.k8s.io/cluster-api/api/v1beta1"
+	kubeadm "sigs.k8s.io/cluster-api/controlplane/kubeadm/api/v1beta1"
 	cr "sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -340,4 +341,21 @@ func (f *Framework) GetAppAndValues(ctx context.Context, name, namespace string)
 	}
 
 	return app, values, nil
+}
+
+// GetExpectedControlPlaneReplicas returns the number of control plane node expected according to the clusters KubeadmControlPlane resource
+func (f *Framework) GetExpectedControlPlaneReplicas(ctx context.Context, clusterName string, clusterNamespace string) (int32, error) {
+	controlPlane := &kubeadm.KubeadmControlPlane{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      clusterName,
+			Namespace: clusterNamespace,
+		},
+	}
+
+	err := f.MC().Get(ctx, cr.ObjectKeyFromObject(controlPlane), controlPlane)
+	if err != nil {
+		return 0, err
+	}
+
+	return *controlPlane.Spec.Replicas, nil
 }

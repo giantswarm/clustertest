@@ -1,3 +1,9 @@
 # k8s.io/apiserver@v0.26.3 vlunerability in the kube apiserver, no implications
 # in our code
 CVE-2020-8561
+
+# github.com/hashicorp/consul/api
+CVE-2022-29153
+
+# github.com/hashicorp/consul/sdk
+CVE-2022-29153

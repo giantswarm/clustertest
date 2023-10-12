@@ -8,7 +8,7 @@ import (
 
 	"golang.org/x/oauth2"
 
-	"github.com/google/go-github/v55/github"
+	"github.com/google/go-github/v56/github"
 
 	"github.com/giantswarm/clustertest/pkg/utils"
 )

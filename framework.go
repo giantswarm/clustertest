@@ -28,11 +28,16 @@ const (
 	EnvWorkloadClusterNamespace = "E2E_WC_NAMESPACE"
 )
 
+type namespaceClient struct {
+	Namespace string
+	Client    *client.Client
+}
+
 // Framework is the overall framework for testing of clusters
 type Framework struct {
 	mcKubeconfigPath string
 	mcClient         *client.Client
-	wcClients        map[string]*client.Client
+	wcClients        map[string]namespaceClient
 }
 
 // New initializes a new Framework instance using the provided context from the kubeconfig found in the env var `E2E_KUBECONFIG`
@@ -50,7 +55,7 @@ func New(contextName string) (*Framework, error) {
 	return &Framework{
 		mcKubeconfigPath: mcKubeconfig,
 		mcClient:         mcClient,
-		wcClients:        map[string]*client.Client{},
+		wcClients:        map[string]namespaceClient{},
 	}, nil
 }
 
@@ -66,7 +71,19 @@ func (f *Framework) WC(clusterName string) (*client.Client, error) {
 	if !ok {
 		return nil, fmt.Errorf("workload cluster not found for name %s", clusterName)
 	}
-	return c, nil
+
+	wcClient := c.Client
+
+	if err := wcClient.IsActive(); err != nil {
+		// Client likely expired, we'll need to fetch a new one from the MC (e.g. for EKS kubeconfigs)
+		wcClient, err = client.NewForWC(context.Background(), f.MC(), clusterName, c.Namespace)
+		if err != nil {
+			return nil, err
+		}
+		f.wcClients[clusterName] = namespaceClient{Namespace: c.Namespace, Client: wcClient}
+	}
+
+	return wcClient, nil
 }
 
 // LoadCluster will construct a Cluster struct using a Workload Cluster's
@@ -117,7 +134,7 @@ func (f *Framework) LoadCluster() (*application.Cluster, error) {
 		return nil, err
 	}
 
-	f.wcClients[name] = wcClient
+	f.wcClients[name] = namespaceClient{Namespace: namespace, Client: wcClient}
 
 	return &application.Cluster{
 		Name: name,
@@ -180,7 +197,17 @@ func (f *Framework) ApplyCluster(ctx context.Context, cluster *application.Clust
 		return nil, fmt.Errorf("failed to apply cluster resources: %v", err)
 	}
 
-	return f.WaitForClusterReady(ctx, cluster.Name, cluster.GetNamespace())
+	if err := f.WaitForClusterReady(ctx, cluster.Name, cluster.GetNamespace()); err != nil {
+		return nil, fmt.Errorf("cluster didn't become ready: %v", err)
+	}
+
+	wcClient, err := client.NewForWC(ctx, f.MC(), cluster.Name, cluster.GetNamespace())
+	if err != nil {
+		return nil, err
+	}
+	f.wcClients[cluster.Name] = namespaceClient{Namespace: cluster.GetNamespace(), Client: wcClient}
+
+	return wcClient, nil
 }
 
 // WaitForClusterReady watches for a Kubeconfig secret to be created on the MC and then waits until that cluster's api-server response successfully
@@ -192,14 +219,9 @@ func (f *Framework) ApplyCluster(ctx context.Context, cluster *application.Clust
 //	timeoutCtx, cancelTimeout := context.WithTimeout(context.Background(), 20*time.Minute)
 //	defer cancelTimeout()
 //
-//	wcClient, err := framework.WaitForClusterReady(timeoutCtx, "test-cluster", "default")
-func (f *Framework) WaitForClusterReady(ctx context.Context, clusterName string, namespace string) (*client.Client, error) {
-	err := wait.For(wait.IsClusterReadyCondition(ctx, f.MC(), clusterName, namespace, f.wcClients), wait.WithContext(ctx), wait.WithInterval(10*time.Second))
-	if err != nil {
-		return nil, err
-	}
-
-	return f.wcClients[clusterName], nil
+//	err := framework.WaitForClusterReady(timeoutCtx, "test-cluster", "default")
+func (f *Framework) WaitForClusterReady(ctx context.Context, clusterName string, namespace string) error {
+	return wait.For(wait.IsClusterReadyCondition(ctx, f.MC(), clusterName, namespace), wait.WithContext(ctx), wait.WithInterval(10*time.Second))
 }
 
 // WaitForControlPlane polls the provided cluster and waits until the provided number of Control Plane nodes are reporting as ready

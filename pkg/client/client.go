@@ -87,6 +87,16 @@ func NewWithContext(kubeconfigPath string, contextName string) (*Client, error) 
 	return newClient(cfg)
 }
 
+// NewForWC create a new Kubernetes client based on the Kubeconfig Secret found in the MC related to the provided cluster details
+func NewForWC(ctx context.Context, mcKubeClient *Client, clusterName string, namespace string) (*Client, error) {
+	kubeconfig, err := mcKubeClient.GetClusterKubeConfig(ctx, clusterName, namespace)
+	if err != nil {
+		return nil, err
+	}
+
+	return NewFromRawKubeconfig(string(kubeconfig))
+}
+
 func newClient(config *rest.Config) (*Client, error) {
 	mapper, err := apiutil.NewDynamicRESTMapper(config, apiutil.WithLazyDiscovery)
 	if err != nil {
@@ -124,6 +134,13 @@ func (c *Client) CheckConnection() error {
 	}
 
 	return err
+}
+
+// IsActive attempts to connect to the clusters API server and returns an error if not successful.
+// Any error returned from the API server is treated as this client not being active anymore.
+func (c *Client) IsActive() error {
+	var ns corev1.NamespaceList
+	return c.List(context.Background(), &ns)
 }
 
 // GetClusterKubeConfig retrieves the Kubeconfig from the secret associated with the provided cluster name.

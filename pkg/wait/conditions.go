@@ -52,21 +52,16 @@ func Consistent(action func() error, attempts int, pollInterval time.Duration) f
 }
 
 // IsClusterReadyCondition returns a WaitCondition to check when a cluster is considered ready and accessible
-func IsClusterReadyCondition(ctx context.Context, kubeClient *client.Client, clusterName string, namespace string, clientMap map[string]*client.Client) WaitCondition {
+func IsClusterReadyCondition(ctx context.Context, kubeClient *client.Client, clusterName string, namespace string) WaitCondition {
 	return func() (bool, error) {
 		logger.Log("Checking for valid Kubeconfig for cluster %s", clusterName)
 
-		kubeconfig, err := kubeClient.GetClusterKubeConfig(ctx, clusterName, namespace)
+		wcClient, err := client.NewForWC(ctx, kubeClient, clusterName, namespace)
 		if err != nil && cr.IgnoreNotFound(err) == nil {
 			// Kubeconfig not yet available
 			logger.Log("kubeconfig secret not yet available")
 			return false, nil
 		} else if err != nil {
-			return false, err
-		}
-
-		wcClient, err := client.NewFromRawKubeconfig(string(kubeconfig))
-		if err != nil {
 			return false, err
 		}
 
@@ -77,9 +72,6 @@ func IsClusterReadyCondition(ctx context.Context, kubeClient *client.Client, clu
 		}
 
 		logger.Log("Got valid kubeconfig!")
-
-		// Store client for later
-		clientMap[clusterName] = wcClient
 
 		return true, nil
 	}

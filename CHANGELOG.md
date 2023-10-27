@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Check for WC client still being active and if not create a new one from the Secret on the MC.
+- `IsActive()` function for the Client
+- `NewForWC` function that creates a new Kubernetes client from a Secret on the MC
+
+### Changes
+
+- `WaitForClusterReady` no longer returns the WC client.
+- `IsClusterReadyCondition` no longer takes in a clientMap
+
 ## [0.11.0] - 2023-10-27
 
 ### Changed

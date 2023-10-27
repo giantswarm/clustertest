@@ -22,6 +22,7 @@ type Provider string
 
 const (
 	ProviderAWS           Provider = "aws"
+	ProviderEKS           Provider = "eks"
 	ProviderGCP           Provider = "gcp"
 	ProviderAzure         Provider = "azure"
 	ProviderCloudDirector Provider = "cloud-director"

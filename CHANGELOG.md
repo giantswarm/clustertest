@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Updated `GetExpectedControlPlaneReplicas` to handle managed clusters (e.g. EKS) and return `0` if no control plane CR is found.
+
 ## [0.10.1] - 2023-10-27
 
 ### Added

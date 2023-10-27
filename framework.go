@@ -11,6 +11,7 @@ import (
 	"github.com/giantswarm/clustertest/pkg/organization"
 	"github.com/giantswarm/clustertest/pkg/wait"
 
+	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/types"
 
 	applicationv1alpha1 "github.com/giantswarm/apiextensions-application/api/v1alpha1"
@@ -353,7 +354,10 @@ func (f *Framework) GetExpectedControlPlaneReplicas(ctx context.Context, cluster
 	}
 
 	err := f.MC().Get(ctx, cr.ObjectKeyFromObject(controlPlane), controlPlane)
-	if err != nil {
+	if errors.IsNotFound(err) {
+		// If we don't find the `KubeadmControlPlane` we assume it's a managed control plane cluster and expect 0 control plane nodes
+		return 0, nil
+	} else if err != nil {
 		return 0, err
 	}
 

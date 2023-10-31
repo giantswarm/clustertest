@@ -9,7 +9,7 @@
 // # Example using `For` with the `IsClusterReadyCondition` condition
 //
 //	err := wait.For(
-//		wait.IsClusterReadyCondition(ctx, f.MC(), clusterName, namespace, f.wcClients),
+//		wait.IsClusterReadyCondition(ctx, f.MC(), clusterName, namespace),
 //		wait.WithContext(ctx),
 //		wait.WithInterval(10*time.Second),
 //	)

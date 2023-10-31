@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Instead of relying on the CAPI-generated kubeconfig we now create a specific ServiceAccount in the workload cluster and authenticate as that for the test suites.
+
 ## [0.11.0] - 2023-10-27
 
 ### Changed

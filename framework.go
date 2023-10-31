@@ -9,6 +9,7 @@ import (
 	"github.com/giantswarm/clustertest/pkg/application"
 	"github.com/giantswarm/clustertest/pkg/client"
 	"github.com/giantswarm/clustertest/pkg/organization"
+	"github.com/giantswarm/clustertest/pkg/testuser"
 	"github.com/giantswarm/clustertest/pkg/wait"
 
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -180,7 +181,21 @@ func (f *Framework) ApplyCluster(ctx context.Context, cluster *application.Clust
 		return nil, fmt.Errorf("failed to apply cluster resources: %v", err)
 	}
 
-	return f.WaitForClusterReady(ctx, cluster.Name, cluster.GetNamespace())
+	kubeClient, err := f.WaitForClusterReady(ctx, cluster.Name, cluster.GetNamespace())
+	if err != nil {
+		return nil, err
+	}
+
+	// Create the E2E test service account and create a new client authenticated as it
+	testClient, err := testuser.Create(ctx, kubeClient)
+	if err != nil {
+		return nil, err
+	}
+
+	// Store the WC client for use in the tests
+	f.wcClients[cluster.Name] = testClient
+
+	return testClient, nil
 }
 
 // WaitForClusterReady watches for a Kubeconfig secret to be created on the MC and then waits until that cluster's api-server response successfully
@@ -194,12 +209,12 @@ func (f *Framework) ApplyCluster(ctx context.Context, cluster *application.Clust
 //
 //	wcClient, err := framework.WaitForClusterReady(timeoutCtx, "test-cluster", "default")
 func (f *Framework) WaitForClusterReady(ctx context.Context, clusterName string, namespace string) (*client.Client, error) {
-	err := wait.For(wait.IsClusterReadyCondition(ctx, f.MC(), clusterName, namespace, f.wcClients), wait.WithContext(ctx), wait.WithInterval(10*time.Second))
+	err := wait.For(wait.IsClusterReadyCondition(ctx, f.MC(), clusterName, namespace), wait.WithContext(ctx), wait.WithInterval(10*time.Second))
 	if err != nil {
 		return nil, err
 	}
 
-	return f.wcClients[clusterName], nil
+	return client.NewFromSecret(ctx, f.MC(), clusterName, namespace)
 }
 
 // WaitForControlPlane polls the provided cluster and waits until the provided number of Control Plane nodes are reporting as ready

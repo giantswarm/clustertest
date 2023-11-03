@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.12.1] - 2023-11-03
+
 ### Fixed
 
 - Ensure `testuser` isn't reapplied when `ApplyCluster` is called again (e.g. during the upgrade tests)
@@ -255,7 +257,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added initial framework layout
 - Added Kubernetes client extended from controller-runtime client
 
-[Unreleased]: https://github.com/giantswarm/clustertest/compare/v0.12.0...HEAD
+[Unreleased]: https://github.com/giantswarm/clustertest/compare/v0.12.1...HEAD
+[0.12.1]: https://github.com/giantswarm/clustertest/compare/v0.12.0...v0.12.1
 [0.12.0]: https://github.com/giantswarm/clustertest/compare/v0.11.0...v0.12.0
 [0.11.0]: https://github.com/giantswarm/clustertest/compare/v0.10.1...v0.11.0
 [0.10.1]: https://github.com/giantswarm/clustertest/compare/v0.10.0...v0.10.1

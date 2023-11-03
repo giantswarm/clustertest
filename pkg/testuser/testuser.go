@@ -8,7 +8,9 @@ import (
 	"time"
 
 	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/types"
+	cr "sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/giantswarm/clustertest/pkg/client"
 	"github.com/giantswarm/clustertest/pkg/wait"
@@ -17,23 +19,30 @@ import (
 // Create handles the creation of a ServiceAccount with cluster-admin permission within the cluster
 // and generated a new Kubernetes client that authenticates as that account.
 func Create(ctx context.Context, kubeClient *client.Client) (*client.Client, error) {
-	// ServiceAccount
-	if err := kubeClient.Create(ctx, &serviceAccount); err != nil {
+	existing, err := doesUserExist(ctx, kubeClient)
+	if err != nil {
 		return nil, err
 	}
-	// Secret
-	if err := kubeClient.Create(ctx, &secret); err != nil {
-		return nil, err
-	}
-	// ClusterRoleBinding
-	if err := kubeClient.Create(ctx, &clusterRoleBinding); err != nil {
-		return nil, err
+
+	if !existing {
+		// ServiceAccount
+		if err := kubeClient.Create(ctx, &serviceAccount); err != nil {
+			return nil, err
+		}
+		// Secret
+		if err := kubeClient.Create(ctx, &secret); err != nil {
+			return nil, err
+		}
+		// ClusterRoleBinding
+		if err := kubeClient.Create(ctx, &clusterRoleBinding); err != nil {
+			return nil, err
+		}
 	}
 
 	var ca string
 	var token string
 
-	err := wait.For(
+	err = wait.For(
 		func() (bool, error) {
 			var populatedSecret corev1.Secret
 			err := kubeClient.Get(ctx, types.NamespacedName{Name: secret.ObjectMeta.Name, Namespace: secret.ObjectMeta.Namespace}, &populatedSecret)
@@ -66,4 +75,15 @@ func Create(ctx context.Context, kubeClient *client.Client) (*client.Client, err
 	}
 
 	return client.NewFromRawKubeconfig(buf.String())
+}
+
+func doesUserExist(ctx context.Context, kubeClient *client.Client) (bool, error) {
+	var existingAccount corev1.ServiceAccount
+	err := kubeClient.Get(ctx, cr.ObjectKeyFromObject(&serviceAccount), &existingAccount)
+	if err != nil && !errors.IsNotFound(err) {
+		return false, err
+	} else if errors.IsNotFound(err) {
+		return false, nil
+	}
+	return true, nil
 }

@@ -143,6 +143,12 @@ func (c *Cluster) Build() (*applicationv1alpha1.App, *corev1.ConfigMap, *applica
 	defaultAppsApplication.Spec.Config.ConfigMap.Name = fmt.Sprintf("%s-cluster-values", c.Name)
 	defaultAppsApplication.Spec.Config.ConfigMap.Namespace = c.DefaultAppsApp.Organization.GetNamespace()
 
+	// null the .resourceVersions
+	clusterApplication.ResourceVersion = ""
+	clusterCM.ResourceVersion = ""
+	defaultAppsApplication.ResourceVersion = ""
+	defaultAppsCM.ResourceVersion = ""
+
 	return clusterApplication, clusterCM, defaultAppsApplication, defaultAppsCM, nil
 }
 

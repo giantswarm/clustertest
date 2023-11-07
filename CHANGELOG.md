@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Add `oidc` plugin for controller runtime client creation in order to be able use OIDC kubeconfigs for local testing.
+
 ## [0.12.1] - 2023-11-03
 
 ### Fixed

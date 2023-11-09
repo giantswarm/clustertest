@@ -19,6 +19,12 @@ import (
 // Create handles the creation of a ServiceAccount with cluster-admin permission within the cluster
 // and generated a new Kubernetes client that authenticates as that account.
 func Create(ctx context.Context, kubeClient *client.Client) (*client.Client, error) {
+	// default namespace is created by controllers after a while
+	err := waitForNamespace(ctx, kubeClient)
+	if err != nil {
+		return nil, err
+	}
+
 	existing, err := doesUserExist(ctx, kubeClient)
 	if err != nil {
 		return nil, err
@@ -75,6 +81,23 @@ func Create(ctx context.Context, kubeClient *client.Client) (*client.Client, err
 	}
 
 	return client.NewFromRawKubeconfig(buf.String())
+}
+
+func waitForNamespace(ctx context.Context, kubeClient *client.Client) error {
+	err := wait.For(
+		func() (bool, error) {
+			var namespace corev1.Namespace
+			err := kubeClient.Get(ctx, types.NamespacedName{Name: serviceAccount.Namespace}, &namespace)
+			if err != nil {
+				return false, err
+			}
+
+			return true, nil
+		},
+		wait.WithTimeout(5*time.Minute),
+		wait.WithInterval(5*time.Second),
+	)
+	return err
 }
 
 func doesUserExist(ctx context.Context, kubeClient *client.Client) (bool, error) {

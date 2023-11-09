@@ -91,7 +91,7 @@ func waitForNamespace(ctx context.Context, kubeClient *client.Client) error {
 			err := kubeClient.Get(ctx, types.NamespacedName{Name: serviceAccount.Namespace}, &namespace)
 			if err != nil {
 				logger.Log("Waiting for %s namespace. Error: %v", serviceAccount.Namespace, err)
-				return false, err
+				return false, nil
 			}
 
 			logger.Log("Namespace %s exists", serviceAccount.Namespace)

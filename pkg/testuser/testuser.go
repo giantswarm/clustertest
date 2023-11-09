@@ -13,6 +13,7 @@ import (
 	cr "sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/giantswarm/clustertest/pkg/client"
+	"github.com/giantswarm/clustertest/pkg/logger"
 	"github.com/giantswarm/clustertest/pkg/wait"
 )
 
@@ -89,9 +90,11 @@ func waitForNamespace(ctx context.Context, kubeClient *client.Client) error {
 			var namespace corev1.Namespace
 			err := kubeClient.Get(ctx, types.NamespacedName{Name: serviceAccount.Namespace}, &namespace)
 			if err != nil {
+				logger.Log("Waiting for %s namespace. Error: %v", serviceAccount.Namespace, err)
 				return false, err
 			}
 
+			logger.Log("Namespace %s exists", serviceAccount.Namespace)
 			return true, nil
 		},
 		wait.WithTimeout(5*time.Minute),

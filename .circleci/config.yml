@@ -8,6 +8,7 @@ jobs:
     executor: architect/machine
     machine:
       image: 'ubuntu-2004:202010-01'
+      resource_class: xlarge
     steps:
       - checkout
       - architect/machine-install-go

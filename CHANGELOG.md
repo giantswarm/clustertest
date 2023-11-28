@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Add `IsAppListDeployed` and `IsAppListStatus` functions in `wait/conditions.go`
+
 ### Changed
 
 - Bumped `golangci-lint` to latest version in CI

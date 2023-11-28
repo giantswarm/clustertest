@@ -147,6 +147,41 @@ func IsAppStatus(ctx context.Context, kubeClient *client.Client, appName string,
 	}
 }
 
+// IsAppListDeployed returns a WaitCondition that checks if all apps from an app list have a deployed status
+func IsAppListDeployed(ctx context.Context, kubeClient *client.Client, appList []string, appNamespace string) WaitCondition {
+	return IsAppListStatus(ctx, kubeClient, appList, appNamespace, "deployed")
+}
+
+// IsApplistStatus returns a WaitCondition that checks if all the apps from the provided list currently have the provided expected status
+func IsAppListStatus(ctx context.Context, kubeClient *client.Client, appList []string, appNamespace string, expectedStatus string) WaitCondition {
+	return func() (bool, error) {
+		var err error
+		isSuccess := true
+
+		for _, appName := range appList {
+			app := &applicationv1alpha1.App{
+				ObjectMeta: v1.ObjectMeta{
+					Name:      appName,
+					Namespace: appNamespace,
+				},
+			}
+			if err = kubeClient.Client.Get(ctx, cr.ObjectKeyFromObject(app), app); err != nil {
+				logger.Log("Failed to get App %s: %s", app.Name, err)
+				isSuccess = false
+				continue
+			}
+
+			actualStatus := app.Status.Release.Status
+			logger.Log("Checking if App status for %s is equal to '%s': %s", app.Name, expectedStatus, actualStatus)
+			if expectedStatus != actualStatus {
+				isSuccess = false
+			}
+		}
+
+		return isSuccess, err
+	}
+}
+
 // IsAllAppDeployed returns a WaitCondition that checks if all the apps provided have a deployed status
 func IsAllAppDeployed(ctx context.Context, kubeClient *client.Client, appNamespacedNames []types.NamespacedName) WaitCondition {
 	return IsAllAppStatus(ctx, kubeClient, appNamespacedNames, "deployed")

@@ -1,6 +1,9 @@
 package application
 
-import "encoding/json"
+import (
+	"encoding/json"
+	"strings"
+)
 
 // ClusterValues holds common values for cluster-<provider> charts. These are
 // the provider independent values and are present for all the charts
@@ -52,4 +55,44 @@ type NodePool struct {
 // the provider independent values and are present for all the charts
 type DefaultAppsValues struct {
 	BaseDomain string `yaml:"baseDomain"`
+}
+
+// UnmarshalJSON implements a custom unmarshaller that handles both the old and new schema structures
+func (cv *ClusterValues) UnmarshalJSON(b []byte) error {
+	if strings.Contains(string(b), `"global":`) {
+		// We're dealing with the new schema
+		type Schema struct {
+			Global struct {
+				Connectivity struct {
+					BaseDomain string `yaml:"baseDomain"`
+				} `yaml:"connectivity"`
+				ControlPlane ControlPlane `yaml:"controlPlane"`
+				NodePools    NodePools    `yaml:"nodePools"`
+			} `yaml:"global"`
+		}
+		var s Schema
+		err := json.Unmarshal(b, &s)
+		if err != nil {
+			return err
+		}
+		cv.BaseDomain = s.Global.Connectivity.BaseDomain
+		cv.ControlPlane = s.Global.ControlPlane
+		cv.NodePools = s.Global.NodePools
+	} else {
+		// We're dealing with the old schema
+		type Schema struct {
+			BaseDomain   string       `yaml:"baseDomain"`
+			ControlPlane ControlPlane `yaml:"controlPlane"`
+			NodePools    NodePools    `yaml:"nodePools"`
+		}
+		var s Schema
+		err := json.Unmarshal(b, &s)
+		if err != nil {
+			return err
+		}
+		cv.BaseDomain = s.BaseDomain
+		cv.ControlPlane = s.ControlPlane
+		cv.NodePools = s.NodePools
+	}
+	return nil
 }

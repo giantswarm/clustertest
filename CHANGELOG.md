@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Added a custom unmarshaller to `application.ClusterValues` to dynamically handle both the old and new values schemas while we migrate all cluster apps
+
 ### Changed
 
 - Bumped `golangci-lint` to latest version in CI

@@ -78,20 +78,25 @@ func (cv *ClusterValues) UnmarshalJSON(b []byte) error {
 		cv.BaseDomain = s.Global.Connectivity.BaseDomain
 		cv.ControlPlane = s.Global.ControlPlane
 		cv.NodePools = s.Global.NodePools
-	} else {
-		// We're dealing with the old schema
-		type Schema struct {
-			BaseDomain   string       `yaml:"baseDomain"`
-			ControlPlane ControlPlane `yaml:"controlPlane"`
-			NodePools    NodePools    `yaml:"nodePools"`
-		}
-		var s Schema
-		err := json.Unmarshal(b, &s)
-		if err != nil {
-			return err
-		}
+	}
+	// We're also checking the old schema
+	type Schema struct {
+		BaseDomain   string       `yaml:"baseDomain"`
+		ControlPlane ControlPlane `yaml:"controlPlane"`
+		NodePools    NodePools    `yaml:"nodePools"`
+	}
+	var s Schema
+	err := json.Unmarshal(b, &s)
+	if err != nil {
+		return err
+	}
+	if cv.BaseDomain == "" {
 		cv.BaseDomain = s.BaseDomain
+	}
+	if cv.ControlPlane.Replicas == 0 {
 		cv.ControlPlane = s.ControlPlane
+	}
+	if len(cv.NodePools) == 0 {
 		cv.NodePools = s.NodePools
 	}
 	return nil

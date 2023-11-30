@@ -253,6 +253,21 @@ nodePools:
 				},
 			},
 		},
+		{
+			description: "old schema but has a 'global' property",
+			input: `global:
+  metadata: {}
+baseDomain: "foo.com"
+controlPlane:
+  replicas: 3`,
+			expectError: false,
+			expected: ClusterValues{
+				BaseDomain: "foo.com",
+				ControlPlane: ControlPlane{
+					Replicas: 3,
+				},
+			},
+		},
 	} {
 		t.Run(scenario.description, func(t *testing.T) {
 			actual := &ClusterValues{}

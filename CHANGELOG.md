@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.13.0] - 2023-11-30
+
 ### Added
 
 - Added a custom unmarshaller to `application.ClusterValues` to dynamically handle both the old and new values schemas while we migrate all cluster apps
@@ -277,7 +279,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added initial framework layout
 - Added Kubernetes client extended from controller-runtime client
 
-[Unreleased]: https://github.com/giantswarm/clustertest/compare/v0.12.5...HEAD
+[Unreleased]: https://github.com/giantswarm/clustertest/compare/v0.13.0...HEAD
+[0.13.0]: https://github.com/giantswarm/clustertest/compare/v0.12.5...v0.13.0
 [0.12.5]: https://github.com/giantswarm/clustertest/compare/v0.12.4...v0.12.5
 [0.12.4]: https://github.com/giantswarm/clustertest/compare/v0.12.3...v0.12.4
 [0.12.3]: https://github.com/giantswarm/clustertest/compare/v0.12.2...v0.12.3

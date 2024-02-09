@@ -13,7 +13,7 @@ require (
 	github.com/giantswarm/apiextensions-application v0.6.0
 	github.com/giantswarm/kubectl-gs/v2 v2.45.0
 	github.com/giantswarm/organization-operator v1.6.0
-	github.com/google/go-github/v58 v58.0.0
+	github.com/google/go-github/v59 v59.0.0
 	github.com/mittwald/go-helm-client v0.12.1
 	golang.org/x/oauth2 v0.17.0
 	k8s.io/api v0.26.3

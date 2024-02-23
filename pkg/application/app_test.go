@@ -399,3 +399,85 @@ func TestGetInstallNamespace(t *testing.T) {
 		})
 	}
 }
+
+func TestWithVersion_Catalog(t *testing.T) {
+	defaultCatalog := "cluster"
+	defaultTestCatalog := "cluster-test"
+
+	// Test with default catalog (cluster) and default version
+	app, _, err := New("installName", "cluster-aws").Build()
+	if err != nil {
+		t.Fatalf("Not expecting an error: %v", err)
+	}
+
+	if app.Spec.Catalog != defaultCatalog {
+		t.Errorf("Was expecting catalog to be default. Expected: %s, Actual: %s", defaultCatalog, app.Spec.Catalog)
+	}
+
+	// Test with default catalog (cluster) and custom version
+	app, _, err = New("installName", "cluster-aws").WithVersion("v1.2.3").Build()
+	if err != nil {
+		t.Fatalf("Not expecting an error: %v", err)
+	}
+
+	if app.Spec.Catalog != defaultCatalog {
+		t.Errorf("Was expecting catalog to be default. Expected: %s, Actual: %s", defaultCatalog, app.Spec.Catalog)
+	}
+
+	// Test with default catalog (cluster) and sha-based version
+	app, _, err = New("installName", "cluster-aws").WithVersion("v1.2.3-68584a77efa719a74e0518163c1af38637927f73").Build()
+	if err != nil {
+		t.Fatalf("Not expecting an error: %v", err)
+	}
+
+	if app.Spec.Catalog != defaultTestCatalog {
+		t.Errorf("Was expecting catalog to be default with test suffix. Expected: %s, Actual: %s", defaultTestCatalog, app.Spec.Catalog)
+	}
+
+	customCatalog := "giantswarm"
+	customTestCatalog := "giantswarm-test"
+
+	// Test with custom catalog and default version
+	app, _, err = New("installName", "cluster-aws").WithCatalog(customCatalog).Build()
+	if err != nil {
+		t.Fatalf("Not expecting an error: %v", err)
+	}
+
+	if app.Spec.Catalog != customCatalog {
+		t.Errorf("Was expecting catalog to match the provided. Expected: %s, Actual: %s", customCatalog, app.Spec.Catalog)
+	}
+
+	// Test with default catalog (cluster) and custom version
+	app, _, err = New("installName", "cluster-aws").WithCatalog(customCatalog).WithVersion("v1.2.3").Build()
+	if err != nil {
+		t.Fatalf("Not expecting an error: %v", err)
+	}
+
+	if app.Spec.Catalog != customCatalog {
+		t.Errorf("Was expecting catalog to match the provided. Expected: %s, Actual: %s", customCatalog, app.Spec.Catalog)
+	}
+
+	// Test with default catalog (cluster) and sha-based version
+	app, _, err = New("installName", "cluster-aws").WithCatalog(customCatalog).WithVersion("v1.2.3-68584a77efa719a74e0518163c1af38637927f73").Build()
+	if err != nil {
+		t.Fatalf("Not expecting an error: %v", err)
+	}
+
+	if app.Spec.Catalog != customTestCatalog {
+		t.Errorf("Was expecting catalog to be the provided with the test suffix. Expected: %s, Actual: %s", customTestCatalog, app.Spec.Catalog)
+	}
+
+	// Ensure we can override the automatic catalog with subsequent call to .WithCatalog()
+
+	app, _, err = New("installName", "cluster-aws").
+		WithVersion("v1.2.3-68584a77efa719a74e0518163c1af38637927f73"). // Causes the catalog to become 'cluster-test'
+		WithCatalog("override").                                        // Overrides the catalog to 'override'
+		Build()
+	if err != nil {
+		t.Fatalf("Not expecting an error: %v", err)
+	}
+
+	if app.Spec.Catalog != "override" {
+		t.Errorf("Was expecting catalog to be the provided with the test suffix. Expected: %s, Actual: %s", "override", app.Spec.Catalog)
+	}
+}

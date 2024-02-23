@@ -92,18 +92,7 @@ func (a *Application) WithCatalog(catalog string) *Application {
 //
 // The values supports templating using Go template strings and uses values provided in `config` to replace placeholders.
 func (a *Application) WithValues(values string, config *TemplateValues) (*Application, error) {
-	// We need to check that the values file actually has contents otherwise kubectl-gs fails to build the Application
-	fileBytes, err := os.ReadFile(values)
-	if err != nil {
-		return nil, err
-	}
-	if len(fileBytes) == 0 {
-		// Empty file so we'll set it to the default contents
-		a.Values = defaultValuesContents
-		return a, nil
-	}
-
-	values, err = parseTemplate(values, config)
+	values, err := parseTemplate(values, config)
 	if err != nil {
 		return nil, err
 	}
@@ -127,6 +116,17 @@ func (a *Application) MustWithValues(values string, config *TemplateValues) *App
 //
 // The file supports templating using Go template strings and uses values provided in `config` to replace placeholders.
 func (a *Application) WithValuesFile(filePath string, config *TemplateValues) (*Application, error) {
+	// We need to check that the values file actually has contents otherwise kubectl-gs fails to build the Application
+	fileBytes, err := os.ReadFile(filePath)
+	if err != nil && !os.IsNotExist(err) {
+		return nil, err
+	}
+	if len(fileBytes) == 0 {
+		// Empty file so we'll set it to the default contents
+		a.Values = defaultValuesContents
+		return a, nil
+	}
+
 	values, err := parseTemplateFile(filePath, config)
 	if err != nil {
 		return nil, err

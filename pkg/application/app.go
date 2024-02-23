@@ -3,6 +3,7 @@ package application
 import (
 	"bytes"
 	"fmt"
+	"os"
 	"regexp"
 
 	applicationv1alpha1 "github.com/giantswarm/apiextensions-application/api/v1alpha1"
@@ -13,6 +14,10 @@ import (
 	"sigs.k8s.io/e2e-framework/klient/decoder"
 
 	"github.com/giantswarm/clustertest/pkg/organization"
+)
+
+const (
+	defaultValuesContents = "\n"
 )
 
 // If commit SHA based version we'll change the catalog
@@ -50,7 +55,7 @@ func New(installName string, appName string) *Application {
 		ClusterName:  "",
 		Version:      "",
 		Catalog:      "cluster",
-		Values:       "\n",
+		Values:       defaultValuesContents,
 		InCluster:    true,
 		Organization: *organization.New("giantswarm"),
 	}
@@ -87,7 +92,18 @@ func (a *Application) WithCatalog(catalog string) *Application {
 //
 // The values supports templating using Go template strings and uses values provided in `config` to replace placeholders.
 func (a *Application) WithValues(values string, config *TemplateValues) (*Application, error) {
-	values, err := parseTemplate(values, config)
+	// We need to check that the values file actually has contents otherwise kubectl-gs fails to build the Application
+	fileBytes, err := os.ReadFile(values)
+	if err != nil {
+		return nil, err
+	}
+	if len(fileBytes) == 0 {
+		// Empty file so we'll set it to the default contents
+		a.Values = defaultValuesContents
+		return a, nil
+	}
+
+	values, err = parseTemplate(values, config)
 	if err != nil {
 		return nil, err
 	}

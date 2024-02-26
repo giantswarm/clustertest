@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Safely handle an empty values file being provided by replacing it with a single newline character
+
 ### Changed
 
 - Updated `.WithVersion()` to better handle sha based versions and set the catalog to the currently set catalog with a `-test` suffix (instead of hardcoded to `cluster-test`)

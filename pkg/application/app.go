@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"regexp"
+	"strings"
 
 	applicationv1alpha1 "github.com/giantswarm/apiextensions-application/api/v1alpha1"
 	templateapp "github.com/giantswarm/kubectl-gs/v2/pkg/template/app"
@@ -75,8 +76,8 @@ func (a *Application) WithVersion(version string) *Application {
 	a.Version = version
 
 	// Override the catalog if version contains a sha suffix
-	if isShaVersion.MatchString(version) {
-		a = a.WithCatalog("cluster-test")
+	if isShaVersion.MatchString(version) && !strings.HasSuffix(a.Catalog, "-test") {
+		a = a.WithCatalog(fmt.Sprintf("%s-test", a.Catalog))
 	}
 
 	return a

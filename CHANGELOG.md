@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Updated `.WithVersion()` to better handle sha based versions and set the catalog to the currently set catalog with a `-test` suffix (instead of hardcoded to `cluster-test`)
+
 ## [0.14.0] - 2023-12-04
 
 ### Changed

@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.15.0] - 2024-02-26
+
 ### Fixed
 
 - Safely handle an empty values file being provided by replacing it with a single newline character
@@ -293,7 +295,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added initial framework layout
 - Added Kubernetes client extended from controller-runtime client
 
-[Unreleased]: https://github.com/giantswarm/clustertest/compare/v0.14.0...HEAD
+[Unreleased]: https://github.com/giantswarm/clustertest/compare/v0.15.0...HEAD
+[0.15.0]: https://github.com/giantswarm/clustertest/compare/v0.14.0...v0.15.0
 [0.14.0]: https://github.com/giantswarm/clustertest/compare/v0.13.0...v0.14.0
 [0.13.0]: https://github.com/giantswarm/clustertest/compare/v0.12.5...v0.13.0
 [0.12.5]: https://github.com/giantswarm/clustertest/compare/v0.12.4...v0.12.5

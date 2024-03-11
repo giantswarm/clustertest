@@ -5,7 +5,6 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/giantswarm/microerror"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/remotecommand"
@@ -21,7 +20,7 @@ func (c *Client) ExecInPod(ctx context.Context, podName, namespace, containerNam
 
 	coreClient, err := kubernetes.NewForConfig(c.config)
 	if err != nil {
-		return "", "", microerror.Mask(err)
+		return "", "", fmt.Errorf("failed initializing kubernetes core client - %v", err)
 	}
 
 	req := coreClient.CoreV1().RESTClient().Post().

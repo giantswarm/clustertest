@@ -3,12 +3,7 @@ package utils
 import (
 	"fmt"
 	"math/rand"
-	"time"
 )
-
-func init() {
-	rand.Seed(time.Now().UnixNano())
-}
 
 // GenerateRandomName produces a random name made up of lower case letters and number, prefixed with the given string
 // and seprated with a hyphen. The generated name is limited to 20 characters.

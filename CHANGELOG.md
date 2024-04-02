@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Added a `GetClusterName` function that returns the friendly name of the cluster from the kubeconfig
+
 ## [0.16.0] - 2024-03-11
 
 ### Added

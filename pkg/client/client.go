@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net"
 	"net/url"
+	"os"
 	"reflect"
 	"strings"
 
@@ -34,7 +35,8 @@ import (
 type Client struct {
 	cr.Client
 
-	config *rest.Config
+	config      *rest.Config
+	clusterName string
 }
 
 // New creates a new Kubernetes client for the provided kubeconfig file
@@ -52,6 +54,10 @@ func New(kubeconfigPath string) (*Client, error) {
 // The creation of the client doesn't confirm connectivity to the cluster and REST discovery is set to lazy discovery
 // so the client can be created while the cluster is still being set up.
 func NewFromRawKubeconfig(kubeconfig string) (*Client, error) {
+	clusterName, err := getClusterNameFromKubeConfig([]byte(kubeconfig), "")
+	if err != nil {
+		return nil, fmt.Errorf("failed to get cluster name - %v", err)
+	}
 	clientConfig, err := clientcmd.NewClientConfigFromBytes([]byte(kubeconfig))
 	if err != nil {
 		return nil, fmt.Errorf("failed to create config - %v", err)
@@ -61,7 +67,7 @@ func NewFromRawKubeconfig(kubeconfig string) (*Client, error) {
 		return nil, fmt.Errorf("failed to create rest config - %v", err)
 	}
 
-	return newClient(restConfig)
+	return newClient(restConfig, clusterName)
 }
 
 // NewFromSecret create a new Kubernetes client from a cluster kubeconfig found in a secret on the MC.
@@ -89,6 +95,12 @@ func NewWithContext(kubeconfigPath string, contextName string) (*Client, error) 
 		return nil, fmt.Errorf("a kubeconfig file must be provided")
 	}
 
+	data, _ := os.ReadFile(kubeconfigPath)
+	clusterName, err := getClusterNameFromKubeConfig(data, contextName)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get cluster name - %v", err)
+	}
+
 	cfg, err := clientcmd.NewNonInteractiveDeferredLoadingClientConfig(
 		&clientcmd.ClientConfigLoadingRules{ExplicitPath: kubeconfigPath},
 		&clientcmd.ConfigOverrides{
@@ -99,10 +111,10 @@ func NewWithContext(kubeconfigPath string, contextName string) (*Client, error) 
 		return nil, fmt.Errorf("failed to create config - %v", err)
 	}
 
-	return newClient(cfg)
+	return newClient(cfg, clusterName)
 }
 
-func newClient(config *rest.Config) (*Client, error) {
+func newClient(config *rest.Config, clusterName string) (*Client, error) {
 	mapper, err := apiutil.NewDynamicRESTMapper(config, apiutil.WithLazyDiscovery)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create new dynamic client - %v", err)
@@ -120,9 +132,40 @@ func newClient(config *rest.Config) (*Client, error) {
 	_ = kubeadm.AddToScheme(client.Scheme())
 
 	return &Client{
-		Client: client,
-		config: config,
+		Client:      client,
+		config:      config,
+		clusterName: clusterName,
 	}, nil
+}
+
+// getClusterNameFromKubeConfig gets the cluster name of the cluster selected for the provided context.
+// The cluster name is the human-friendly name found in the KubeConfig.
+// If an empty `contextName` is provided it will use the `CurrentContext` from the provided KubeConfig.
+func getClusterNameFromKubeConfig(data []byte, contextName string) (string, error) {
+	if len(data) == 0 {
+		return "", fmt.Errorf("Empty kubeconfig provided")
+	}
+
+	kubeconfig := clientcmdapi.Config{}
+	err := yaml.Unmarshal(data, &kubeconfig)
+	if err != nil {
+		return "", err
+	}
+
+	// Default to the context in the kubeconfig if not provided
+	if contextName == "" {
+		contextName = kubeconfig.CurrentContext
+	}
+
+	clusterName := ""
+	for _, context := range kubeconfig.Contexts {
+		if context.Name == contextName {
+			clusterName = context.Context.Cluster
+			break
+		}
+	}
+
+	return clusterName, nil
 }
 
 // CheckConnection attempts to connect to the clusters API server and returns an error if not successful.
@@ -311,4 +354,9 @@ func (c *Client) DeleteApp(ctx context.Context, app application.Application) err
 // GetAPIServerEndpoint returns the full URL for the API server
 func (c *Client) GetAPIServerEndpoint() string {
 	return c.config.Host
+}
+
+// GetClusterName returns the friendly name of the Cluster from the KubeConfig
+func (c *Client) GetClusterName() string {
+	return c.clusterName
 }

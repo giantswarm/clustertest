@@ -207,7 +207,7 @@ func IsAppVersion(ctx context.Context, kubeClient *client.Client, appName string
 	}
 }
 
-// IsClusterConditionSet returns a WaitCondition that checks if a Cluster resource has the specified condition with the expected status
+// IsClusterConditionSet returns a WaitCondition that checks if a Cluster resource has the specified condition with the expected status.
 func IsClusterConditionSet(ctx context.Context, kubeClient *client.Client, clusterName string, clusterNamespace string, conditionType capi.ConditionType, expectedStatus corev1.ConditionStatus, expectedReason string) WaitCondition {
 	cluster := &capi.Cluster{
 		ObjectMeta: v1.ObjectMeta{
@@ -219,7 +219,7 @@ func IsClusterConditionSet(ctx context.Context, kubeClient *client.Client, clust
 	return isClusterApiObjectConditionSet(ctx, kubeClient, cluster, conditionType, expectedStatus, expectedReason)
 }
 
-// IsKubeadmControlPlaneConditionSet returns a WaitCondition that checks if a KubeadmControlPlane resource has the specified condition with the expected status
+// IsKubeadmControlPlaneConditionSet returns a WaitCondition that checks if a KubeadmControlPlane resource has the specified condition with the expected status.
 func IsKubeadmControlPlaneConditionSet(ctx context.Context, kubeClient *client.Client, clusterName string, clusterNamespace string, conditionType capi.ConditionType, expectedStatus corev1.ConditionStatus, expectedReason string) WaitCondition {
 	kcp := &kubeadm.KubeadmControlPlane{
 		ObjectMeta: v1.ObjectMeta{
@@ -231,8 +231,7 @@ func IsKubeadmControlPlaneConditionSet(ctx context.Context, kubeClient *client.C
 	return isClusterApiObjectConditionSet(ctx, kubeClient, kcp, conditionType, expectedStatus, expectedReason)
 }
 
-// IsKubeadmControlPlaneConditionSet returns a WaitCondition that checks if a cluster has the specified condition with the expected status
-// Passing Kind explicitly here for the sake of more useful logs (as obj.GetObjectKind().GroupVersionKind().Kind returns empty string sometimes)
+// isClusterApiObjectConditionSet returns a WaitCondition that checks if a cluster has the specified condition with the expected status.
 func isClusterApiObjectConditionSet(ctx context.Context, kubeClient *client.Client, obj clusterApiObject, conditionType capi.ConditionType, expectedStatus corev1.ConditionStatus, expectedReason string) WaitCondition {
 	return func() (bool, error) {
 		if err := kubeClient.Client.Get(ctx, cr.ObjectKeyFromObject(obj), obj); err != nil {

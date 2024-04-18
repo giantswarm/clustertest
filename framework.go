@@ -359,7 +359,8 @@ func (f *Framework) GetAppAndValues(ctx context.Context, name, namespace string)
 	return app, values, nil
 }
 
-// GetKubeadmControlPlane returns the KubeadmControlPlane resource
+// GetKubeadmControlPlane returns the KubeadmControlPlane resource. If we don't find the `KubeadmControlPlane` we assume
+// it's a managed control plane cluster and expect nil pointer to be returned without error.
 func (f *Framework) GetKubeadmControlPlane(ctx context.Context, clusterName string, clusterNamespace string) (*kubeadm.KubeadmControlPlane, error) {
 	controlPlane := &kubeadm.KubeadmControlPlane{
 		ObjectMeta: metav1.ObjectMeta{
@@ -370,7 +371,8 @@ func (f *Framework) GetKubeadmControlPlane(ctx context.Context, clusterName stri
 
 	err := f.MC().Get(ctx, cr.ObjectKeyFromObject(controlPlane), controlPlane)
 	if errors.IsNotFound(err) {
-		// If we don't find the `KubeadmControlPlane` we assume it's a managed control plane cluster and expect 0 control plane nodes
+		// If we don't find the `KubeadmControlPlane` we assume it's a managed control plane cluster and return a nil
+		// pointer without error.
 		return nil, nil
 	} else if err != nil {
 		return nil, err

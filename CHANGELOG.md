@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.18.0] - 2024-04-18
+
 ### Added
 
 - Add new WaitConditions to check for Cluster API status conditions.
@@ -311,7 +313,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added initial framework layout
 - Added Kubernetes client extended from controller-runtime client
 
-[Unreleased]: https://github.com/giantswarm/clustertest/compare/v0.17.0...HEAD
+[Unreleased]: https://github.com/giantswarm/clustertest/compare/v0.18.0...HEAD
+[0.18.0]: https://github.com/giantswarm/clustertest/compare/v0.17.0...v0.18.0
 [0.17.0]: https://github.com/giantswarm/clustertest/compare/v0.16.0...v0.17.0
 [0.16.0]: https://github.com/giantswarm/clustertest/compare/v0.15.0...v0.16.0
 [0.15.0]: https://github.com/giantswarm/clustertest/compare/v0.14.0...v0.15.0

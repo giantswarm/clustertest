@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Add new WaitConditions to check for Cluster API status conditions.
+
 ## [0.17.0] - 2024-04-02
 
 ### Added

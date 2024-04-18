@@ -2,6 +2,7 @@ package wait
 
 import (
 	"context"
+	"reflect"
 	"strings"
 	"time"
 
@@ -13,6 +14,9 @@ import (
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
+	capi "sigs.k8s.io/cluster-api/api/v1beta1"
+	kubeadm "sigs.k8s.io/cluster-api/controlplane/kubeadm/api/v1beta1"
+	capiconditions "sigs.k8s.io/cluster-api/util/conditions"
 	cr "sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/client/apiutil"
 )
@@ -24,6 +28,13 @@ type Range struct {
 
 // WaitCondition is a function performing a condition check for if we need to keep waiting
 type WaitCondition func() (done bool, err error)
+
+// clusterApiObject is an interface that combines controller-runtime Object and Cluster API object with conditions.
+// We use this in functions where Kubernetes client fetches Cluster API objects and checks their Status.Conditions.
+type clusterApiObject interface {
+	cr.Object
+	capiconditions.Getter
+}
 
 // Consistent is a modifier for functions. It will return a function that will
 // perform the provided action and return an error if that action doesn't
@@ -193,6 +204,85 @@ func IsAppVersion(ctx context.Context, kubeClient *client.Client, appName string
 		actualVersion := app.Status.Version
 		logger.Log("Checking if App version for %s is equal to '%s': %s", appName, expectedVersion, actualVersion)
 		return strings.TrimPrefix(expectedVersion, "v") == strings.TrimPrefix(actualVersion, "v"), nil
+	}
+}
+
+// IsClusterConditionSet returns a WaitCondition that checks if a Cluster resource has the specified condition with the expected status
+func IsClusterConditionSet(ctx context.Context, kubeClient *client.Client, clusterName string, clusterNamespace string, conditionType capi.ConditionType, expectedStatus corev1.ConditionStatus, expectedReason string) WaitCondition {
+	cluster := &capi.Cluster{
+		ObjectMeta: v1.ObjectMeta{
+			Name:      clusterName,
+			Namespace: clusterNamespace,
+		},
+	}
+
+	return isClusterApiObjectConditionSet(ctx, kubeClient, cluster, conditionType, expectedStatus, expectedReason)
+}
+
+// IsKubeadmControlPlaneConditionSet returns a WaitCondition that checks if a KubeadmControlPlane resource has the specified condition with the expected status
+func IsKubeadmControlPlaneConditionSet(ctx context.Context, kubeClient *client.Client, clusterName string, clusterNamespace string, conditionType capi.ConditionType, expectedStatus corev1.ConditionStatus, expectedReason string) WaitCondition {
+	kcp := &kubeadm.KubeadmControlPlane{
+		ObjectMeta: v1.ObjectMeta{
+			Name:      clusterName,
+			Namespace: clusterNamespace,
+		},
+	}
+
+	return isClusterApiObjectConditionSet(ctx, kubeClient, kcp, conditionType, expectedStatus, expectedReason)
+}
+
+// IsKubeadmControlPlaneConditionSet returns a WaitCondition that checks if a cluster has the specified condition with the expected status
+// Passing Kind explicitly here for the sake of more useful logs (as obj.GetObjectKind().GroupVersionKind().Kind returns empty string sometimes)
+func isClusterApiObjectConditionSet(ctx context.Context, kubeClient *client.Client, obj clusterApiObject, conditionType capi.ConditionType, expectedStatus corev1.ConditionStatus, expectedReason string) WaitCondition {
+	return func() (bool, error) {
+		if err := kubeClient.Client.Get(ctx, cr.ObjectKeyFromObject(obj), obj); err != nil {
+			return false, err
+		}
+		condition := capiconditions.Get(obj, conditionType)
+
+		// obj.GetObjectKind().GroupVersionKind().Kind should return obj Kind, but that sometimes just returns an empty
+		// string, so here we just get the name of the struct.
+		// See these Kubernetes issues for more details:
+		// - https://github.com/kubernetes/kubernetes/issues/3030
+		// - https://github.com/kubernetes/kubernetes/issues/80609
+		var objTypeName string
+		objType := reflect.TypeOf(obj)
+		if objType.Kind() == reflect.Ptr {
+			objTypeName = objType.Elem().Name()
+		} else {
+			objTypeName = objType.Name()
+		}
+
+		if condition == nil {
+			// Condition not being set is equivalent to a condition with Status="Unknown"
+			expectedNotSet := expectedStatus == corev1.ConditionUnknown
+			if expectedNotSet {
+				logger.Log(
+					"%s condition %s is not set, expected condition with unknown status (or condition not set)",
+					objTypeName,
+					conditionType)
+			} else {
+				logger.Log(
+					"%s condition %s is not set, expected condition with Status='%s' and Reason='%s'",
+					objTypeName,
+					conditionType,
+					expectedStatus,
+					expectedReason)
+			}
+			return expectedNotSet, nil
+		}
+
+		logger.Log(
+			"Found %s condition %s with Status='%s' and Reason='%s', expected condition with Status='%s' and Reason='%s'",
+			objTypeName,
+			conditionType,
+			condition.Status,
+			condition.Reason,
+			expectedStatus,
+			expectedReason)
+
+		foundExpectedCondition := condition.Status == expectedStatus && condition.Reason == expectedReason
+		return foundExpectedCondition, nil
 	}
 }
 

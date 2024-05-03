@@ -2,6 +2,7 @@ package wait
 
 import (
 	"context"
+	"fmt"
 	"reflect"
 	"strings"
 	"time"
@@ -94,11 +95,12 @@ func IsResourceDeleted(ctx context.Context, kubeClient *client.Client, resource 
 		logger.Log("Checking if %s '%s' still exists", getResourceKind(kubeClient, resource), resource.GetName())
 		err := kubeClient.Client.Get(ctx, cr.ObjectKeyFromObject(resource), resource, &cr.GetOptions{})
 		if cr.IgnoreNotFound(err) != nil {
-			return false, err
+			return false, fmt.Errorf("failed to check if %s '%s' still exists: %v", getResourceKind(kubeClient, resource), resource.GetName(), err)
 		} else if apierrors.IsNotFound(err) {
 			return true, nil
 		}
 
+		logger.Log("Still exists: %s '%s' (finalizers: %s)", getResourceKind(kubeClient, resource), resource.GetName(), strings.Join(resource.GetFinalizers(), ", "))
 		return false, nil
 	}
 }

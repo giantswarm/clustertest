@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Better log message for app status
 - Improve error message when `E2E_KUBECONFIG` points to a non-existing file
 - Show finalizers if object still exists
+- Do not unnecessarily allocate TTY for running commands, return stderr content even if command fails with error exit code
 
 ## [0.18.0] - 2024-04-18
 

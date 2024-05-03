@@ -153,8 +153,13 @@ func IsAppStatus(ctx context.Context, kubeClient *client.Client, appName string,
 		}
 
 		actualStatus := app.Status.Release.Status
-		logger.Log("Checking if App status for %s is equal to '%s': %s", appName, expectedStatus, actualStatus)
-		return expectedStatus == actualStatus, nil
+		if expectedStatus == actualStatus {
+			logger.Log("App status for %s is as expected: %s", appName, actualStatus)
+			return true, nil
+		} else {
+			logger.Log("App status for %s is not yet as expected: expectedStatus=%q actualStatus=%q (reason: %q)", appName, expectedStatus, actualStatus, app.Status.Release.Reason)
+			return false, nil
+		}
 	}
 }
 
@@ -178,8 +183,10 @@ func IsAllAppStatus(ctx context.Context, kubeClient *client.Client, appNamespace
 			}
 
 			actualStatus := app.Status.Release.Status
-			logger.Log("Checking if App status for %s is equal to '%s': %s", namespacedName.Name, expectedStatus, actualStatus)
-			if expectedStatus != actualStatus {
+			if expectedStatus == actualStatus {
+				logger.Log("App status for %s is as expected: %s", namespacedName.Name, actualStatus)
+			} else {
+				logger.Log("App status for %s is not yet as expected: expectedStatus=%q actualStatus=%q (reason: %q)", namespacedName.Name, expectedStatus, actualStatus, app.Status.Release.Reason)
 				isSuccess = false
 			}
 		}

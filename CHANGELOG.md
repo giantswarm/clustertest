@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Better log message for app status
+
 ## [0.18.0] - 2024-04-18
 
 ### Added

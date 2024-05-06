@@ -16,7 +16,7 @@ import (
 func (c *Client) ExecInPod(ctx context.Context, podName, namespace, containerName string, command []string) (string, string, error) {
 	logger.Log("Running %v in container %q in pod %q", command, containerName, podName)
 
-	tty := true
+	tty := false
 
 	coreClient, err := kubernetes.NewForConfig(c.config)
 	if err != nil {
@@ -51,7 +51,7 @@ func (c *Client) ExecInPod(ctx context.Context, podName, namespace, containerNam
 		Tty:    tty,
 	})
 	if err != nil {
-		return "", "", fmt.Errorf("failed to exec command in pod - %v", err)
+		return stdout.String(), stderr.String(), fmt.Errorf("failed to exec command in pod - %v", err)
 	}
 
 	return stdout.String(), stderr.String(), err

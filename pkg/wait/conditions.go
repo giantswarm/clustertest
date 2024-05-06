@@ -2,6 +2,7 @@ package wait
 
 import (
 	"context"
+	"fmt"
 	"reflect"
 	"strings"
 	"time"
@@ -94,11 +95,12 @@ func IsResourceDeleted(ctx context.Context, kubeClient *client.Client, resource 
 		logger.Log("Checking if %s '%s' still exists", getResourceKind(kubeClient, resource), resource.GetName())
 		err := kubeClient.Client.Get(ctx, cr.ObjectKeyFromObject(resource), resource, &cr.GetOptions{})
 		if cr.IgnoreNotFound(err) != nil {
-			return false, err
+			return false, fmt.Errorf("failed to check if %s '%s' still exists: %v", getResourceKind(kubeClient, resource), resource.GetName(), err)
 		} else if apierrors.IsNotFound(err) {
 			return true, nil
 		}
 
+		logger.Log("Still exists: %s '%s' (finalizers: %s)", getResourceKind(kubeClient, resource), resource.GetName(), strings.Join(resource.GetFinalizers(), ", "))
 		return false, nil
 	}
 }
@@ -153,8 +155,13 @@ func IsAppStatus(ctx context.Context, kubeClient *client.Client, appName string,
 		}
 
 		actualStatus := app.Status.Release.Status
-		logger.Log("Checking if App status for %s is equal to '%s': %s", appName, expectedStatus, actualStatus)
-		return expectedStatus == actualStatus, nil
+		if expectedStatus == actualStatus {
+			logger.Log("App status for %s is as expected: %s", appName, actualStatus)
+			return true, nil
+		} else {
+			logger.Log("App status for %s is not yet as expected: expectedStatus=%q actualStatus=%q (reason: %q)", appName, expectedStatus, actualStatus, app.Status.Release.Reason)
+			return false, nil
+		}
 	}
 }
 
@@ -178,8 +185,10 @@ func IsAllAppStatus(ctx context.Context, kubeClient *client.Client, appNamespace
 			}
 
 			actualStatus := app.Status.Release.Status
-			logger.Log("Checking if App status for %s is equal to '%s': %s", namespacedName.Name, expectedStatus, actualStatus)
-			if expectedStatus != actualStatus {
+			if expectedStatus == actualStatus {
+				logger.Log("App status for %s is as expected: %s", namespacedName.Name, actualStatus)
+			} else {
+				logger.Log("App status for %s is not yet as expected: expectedStatus=%q actualStatus=%q (reason: %q)", namespacedName.Name, expectedStatus, actualStatus, app.Status.Release.Reason)
 				isSuccess = false
 			}
 		}

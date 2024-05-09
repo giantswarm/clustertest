@@ -14,7 +14,7 @@ import (
 )
 
 func (c *Client) ExecInPod(ctx context.Context, podName, namespace, containerName string, command []string) (string, string, error) {
-	logger.Log("Running %v in container %q in pod %q", command, containerName, podName)
+	logger.Log("Running %v in container '%s' in pod '%s'", command, containerName, podName)
 
 	tty := false
 

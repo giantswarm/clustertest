@@ -97,7 +97,7 @@ func NewWithContext(kubeconfigPath string, contextName string) (*Client, error) 
 
 	data, err := os.ReadFile(kubeconfigPath)
 	if err != nil {
-		return nil, fmt.Errorf("failed to create context from kubeconfig file %q - %v", kubeconfigPath, err)
+		return nil, fmt.Errorf("failed to create context from kubeconfig file '%s' - %v", kubeconfigPath, err)
 	}
 	clusterName, err := getClusterNameFromKubeConfig(data, contextName)
 	if err != nil {

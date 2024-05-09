@@ -2,7 +2,7 @@ module github.com/giantswarm/clustertest
 
 go 1.21
 
-toolchain go1.22.2
+toolchain go1.22.3
 
 replace (
 	github.com/cloudflare/circl v1.1.0 => github.com/cloudflare/circl v1.3.3

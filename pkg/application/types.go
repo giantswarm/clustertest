@@ -51,12 +51,6 @@ type NodePool struct {
 	Name     *string `yaml:"name"`
 }
 
-// DefaultAppsValues holds common values for default-apps-<provider> charts. These are
-// the provider independent values and are present for all the charts
-type DefaultAppsValues struct {
-	BaseDomain string `yaml:"baseDomain"`
-}
-
 // UnmarshalJSON implements a custom unmarshaller that handles both the old and new schema structures
 func (cv *ClusterValues) UnmarshalJSON(b []byte) error {
 	if strings.Contains(string(b), `"global":`) {

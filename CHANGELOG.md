@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Breaking Change
+
+- Removed `application.DefaultAppsValues` in favour of getting the values from the cluster values instead.
+
 ## [0.19.1] - 2024-05-09
 
 ### Changed

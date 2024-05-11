@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.20.0] - 2024-05-11
+
 ### Breaking Change
 
 - Removed `application.DefaultAppsValues` in favour of getting the values from the cluster values instead.
@@ -332,7 +334,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added initial framework layout
 - Added Kubernetes client extended from controller-runtime client
 
-[Unreleased]: https://github.com/giantswarm/clustertest/compare/v0.19.1...HEAD
+[Unreleased]: https://github.com/giantswarm/clustertest/compare/v0.20.0...HEAD
+[0.20.0]: https://github.com/giantswarm/clustertest/compare/v0.19.1...v0.20.0
 [0.19.1]: https://github.com/giantswarm/clustertest/compare/v0.19.0...v0.19.1
 [0.19.0]: https://github.com/giantswarm/clustertest/compare/v0.18.0...v0.19.0
 [0.18.0]: https://github.com/giantswarm/clustertest/compare/v0.17.0...v0.18.0

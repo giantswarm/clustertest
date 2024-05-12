@@ -481,3 +481,89 @@ func TestWithVersion_Catalog(t *testing.T) {
 		t.Errorf("Was expecting catalog to be the provided with the test suffix. Expected: %s, Actual: %s", "override", app.Spec.Catalog)
 	}
 }
+
+func TestIsUnifiedClusterAppWithDefaultApps(t *testing.T) {
+	type testCases struct {
+		description    string
+		appName        string
+		appVersion     string
+		expectedResult bool
+	}
+
+	for _, scenario := range []testCases{
+		{
+			description:    "cluster-aws v0.76.0 is a unified cluster app",
+			appName:        "cluster-aws",
+			appVersion:     "0.76.0",
+			expectedResult: true,
+		},
+		{
+			description:    "cluster-aws v0.76.0-37ec0271eb72504378133ae1276c287a6d702e78 is a unified cluster app with change on top of it",
+			appName:        "cluster-aws",
+			appVersion:     "0.76.0-37ec0271eb72504378133ae1276c287a6d702e78",
+			expectedResult: true,
+		},
+		{
+			description:    "cluster-aws v0.76.1 is a unified cluster app",
+			appName:        "cluster-aws",
+			appVersion:     "0.76.1",
+			expectedResult: true,
+		},
+		{
+			description:    "cluster-aws v0.77.0 is a unified cluster app",
+			appName:        "cluster-aws",
+			appVersion:     "0.77.0",
+			expectedResult: true,
+		},
+		{
+			description:    "cluster-aws v0.75.0 is not a unified cluster app",
+			appName:        "cluster-aws",
+			appVersion:     "0.75.0",
+			expectedResult: false,
+		},
+		{
+			description:    "cluster-aws v0.75.1 is not a unified cluster app",
+			appName:        "cluster-aws",
+			appVersion:     "0.75.1",
+			expectedResult: false,
+		},
+		{
+			description:    "cluster-azure is not a unified cluster app",
+			appName:        "cluster-azure",
+			appVersion:     "v0.100.0",
+			expectedResult: false,
+		},
+		{
+			description:    "cluster-vsphere is not a unified cluster app",
+			appName:        "cluster-vsphere",
+			appVersion:     "v0.100.0",
+			expectedResult: false,
+		},
+		{
+			description:    "cluster-cloud-director is not a unified cluster app",
+			appName:        "cluster-cloud-director",
+			appVersion:     "v0.100.0",
+			expectedResult: false,
+		},
+	} {
+		t.Run(scenario.description, func(t *testing.T) {
+			app := &Application{
+				AppName: scenario.appName,
+				Version: scenario.appVersion,
+			}
+
+			result, err := app.IsUnifiedClusterAppWithDefaultApps()
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			if result != scenario.expectedResult {
+				if scenario.expectedResult {
+					t.Errorf("Expected cluster app to be a unified cluster app, but it wasn't.")
+				} else {
+					t.Errorf("Expected cluster app not to be a unified cluster app, but it was.")
+				}
+			}
+		})
+	}
+}

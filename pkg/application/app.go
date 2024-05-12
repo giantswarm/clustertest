@@ -326,6 +326,7 @@ func (a *Application) IsUnifiedClusterAppWithDefaultApps() (bool, error) {
 				}
 			}
 		}
+		appVersionString = strings.TrimPrefix(appVersionString, "v")
 		appVersion, err := semver.StrictNewVersion(appVersionString)
 		if err != nil {
 			return false, err

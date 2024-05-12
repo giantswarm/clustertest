@@ -150,3 +150,9 @@ func (c *Cluster) Build() (*applicationv1alpha1.App, *corev1.ConfigMap, *applica
 func (c *Cluster) GetNamespace() string {
 	return c.Organization.GetNamespace()
 }
+
+// UsesUnifiedClusterApp returns a flag that indicates if the cluster is deployed with the unified cluster-$provider app
+// that deploys all default apps.
+func (c *Cluster) UsesUnifiedClusterApp() (bool, error) {
+	return c.ClusterApp.IsUnifiedClusterAppWithDefaultApps()
+}

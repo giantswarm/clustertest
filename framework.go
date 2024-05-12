@@ -102,12 +102,6 @@ func (f *Framework) LoadCluster() (*application.Cluster, error) {
 		return nil, err
 	}
 
-	defaultAppsName := fmt.Sprintf("%s-default-apps", name)
-	defaultApps, defaultAppsValues, err := f.GetAppAndValues(ctx, defaultAppsName, namespace)
-	if err != nil {
-		return nil, err
-	}
-
 	kubeconfig, err := f.mcClient.GetClusterKubeConfig(context.Background(), name, namespace)
 	if err != nil {
 		return nil, err
@@ -120,7 +114,7 @@ func (f *Framework) LoadCluster() (*application.Cluster, error) {
 
 	f.wcClients[name] = wcClient
 
-	return &application.Cluster{
+	cluster := &application.Cluster{
 		Name: name,
 		ClusterApp: &application.Application{
 			InstallName:     clusterApp.Name,
@@ -133,7 +127,21 @@ func (f *Framework) LoadCluster() (*application.Cluster, error) {
 			AppLabels:       clusterApp.Labels,
 			ConfigMapLabels: clusterValues.Labels,
 		},
-		DefaultAppsApp: &application.Application{
+		Organization: org,
+	}
+
+	skipDefaultAppsApp, err := cluster.UsesUnifiedClusterApp()
+	if err != nil {
+		return nil, err
+	}
+	if !skipDefaultAppsApp {
+		defaultAppsName := fmt.Sprintf("%s-default-apps", name)
+		defaultApps, defaultAppsValues, err := f.GetAppAndValues(ctx, defaultAppsName, namespace)
+		if err != nil {
+			return nil, err
+		}
+
+		cluster.DefaultAppsApp = &application.Application{
 			InstallName:     defaultApps.Name,
 			AppName:         defaultApps.Spec.Name,
 			Version:         defaultApps.Spec.Version,
@@ -143,9 +151,10 @@ func (f *Framework) LoadCluster() (*application.Cluster, error) {
 			Organization:    *org,
 			AppLabels:       defaultApps.Labels,
 			ConfigMapLabels: defaultApps.Labels,
-		},
-		Organization: org,
-	}, nil
+		}
+	}
+
+	return cluster, nil
 }
 
 // ApplyCluster takes a Cluster object, applies it to the MC in the correct order and then waits for a valid Kubeconfig to be available
@@ -177,8 +186,14 @@ func (f *Framework) ApplyCluster(ctx context.Context, cluster *application.Clust
 	}
 
 	// Apply Default Apps resources
-	if err := f.MC().DeployAppManifests(ctx, defaultAppsApplication, defaultAppsCM); err != nil {
-		return nil, fmt.Errorf("failed to apply cluster resources: %v", err)
+	skipDefaultAppsApp, err := cluster.UsesUnifiedClusterApp()
+	if err != nil {
+		return nil, err
+	}
+	if !skipDefaultAppsApp {
+		if err = f.MC().DeployAppManifests(ctx, defaultAppsApplication, defaultAppsCM); err != nil {
+			return nil, fmt.Errorf("failed to apply cluster resources: %v", err)
+		}
 	}
 
 	kubeClient, err := f.WaitForClusterReady(ctx, cluster.Name, cluster.GetNamespace())

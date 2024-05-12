@@ -7,6 +7,7 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/Masterminds/semver/v3"
 	applicationv1alpha1 "github.com/giantswarm/apiextensions-application/api/v1alpha1"
 	templateapp "github.com/giantswarm/kubectl-gs/v2/pkg/template/app"
 	corev1 "k8s.io/api/core/v1"
@@ -305,4 +306,44 @@ func (a *Application) GetInstallNamespace() string {
 		installNamespace = a.Organization.GetNamespace()
 	}
 	return installNamespace
+}
+
+// IsUnifiedClusterAppWithDefaultApps returns a flag that indicates if a cluster-$provider app with specified version is
+// a unified cluster-$provider app that deploys all default apps.
+func (a *Application) IsUnifiedClusterAppWithDefaultApps() (bool, error) {
+	isUnifiedClusterApp := false
+	switch a.AppName {
+	case "cluster-aws":
+		appVersionString := a.Version
+		if appVersionString == "" {
+			var ok bool
+			appVersionString, ok = getOverrideVersion(a.AppName)
+			if !ok {
+				var err error
+				appVersionString, err = getLatestReleaseVersion(a.AppName)
+				if err != nil {
+					return false, err
+				}
+			}
+		}
+		appVersion, err := semver.StrictNewVersion(appVersionString)
+		if err != nil {
+			return false, err
+		}
+
+		unifiedClusterAppMinVersion := semver.New(0, 76, 0, "", "")
+
+		// desired app version is greater than or equal to the unified cluster app version
+		desiredAppVersionGTEUnified := !unifiedClusterAppMinVersion.GreaterThan(appVersion)
+
+		// desired app version is the dev build on top of unified cluster app version, e.g. unified app version is v0.76.0
+		// and desired version is v0.76.0-37ec0271eb72504378133ae1276c287a6d702e78
+		desiredAppVersionIsUnifiedWithDevChanges := appVersion.Prerelease() != "" &&
+			appVersion.Major() == unifiedClusterAppMinVersion.Major() &&
+			appVersion.Minor() == unifiedClusterAppMinVersion.Minor() &&
+			appVersion.Patch() == unifiedClusterAppMinVersion.Patch()
+
+		isUnifiedClusterApp = desiredAppVersionGTEUnified || desiredAppVersionIsUnifiedWithDevChanges
+	}
+	return isUnifiedClusterApp, nil
 }

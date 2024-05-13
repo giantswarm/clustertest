@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Improve reliability of cluster deletion by ignoring possible network flake errors when checking if a resource has been deleted
+
 ## [0.20.0] - 2024-05-11
 
 ### Breaking Change

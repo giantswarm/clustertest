@@ -2,7 +2,9 @@ package application
 
 import (
 	"fmt"
+	"strings"
 
+	"github.com/Masterminds/semver/v3"
 	applicationv1alpha1 "github.com/giantswarm/apiextensions-application/api/v1alpha1"
 	corev1 "k8s.io/api/core/v1"
 
@@ -125,23 +127,28 @@ func (c *Cluster) Build() (*applicationv1alpha1.App, *corev1.ConfigMap, *applica
 		return nil, nil, nil, nil, err
 	}
 
-	c.DefaultAppsApp.
-		WithAppLabels(map[string]string{
-			"app-operator.giantswarm.io/version": "0.0.0",
-			"giantswarm.io/cluster":              c.Name,
-			"giantswarm.io/managed-by":           "cluster",
-		}).
-		WithConfigMapLabels(map[string]string{
-			"giantswarm.io/cluster": c.Name,
-		})
-	defaultAppsApplication, defaultAppsCM, err := c.DefaultAppsApp.Build()
-	if err != nil {
-		return nil, nil, nil, nil, err
-	}
+	var defaultAppsApplication *applicationv1alpha1.App
+	var defaultAppsCM *corev1.ConfigMap
 
-	// Add missing config
-	defaultAppsApplication.Spec.Config.ConfigMap.Name = fmt.Sprintf("%s-cluster-values", c.Name)
-	defaultAppsApplication.Spec.Config.ConfigMap.Namespace = c.DefaultAppsApp.Organization.GetNamespace()
+	if !isUnifiedClusterAppWithDefaultApps(clusterApplication) {
+		c.DefaultAppsApp.
+			WithAppLabels(map[string]string{
+				"app-operator.giantswarm.io/version": "0.0.0",
+				"giantswarm.io/cluster":              c.Name,
+				"giantswarm.io/managed-by":           "cluster",
+			}).
+			WithConfigMapLabels(map[string]string{
+				"giantswarm.io/cluster": c.Name,
+			})
+		defaultAppsApplication, defaultAppsCM, err = c.DefaultAppsApp.Build()
+		if err != nil {
+			return nil, nil, nil, nil, err
+		}
+
+		// Add missing config
+		defaultAppsApplication.Spec.Config.ConfigMap.Name = fmt.Sprintf("%s-cluster-values", c.Name)
+		defaultAppsApplication.Spec.Config.ConfigMap.Namespace = c.DefaultAppsApp.Organization.GetNamespace()
+	}
 
 	return clusterApplication, clusterCM, defaultAppsApplication, defaultAppsCM, nil
 }
@@ -149,4 +156,23 @@ func (c *Cluster) Build() (*applicationv1alpha1.App, *corev1.ConfigMap, *applica
 // GetNamespace returns the cluster organization namespace.
 func (c *Cluster) GetNamespace() string {
 	return c.Organization.GetNamespace()
+}
+
+func isUnifiedClusterAppWithDefaultApps(clusterApp *applicationv1alpha1.App) bool {
+	minVersion := semver.New(9999, 0, 0, "", "")
+
+	switch clusterApp.Name {
+	case "cluster-aws":
+		minVersion = semver.New(0, 76, 0, "", "")
+	}
+
+	appVersionString := strings.TrimPrefix(clusterApp.Spec.Version, "v")
+	appVersion := semver.MustParse(appVersionString)
+	// Remove any pre-release string so we can treat it the same as if it was released
+	// e.g. v0.76.0-37ec0271eb72504378133ae1276c287a6d702e78 becomes v0.76.0
+	appVersionPtr, _ := appVersion.SetPrerelease("")
+
+	// desired app version is greater than or equal to the unified cluster app version
+	isUnified := !minVersion.GreaterThan(&appVersionPtr)
+	return isUnified
 }

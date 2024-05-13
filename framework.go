@@ -176,9 +176,12 @@ func (f *Framework) ApplyCluster(ctx context.Context, cluster *application.Clust
 		return nil, fmt.Errorf("failed to apply cluster resources: %v", err)
 	}
 
-	// Apply Default Apps resources
-	if err := f.MC().DeployAppManifests(ctx, defaultAppsApplication, defaultAppsCM); err != nil {
-		return nil, fmt.Errorf("failed to apply cluster resources: %v", err)
+	// Is cluster app is now unified with default apps this will be nil
+	if defaultAppsApplication != nil {
+		// Apply Default Apps resources
+		if err := f.MC().DeployAppManifests(ctx, defaultAppsApplication, defaultAppsCM); err != nil {
+			return nil, fmt.Errorf("failed to apply cluster resources: %v", err)
+		}
 	}
 
 	kubeClient, err := f.WaitForClusterReady(ctx, cluster.Name, cluster.GetNamespace())

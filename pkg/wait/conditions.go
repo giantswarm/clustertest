@@ -2,7 +2,6 @@ package wait
 
 import (
 	"context"
-	"fmt"
 	"reflect"
 	"strings"
 	"time"
@@ -94,10 +93,20 @@ func IsResourceDeleted(ctx context.Context, kubeClient *client.Client, resource 
 	return func() (bool, error) {
 		logger.Log("Checking if %s '%s' still exists", getResourceKind(kubeClient, resource), resource.GetName())
 		err := kubeClient.Client.Get(ctx, cr.ObjectKeyFromObject(resource), resource, &cr.GetOptions{})
-		if cr.IgnoreNotFound(err) != nil {
-			return false, fmt.Errorf("failed to check if %s '%s' still exists: %v", getResourceKind(kubeClient, resource), resource.GetName(), err)
-		} else if apierrors.IsNotFound(err) {
-			return true, nil
+		if err != nil {
+			switch {
+			case apierrors.IsNotFound(err):
+				// Resource has been deleted
+				logger.Log("%s '%s' no longer exists", getResourceKind(kubeClient, resource), resource.GetName())
+				return true, nil
+			case apierrors.IsServerTimeout(err) || apierrors.IsServiceUnavailable(err) || apierrors.IsServerTimeout(err):
+				// Possibly a network flake so we'll log out the issue but not return the error
+				logger.Log("Unable to check if %s '%s' still exists. Failed to connect to api server - %v", getResourceKind(kubeClient, resource), resource.GetName(), err)
+				return false, nil
+			default:
+				// For all other errors we'll return to the caller
+				return false, err
+			}
 		}
 
 		logger.Log("Still exists: %s '%s' (finalizers: %s)", getResourceKind(kubeClient, resource), resource.GetName(), strings.Join(resource.GetFinalizers(), ", "))

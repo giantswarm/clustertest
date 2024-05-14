@@ -12,6 +12,7 @@ replace (
 )
 
 require (
+	github.com/Masterminds/semver/v3 v3.2.1
 	github.com/giantswarm/apiextensions-application v0.6.0
 	github.com/giantswarm/kubectl-gs/v2 v2.45.0
 	github.com/giantswarm/organization-operator v1.6.0
@@ -35,7 +36,6 @@ require (
 	github.com/BurntSushi/toml v1.2.1 // indirect
 	github.com/MakeNowJust/heredoc v1.0.0 // indirect
 	github.com/Masterminds/goutils v1.1.1 // indirect
-	github.com/Masterminds/semver/v3 v3.2.1 // indirect
 	github.com/Masterminds/sprig/v3 v3.2.3 // indirect
 	github.com/Masterminds/squirrel v1.5.3 // indirect
 	github.com/alessio/shellescape v1.4.1 // indirect

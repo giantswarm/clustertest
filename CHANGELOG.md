@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.21.0] - 2024-05-14
+
 ### Added
 
 - Add support for unified cluster-aws app. With cluster-aws v0.76.0 and newer, default apps are deployed with cluster-aws and default-apps-aws app is not deployed anymore.
@@ -344,7 +346,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added initial framework layout
 - Added Kubernetes client extended from controller-runtime client
 
-[Unreleased]: https://github.com/giantswarm/clustertest/compare/v0.20.1...HEAD
+[Unreleased]: https://github.com/giantswarm/clustertest/compare/v0.21.0...HEAD
+[0.21.0]: https://github.com/giantswarm/clustertest/compare/v0.20.1...v0.21.0
 [0.20.1]: https://github.com/giantswarm/clustertest/compare/v0.20.0...v0.20.1
 [0.20.0]: https://github.com/giantswarm/clustertest/compare/v0.19.1...v0.20.0
 [0.19.1]: https://github.com/giantswarm/clustertest/compare/v0.19.0...v0.19.1

@@ -2,6 +2,7 @@ package application
 
 import (
 	"fmt"
+	"os"
 
 	applicationv1alpha1 "github.com/giantswarm/apiextensions-application/api/v1alpha1"
 	corev1 "k8s.io/api/core/v1"
@@ -112,13 +113,23 @@ func (c *Cluster) WithExtraConfigs(extraConfigs []applicationv1alpha1.AppExtraCo
 // Build defaults and populates some required values on the apps then generated the App and Configmap pairs for both the
 // cluster and default-apps apps.
 func (c *Cluster) Build() (*applicationv1alpha1.App, *corev1.ConfigMap, *applicationv1alpha1.App, *corev1.ConfigMap, error) {
+	baseLabels := map[string]string{}
+
+	// If found, populate details about Tekton run as labels
+	if os.Getenv("TEKTON_PIPELINE_RUN") != "" {
+		baseLabels["cicd.giantswarm.io/pipelinerun"] = os.Getenv("TEKTON_PIPELINE_RUN")
+	}
+	if os.Getenv("TEKTON_TASK_RUN") != "" {
+		baseLabels["cicd.giantswarm.io/taskrun"] = os.Getenv("TEKTON_TASK_RUN")
+	}
+
 	c.ClusterApp.
-		WithAppLabels(map[string]string{
+		WithAppLabels(mergeMaps(baseLabels, map[string]string{
 			"app-operator.giantswarm.io/version": "0.0.0",
-		}).
-		WithConfigMapLabels(map[string]string{
+		})).
+		WithConfigMapLabels(mergeMaps(baseLabels, map[string]string{
 			"giantswarm.io/cluster": c.Name,
-		})
+		}))
 
 	clusterApplication, clusterCM, err := c.ClusterApp.Build()
 	if err != nil {
@@ -126,14 +137,14 @@ func (c *Cluster) Build() (*applicationv1alpha1.App, *corev1.ConfigMap, *applica
 	}
 
 	c.DefaultAppsApp.
-		WithAppLabels(map[string]string{
+		WithAppLabels(mergeMaps(baseLabels, map[string]string{
 			"app-operator.giantswarm.io/version": "0.0.0",
 			"giantswarm.io/cluster":              c.Name,
 			"giantswarm.io/managed-by":           "cluster",
-		}).
-		WithConfigMapLabels(map[string]string{
+		})).
+		WithConfigMapLabels(mergeMaps(baseLabels, map[string]string{
 			"giantswarm.io/cluster": c.Name,
-		})
+		}))
 	defaultAppsApplication, defaultAppsCM, err := c.DefaultAppsApp.Build()
 	if err != nil {
 		return nil, nil, nil, nil, err

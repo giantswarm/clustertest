@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- If relevant env vars are found populate the Cluster Apps and Org CRs with labels containing the Tekton run names
+
 ## [0.21.0] - 2024-05-14
 
 ### Added

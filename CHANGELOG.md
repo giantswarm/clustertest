@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.22.0] - 2024-05-20
+
 ### Added
 
 - If relevant env vars are found populate the Cluster Apps and Org CRs with labels containing the Tekton run names
@@ -350,7 +352,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added initial framework layout
 - Added Kubernetes client extended from controller-runtime client
 
-[Unreleased]: https://github.com/giantswarm/clustertest/compare/v0.21.0...HEAD
+[Unreleased]: https://github.com/giantswarm/clustertest/compare/v0.22.0...HEAD
+[0.22.0]: https://github.com/giantswarm/clustertest/compare/v0.21.0...v0.22.0
 [0.21.0]: https://github.com/giantswarm/clustertest/compare/v0.20.1...v0.21.0
 [0.20.1]: https://github.com/giantswarm/clustertest/compare/v0.20.0...v0.20.1
 [0.20.0]: https://github.com/giantswarm/clustertest/compare/v0.19.1...v0.20.0

@@ -182,7 +182,7 @@ func (f *Framework) ApplyCluster(ctx context.Context, cluster *application.Clust
 	values := `
 	service.operatorkit.resyncPeriod: 1m
 	`
-    configMapData["values"] = values
+	configMapData["values"] = values
 
 	cm := corev1.ConfigMap{
 		TypeMeta: metav1.TypeMeta{

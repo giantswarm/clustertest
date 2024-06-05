@@ -175,6 +175,29 @@ func (f *Framework) ApplyCluster(ctx context.Context, cluster *application.Clust
 		return nil, err
 	}
 
+	ns := cluster.GetNamespace()
+	cm_name := fmt.Sprintf("%s-app-operator-user-values",cluster.Name)
+
+	configMapData := make(map[string]string, 0)
+	values := `
+	service.operatorkit.resyncPeriod: 1m
+	`
+    configMapData["values"] = values
+
+	cm := corev1.ConfigMap{
+		TypeMeta: metav1.TypeMeta{
+		  Kind:       "ConfigMap",
+		  APIVersion: "v1",
+		},
+		ObjectMeta: metav1.ObjectMeta{
+		  Name:      cm_name,
+		  Namespace: ns,
+		},
+		Data: configMapData,
+	  }
+	  
+	f.mcClient.CreateOrUpdate(ctx, &cm)
+
 	clusterApplication, clusterCM, defaultAppsApplication, defaultAppsCM, err := cluster.Build()
 	if err != nil {
 		return nil, fmt.Errorf("failed to build cluster app: %v", err)

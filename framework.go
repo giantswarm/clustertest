@@ -178,6 +178,7 @@ func (f *Framework) ApplyCluster(ctx context.Context, cluster *application.Clust
 	ns := cluster.GetNamespace()
 	cm_name := fmt.Sprintf("%s-app-operator-user-values",cluster.Name)
 
+	// Create a ConfigMap with the user values for app-operator
 	configMapData := make(map[string]string, 0)
 	values := `
 	service.operatorkit.resyncPeriod: 1m
@@ -196,7 +197,9 @@ func (f *Framework) ApplyCluster(ctx context.Context, cluster *application.Clust
 		Data: configMapData,
 	  }
 	  
-	f.mcClient.CreateOrUpdate(ctx, &cm)
+	if err := f.mcClient.CreateOrUpdate(ctx, &cm); err != nil {
+		return nil, fmt.Errorf("failed to create app-operator user values: %v", err)
+	}
 
 	clusterApplication, clusterCM, defaultAppsApplication, defaultAppsCM, err := cluster.Build()
 	if err != nil {

@@ -176,7 +176,7 @@ func (f *Framework) ApplyCluster(ctx context.Context, cluster *application.Clust
 	}
 
 	ns := cluster.GetNamespace()
-	cm_name := fmt.Sprintf("%s-app-operator-user-values",cluster.Name)
+	cm_name := fmt.Sprintf("%s-app-operator-user-values", cluster.Name)
 
 	// Create a ConfigMap with the user values for app-operator
 	configMapData := make(map[string]string, 0)
@@ -187,16 +187,16 @@ func (f *Framework) ApplyCluster(ctx context.Context, cluster *application.Clust
 
 	cm := corev1.ConfigMap{
 		TypeMeta: metav1.TypeMeta{
-		  Kind:       "ConfigMap",
-		  APIVersion: "v1",
+			Kind:       "ConfigMap",
+			APIVersion: "v1",
 		},
 		ObjectMeta: metav1.ObjectMeta{
-		  Name:      cm_name,
-		  Namespace: ns,
+			Name:      cm_name,
+			Namespace: ns,
 		},
 		Data: configMapData,
-	  }
-	  
+	}
+
 	if err := f.mcClient.CreateOrUpdate(ctx, &cm); err != nil {
 		return nil, fmt.Errorf("failed to create app-operator user values: %v", err)
 	}

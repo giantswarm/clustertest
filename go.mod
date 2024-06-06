@@ -18,7 +18,7 @@ require (
 	github.com/giantswarm/organization-operator v1.6.3
 	github.com/google/go-github/v62 v62.0.0
 	github.com/mittwald/go-helm-client v0.12.1
-	golang.org/x/oauth2 v0.20.0
+	golang.org/x/oauth2 v0.21.0
 	k8s.io/api v0.26.3
 	k8s.io/apimachinery v0.26.3
 	k8s.io/client-go v0.26.3

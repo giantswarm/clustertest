@@ -193,14 +193,15 @@ service:
 			APIVersion: "v1",
 		},
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      cm_name,
+			Name:      configMapName,
 			Namespace: ns,
 		},
 		Data: configMapData,
 	}
 
 	if err := f.mcClient.CreateOrUpdate(ctx, &cm); err != nil {
-		return nil, fmt.Errorf("failed to create app-operator user values: %v", err)
+		fmt.Print("Failed to create user-values for app-operator.")
+		fmt.Println(err)
 	}
 
 	clusterApplication, clusterCM, defaultAppsApplication, defaultAppsCM, err := cluster.Build()

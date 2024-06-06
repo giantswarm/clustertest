@@ -176,7 +176,7 @@ func (f *Framework) ApplyCluster(ctx context.Context, cluster *application.Clust
 	}
 
 	ns := cluster.GetNamespace()
-	cm_name := fmt.Sprintf("%s-app-operator-user-values", cluster.Name)
+	configMapName := fmt.Sprintf("%s-app-operator-user-values", cluster.Name)
 
 	// Create a ConfigMap with the user values for app-operator
 	configMapData := make(map[string]string, 0)

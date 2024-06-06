@@ -181,8 +181,10 @@ func (f *Framework) ApplyCluster(ctx context.Context, cluster *application.Clust
 	// Create a ConfigMap with the user values for app-operator
 	configMapData := make(map[string]string, 0)
 	values := `
-	service.operatorkit.resyncPeriod: 1m
-	`
+service:
+  operatorkit:
+    resyncPeriod: 1m
+`
 	configMapData["values"] = values
 
 	cm := corev1.ConfigMap{

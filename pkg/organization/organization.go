@@ -16,12 +16,6 @@ func init() {
 	_ = orgv1alpha1.AddToScheme(scheme.Scheme)
 }
 
-const (
-	// DeleteAnnotation is added to Organizations created during testing.
-	// This is to ensure only those with this annotation can be deleted to avoid accidentally deleting a shared Org.
-	DeleteAnnotation = "e2e-test-cleanup"
-)
-
 // Org contains details about an Organization
 type Org struct {
 	Name string
@@ -67,7 +61,7 @@ func (o *Org) Build() (*orgv1alpha1.Organization, error) {
 	// We want to add an annotation to track if we should be removing the org when done or not
 	// This check will allow us to re-use existing orgs too without accidentally deleting the org when done
 	orgCR.ObjectMeta.Annotations = map[string]string{
-		DeleteAnnotation: "true",
+		utils.DeleteAnnotation: "true",
 	}
 
 	// If found, populate details about Tekton run as labels

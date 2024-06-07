@@ -8,14 +8,17 @@ import (
 
 	"github.com/giantswarm/clustertest/pkg/application"
 	"github.com/giantswarm/clustertest/pkg/client"
+	"github.com/giantswarm/clustertest/pkg/logger"
 	"github.com/giantswarm/clustertest/pkg/organization"
 	"github.com/giantswarm/clustertest/pkg/testuser"
+	"github.com/giantswarm/clustertest/pkg/utils"
 	"github.com/giantswarm/clustertest/pkg/wait"
 
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/types"
 
 	applicationv1alpha1 "github.com/giantswarm/apiextensions-application/api/v1alpha1"
+	releases "github.com/giantswarm/releases/sdk/api/v1alpha1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	capi "sigs.k8s.io/cluster-api/api/v1beta1"
@@ -170,28 +173,29 @@ func (f *Framework) LoadCluster() (*application.Cluster, error) {
 //
 //	client, err := framework.ApplyCluster(timeoutCtx, cluster)
 func (f *Framework) ApplyCluster(ctx context.Context, cluster *application.Cluster) (*client.Client, error) {
-	err := f.CreateOrg(ctx, cluster.Organization)
-	if err != nil {
-		return nil, err
-	}
-
-	clusterApplication, clusterCM, defaultAppsApplication, defaultAppsCM, err := cluster.Build()
+	builtCluster, err := cluster.Build()
 	if err != nil {
 		return nil, fmt.Errorf("failed to build cluster app: %v", err)
 	}
 
-	// Apply Cluster resources
-	if err := f.MC().DeployAppManifests(ctx, clusterApplication, clusterCM); err != nil {
-		return nil, fmt.Errorf("failed to apply cluster resources: %v", err)
+	if builtCluster.Release != nil {
+		if err := f.MC().CreateOrUpdate(ctx, builtCluster.Release); err != nil {
+			return nil, fmt.Errorf("failed to apply release resources: %v", err)
+		}
 	}
 
-	// Apply Default Apps resources
-	skipDefaultAppsApp, err := cluster.UsesUnifiedClusterApp()
+	err = f.CreateOrg(ctx, cluster.Organization)
 	if err != nil {
 		return nil, err
 	}
-	if !skipDefaultAppsApp {
-		if err = f.MC().DeployAppManifests(ctx, defaultAppsApplication, defaultAppsCM); err != nil {
+
+	// Apply Cluster resources
+	if err := f.MC().DeployAppManifests(ctx, builtCluster.Cluster.App, builtCluster.Cluster.ConfigMap); err != nil {
+		return nil, fmt.Errorf("failed to apply cluster resources: %v", err)
+	}
+
+	if builtCluster.DefaultApps != nil {
+		if err = f.MC().DeployAppManifests(ctx, builtCluster.DefaultApps.App, builtCluster.DefaultApps.ConfigMap); err != nil {
 			return nil, fmt.Errorf("failed to apply cluster resources: %v", err)
 		}
 	}
@@ -285,6 +289,22 @@ func (f *Framework) DeleteCluster(ctx context.Context, cluster *application.Clus
 		return err
 	}
 
+	// Clean up any releases associated with this test Cluster
+	releaseList := releases.ReleaseList{}
+	err = f.MC().Client.List(ctx, &releaseList, &cr.MatchingLabels{"giantswarm.io/cluster": cluster.Name})
+	if cr.IgnoreNotFound(err) != nil {
+		return err
+	}
+	for i := range releaseList.Items {
+		if utils.SafeToDelete(releaseList.Items[i].GetAnnotations()) {
+			logger.Log("Deleting Release '%s'", releaseList.Items[i].ObjectMeta.Name)
+			err = f.MC().Client.Delete(ctx, &releaseList.Items[i])
+			if err != nil {
+				return err
+			}
+		}
+	}
+
 	return f.DeleteOrg(ctx, cluster.Organization)
 }
 
@@ -329,7 +349,7 @@ func (f *Framework) DeleteOrg(ctx context.Context, org *organization.Org) error 
 		return nil
 	}
 
-	if organization.SafeToDelete(*orgCR) {
+	if utils.SafeToDelete(orgCR.GetAnnotations()) {
 		err = f.MC().Client.Delete(ctx, orgCR, &cr.DeleteOptions{})
 		if err != nil {
 			return err

@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.0] - 2024-06-10
+
 ### Breaking Change
 
 - The `cluster.Build()` function now returns a `BuiltCluster` type containing the App, ConfigMaps and (new) Release types instead of having them returned as individual return values.
@@ -365,7 +367,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added initial framework layout
 - Added Kubernetes client extended from controller-runtime client
 
-[Unreleased]: https://github.com/giantswarm/clustertest/compare/v0.22.0...HEAD
+[Unreleased]: https://github.com/giantswarm/clustertest/compare/v1.0.0...HEAD
+[1.0.0]: https://github.com/giantswarm/clustertest/compare/v0.22.0...v1.0.0
 [0.22.0]: https://github.com/giantswarm/clustertest/compare/v0.21.0...v0.22.0
 [0.21.0]: https://github.com/giantswarm/clustertest/compare/v0.20.1...v0.21.0
 [0.20.1]: https://github.com/giantswarm/clustertest/compare/v0.20.0...v0.20.1

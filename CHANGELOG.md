@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Breaking Change
+
+- The `cluster.Build()` function now returns a `BuiltCluster` type containing the App, ConfigMaps and (new) Release types instead of having them returned as individual return values.
+
+### Added
+
+- Added support for creating and deleting a Release CR for providers that have been updated to support it.
+- The schema for Releases are added to the default Kubernetes Client
+
+### Changed
+
+- The `cluster.Build()` function will now only return a default-apps App and ConfigMap if the provider still supports it.
+
 ## [0.22.0] - 2024-05-20
 
 ### Added

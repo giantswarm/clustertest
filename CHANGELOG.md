@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Upgraded `releases` SDK to latest so the date of Release CRs is set to the current date instead of matching the latest from Git.
+
 ## [1.0.0] - 2024-06-10
 
 ### Breaking Change

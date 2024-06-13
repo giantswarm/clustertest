@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.1] - 2024-06-13
+
 ### Fixed
 
 - Upgraded `releases` SDK to latest so the date of Release CRs is set to the current date instead of matching the latest from Git.
@@ -371,7 +373,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added initial framework layout
 - Added Kubernetes client extended from controller-runtime client
 
-[Unreleased]: https://github.com/giantswarm/clustertest/compare/v1.0.0...HEAD
+[Unreleased]: https://github.com/giantswarm/clustertest/compare/v1.0.1...HEAD
+[1.0.1]: https://github.com/giantswarm/clustertest/compare/v1.0.0...v1.0.1
 [1.0.0]: https://github.com/giantswarm/clustertest/compare/v0.22.0...v1.0.0
 [0.22.0]: https://github.com/giantswarm/clustertest/compare/v0.21.0...v0.22.0
 [0.21.0]: https://github.com/giantswarm/clustertest/compare/v0.20.1...v0.21.0

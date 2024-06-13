@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Add support for unified cluster-azure app. With cluster-azure v0.14.0 and newer, default apps are deployed with cluster-azure nd default-apps-azure app is not deployed anymore.
+
+
 ## [1.0.0] - 2024-06-10
 
 ### Breaking Change

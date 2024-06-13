@@ -7,7 +7,7 @@ import (
 	"text/template"
 
 	"dario.cat/mergo"
-	"gopkg.in/yaml.v2"
+	"gopkg.in/yaml.v3"
 )
 
 // TemplateValues is the properties made available to the Values string when templating.

@@ -30,9 +30,10 @@ type AppPair struct {
 }
 
 type BuiltCluster struct {
-	Cluster     *AppPair
-	DefaultApps *AppPair
-	Release     *releases.Release
+	SourceCluster *Cluster
+	Cluster       *AppPair
+	DefaultApps   *AppPair
+	Release       *releases.Release
 }
 
 // Provider is the supported cluster provider name used to determine the cluster and default-apps to use
@@ -142,7 +143,9 @@ func (c *Cluster) UsesUnifiedClusterApp() (bool, error) {
 // Build defaults and populates some required values on the apps then generated the App and Configmap pairs for both the
 // cluster and default-apps (if applicable) apps as well as the Release CR.
 func (c *Cluster) Build() (*BuiltCluster, error) {
-	builtCluster := &BuiltCluster{}
+	builtCluster := &BuiltCluster{
+		SourceCluster: c,
+	}
 
 	baseLabels := getBaseLabels()
 

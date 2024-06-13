@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Switched to using `sigs.k8s.io/yaml` for yaml parsing.
+
 ### Added
 
 - Added a new `ApplyBuiltCluster` function to the framework to avoid building a Cluster twice if the result types are needed in testing. This helps to ensure that the Release generated is the same as applied in the case where `cluster.Build()` is called within a test case to access the generated properties.

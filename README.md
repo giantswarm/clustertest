@@ -20,6 +20,17 @@ go get github.com/giantswarm/clustertest
 - Wait and polling helpers
 - Override App versions using environment variables. (See [`application` documentation](https://pkg.go.dev/github.com/giantswarm/clustertest/pkg/application) for details)
 
+### Supported Environment Variables
+
+The following environment variables can be set to control or override different behaviour:
+
+| Env Var | Description |
+| --- | --- |
+| `E2E_KUBECONFIG` | Points to the file containing the kubeconfig to use for the Management Clusters |
+| `E2E_WC_NAME` | The name of an existing Workload Cluster to load from the Management Cluster instead of creating a new one.<br/>Must be used with `E2E_WC_NAMESPACE` |
+| `E2E_WC_NAMESPACE` | The namespace an existing Workload Cluster is in which will be loaded instead of creating a new one.<br/>Must be used with `E2E_WC_NAME` |
+| `E2E_OVERRIDE_VERSIONS` | Sets the version of Apps to use instead of installing the latest released.<br/>Example format: `E2E_OVERRIDE_VERSIONS="cluster-aws=0.38.0-5f4372ac697fce58d524830a985ede2082d7f461"` |
+
 ## Documentation
 
 Documentation can be found at: [pkg.go.dev/github.com/giantswarm/clustertest](https://pkg.go.dev/github.com/giantswarm/clustertest).

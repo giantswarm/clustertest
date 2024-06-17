@@ -202,7 +202,7 @@ func (f *Framework) ApplyBuiltCluster(ctx context.Context, builtCluster *applica
 
 	err := f.CreateOrg(ctx, builtCluster.SourceCluster.Organization)
 
-  ns := cluster.GetNamespace()
+	ns := cluster.GetNamespace()
 	configMapName := fmt.Sprintf("%s-app-operator-user-values", cluster.Name)
 
 	// Create a ConfigMap with the user values for app-operator
@@ -229,7 +229,7 @@ service:
 	if err := f.mcClient.CreateOrUpdate(ctx, &cm); err != nil {
 		fmt.Printf("Failed to create user-values for app-operator - %v\n", err)
 	}
-  
+
 	if err != nil {
 		return nil, err
 	}

@@ -200,8 +200,7 @@ service:
 	}
 
 	if err := f.mcClient.CreateOrUpdate(ctx, &cm); err != nil {
-		fmt.Print("Failed to create user-values for app-operator.")
-		fmt.Println(err)
+		fmt.Printf("Failed to create user-values for app-operator - %v\n", err)
 	}
 
 	clusterApplication, clusterCM, defaultAppsApplication, defaultAppsCM, err := cluster.Build()

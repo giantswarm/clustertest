@@ -7,6 +7,37 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.1.0] - 2024-06-13
+
+### Fixed
+
+- Switched to using `sigs.k8s.io/yaml` for yaml parsing.
+
+### Added
+
+- Added a new `ApplyBuiltCluster` function to the framework to avoid building a Cluster twice if the result types are needed in testing. This helps to ensure that the Release generated is the same as applied in the case where `cluster.Build()` is called within a test case to access the generated properties.
+
+## [1.0.1] - 2024-06-13
+
+### Fixed
+
+- Upgraded `releases` SDK to latest so the date of Release CRs is set to the current date instead of matching the latest from Git.
+
+## [1.0.0] - 2024-06-10
+
+### Breaking Change
+
+- The `cluster.Build()` function now returns a `BuiltCluster` type containing the App, ConfigMaps and (new) Release types instead of having them returned as individual return values.
+
+### Added
+
+- Added support for creating and deleting a Release CR for providers that have been updated to support it.
+- The schema for Releases are added to the default Kubernetes Client
+
+### Changed
+
+- The `cluster.Build()` function will now only return a default-apps App and ConfigMap if the provider still supports it.
+
 ## [0.22.0] - 2024-05-20
 
 ### Added
@@ -352,7 +383,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added initial framework layout
 - Added Kubernetes client extended from controller-runtime client
 
-[Unreleased]: https://github.com/giantswarm/clustertest/compare/v0.22.0...HEAD
+[Unreleased]: https://github.com/giantswarm/clustertest/compare/v1.1.0...HEAD
+[1.1.0]: https://github.com/giantswarm/clustertest/compare/v1.0.1...v1.1.0
+[1.0.1]: https://github.com/giantswarm/clustertest/compare/v1.0.0...v1.0.1
+[1.0.0]: https://github.com/giantswarm/clustertest/compare/v0.22.0...v1.0.0
 [0.22.0]: https://github.com/giantswarm/clustertest/compare/v0.21.0...v0.22.0
 [0.21.0]: https://github.com/giantswarm/clustertest/compare/v0.20.1...v0.21.0
 [0.20.1]: https://github.com/giantswarm/clustertest/compare/v0.20.0...v0.20.1

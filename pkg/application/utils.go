@@ -5,6 +5,9 @@ import (
 	"os"
 	"strings"
 	"text/template"
+
+	"dario.cat/mergo"
+	"sigs.k8s.io/yaml"
 )
 
 // TemplateValues is the properties made available to the Values string when templating.
@@ -87,4 +90,46 @@ func mergeMaps(m1 map[string]string, m2 map[string]string) map[string]string {
 		merged[key] = value
 	}
 	return merged
+}
+
+func mergeValues(layers ...string) (string, error) {
+	mergedLayers := map[string]interface{}{}
+
+	for _, layer := range layers {
+		if layer == "" {
+			continue
+		}
+
+		var rawMapData map[string]interface{}
+		err := yaml.Unmarshal([]byte(layer), &rawMapData)
+		if err != nil {
+			return "", err
+		}
+
+		err = mergo.Merge(&mergedLayers, rawMapData, mergo.WithOverride)
+		if err != nil {
+			return "", err
+		}
+	}
+
+	data, err := yaml.Marshal(mergedLayers)
+	if err != nil {
+		return "", err
+	}
+
+	return string(data), nil
+}
+
+func getBaseLabels() map[string]string {
+	baseLabels := map[string]string{}
+
+	// If found, populate details about Tekton run as labels
+	if os.Getenv("TEKTON_PIPELINE_RUN") != "" {
+		baseLabels["cicd.giantswarm.io/pipelinerun"] = os.Getenv("TEKTON_PIPELINE_RUN")
+	}
+	if os.Getenv("TEKTON_TASK_RUN") != "" {
+		baseLabels["cicd.giantswarm.io/taskrun"] = os.Getenv("TEKTON_TASK_RUN")
+	}
+
+	return baseLabels
 }

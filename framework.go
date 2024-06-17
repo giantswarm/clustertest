@@ -8,14 +8,17 @@ import (
 
 	"github.com/giantswarm/clustertest/pkg/application"
 	"github.com/giantswarm/clustertest/pkg/client"
+	"github.com/giantswarm/clustertest/pkg/logger"
 	"github.com/giantswarm/clustertest/pkg/organization"
 	"github.com/giantswarm/clustertest/pkg/testuser"
+	"github.com/giantswarm/clustertest/pkg/utils"
 	"github.com/giantswarm/clustertest/pkg/wait"
 
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/types"
 
 	applicationv1alpha1 "github.com/giantswarm/apiextensions-application/api/v1alpha1"
+	releases "github.com/giantswarm/releases/sdk/api/v1alpha1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	capi "sigs.k8s.io/cluster-api/api/v1beta1"
@@ -157,7 +160,7 @@ func (f *Framework) LoadCluster() (*application.Cluster, error) {
 	return cluster, nil
 }
 
-// ApplyCluster takes a Cluster object, applies it to the MC in the correct order and then waits for a valid Kubeconfig to be available
+// ApplyCluster takes a Cluster object, builds it, then applies it to the MC in the correct order and then waits for a valid Kubeconfig to be available
 //
 // A timeout can be provided via the given `ctx` value by using `context.WithTimeout()`
 //
@@ -170,12 +173,36 @@ func (f *Framework) LoadCluster() (*application.Cluster, error) {
 //
 //	client, err := framework.ApplyCluster(timeoutCtx, cluster)
 func (f *Framework) ApplyCluster(ctx context.Context, cluster *application.Cluster) (*client.Client, error) {
-	err := f.CreateOrg(ctx, cluster.Organization)
+	builtCluster, err := cluster.Build()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to build cluster app: %v", err)
 	}
 
-	ns := cluster.GetNamespace()
+	return f.ApplyBuiltCluster(ctx, builtCluster)
+}
+
+// ApplyBuiltCluster takes a pre-built Cluster object, applies it to the MC in the correct order and then waits for a valid Kubeconfig to be available
+//
+// A timeout can be provided via the given `ctx` value by using `context.WithTimeout()`
+//
+// Example:
+//
+//	timeoutCtx, cancelTimeout := context.WithTimeout(context.Background(), 20*time.Minute)
+//	defer cancelTimeout()
+//
+//	cluster := application.NewClusterApp(utils.GenerateRandomName("t"), application.ProviderAWS)
+//	builtCluster, _ := cluster.Build()
+//	client, err := framework.ApplyBuiltCluster(timeoutCtx, builtCluster)
+func (f *Framework) ApplyBuiltCluster(ctx context.Context, builtCluster *application.BuiltCluster) (*client.Client, error) {
+	if builtCluster.Release != nil {
+		if err := f.MC().CreateOrUpdate(ctx, builtCluster.Release); err != nil {
+			return nil, fmt.Errorf("failed to apply release resources: %v", err)
+		}
+	}
+
+	err := f.CreateOrg(ctx, builtCluster.SourceCluster.Organization)
+
+  ns := cluster.GetNamespace()
 	configMapName := fmt.Sprintf("%s-app-operator-user-values", cluster.Name)
 
 	// Create a ConfigMap with the user values for app-operator
@@ -202,29 +229,23 @@ service:
 	if err := f.mcClient.CreateOrUpdate(ctx, &cm); err != nil {
 		fmt.Printf("Failed to create user-values for app-operator - %v\n", err)
 	}
-
-	clusterApplication, clusterCM, defaultAppsApplication, defaultAppsCM, err := cluster.Build()
-	if err != nil {
-		return nil, fmt.Errorf("failed to build cluster app: %v", err)
-	}
-
-	// Apply Cluster resources
-	if err := f.MC().DeployAppManifests(ctx, clusterApplication, clusterCM); err != nil {
-		return nil, fmt.Errorf("failed to apply cluster resources: %v", err)
-	}
-
-	// Apply Default Apps resources
-	skipDefaultAppsApp, err := cluster.UsesUnifiedClusterApp()
+  
 	if err != nil {
 		return nil, err
 	}
-	if !skipDefaultAppsApp {
-		if err = f.MC().DeployAppManifests(ctx, defaultAppsApplication, defaultAppsCM); err != nil {
+
+	// Apply Cluster resources
+	if err := f.MC().DeployAppManifests(ctx, builtCluster.Cluster.App, builtCluster.Cluster.ConfigMap); err != nil {
+		return nil, fmt.Errorf("failed to apply cluster resources: %v", err)
+	}
+
+	if builtCluster.DefaultApps != nil {
+		if err = f.MC().DeployAppManifests(ctx, builtCluster.DefaultApps.App, builtCluster.DefaultApps.ConfigMap); err != nil {
 			return nil, fmt.Errorf("failed to apply cluster resources: %v", err)
 		}
 	}
 
-	kubeClient, err := f.WaitForClusterReady(ctx, cluster.Name, cluster.GetNamespace())
+	kubeClient, err := f.WaitForClusterReady(ctx, builtCluster.SourceCluster.Name, builtCluster.SourceCluster.GetNamespace())
 	if err != nil {
 		return nil, err
 	}
@@ -236,7 +257,7 @@ service:
 	}
 
 	// Store the WC client for use in the tests
-	f.wcClients[cluster.Name] = testClient
+	f.wcClients[builtCluster.SourceCluster.Name] = testClient
 
 	return testClient, nil
 }
@@ -313,6 +334,22 @@ func (f *Framework) DeleteCluster(ctx context.Context, cluster *application.Clus
 		return err
 	}
 
+	// Clean up any releases associated with this test Cluster
+	releaseList := releases.ReleaseList{}
+	err = f.MC().Client.List(ctx, &releaseList, &cr.MatchingLabels{"giantswarm.io/cluster": cluster.Name})
+	if cr.IgnoreNotFound(err) != nil {
+		return err
+	}
+	for i := range releaseList.Items {
+		if utils.SafeToDelete(releaseList.Items[i].GetAnnotations()) {
+			logger.Log("Deleting Release '%s'", releaseList.Items[i].ObjectMeta.Name)
+			err = f.MC().Client.Delete(ctx, &releaseList.Items[i])
+			if err != nil {
+				return err
+			}
+		}
+	}
+
 	return f.DeleteOrg(ctx, cluster.Organization)
 }
 
@@ -357,7 +394,7 @@ func (f *Framework) DeleteOrg(ctx context.Context, org *organization.Org) error 
 		return nil
 	}
 
-	if organization.SafeToDelete(*orgCR) {
+	if utils.SafeToDelete(orgCR.GetAnnotations()) {
 		err = f.MC().Client.Delete(ctx, orgCR, &cr.DeleteOptions{})
 		if err != nil {
 			return err

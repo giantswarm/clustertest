@@ -9,6 +9,7 @@ import (
 	"reflect"
 	"strings"
 
+	releasev1alpha1 "github.com/giantswarm/releases/sdk/api/v1alpha1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/types"
@@ -133,6 +134,7 @@ func newClient(config *rest.Config, clusterName string) (*Client, error) {
 	_ = orgv1alpha1.AddToScheme(client.Scheme())
 	_ = capi.AddToScheme(client.Scheme())
 	_ = kubeadm.AddToScheme(client.Scheme())
+	_ = releasev1alpha1.AddToScheme(client.Scheme())
 
 	return &Client{
 		Client:      client,

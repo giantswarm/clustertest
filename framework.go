@@ -202,13 +202,15 @@ func (f *Framework) ApplyBuiltCluster(ctx context.Context, builtCluster *applica
 
 	err := f.CreateOrg(ctx, builtCluster.SourceCluster.Organization)
 
-	ns := cluster.GetNamespace()
-	configMapName := fmt.Sprintf("%s-app-operator-user-values", cluster.Name)
+	ns := builtCluster.Cluster.App.Namespace
+	configMapName := fmt.Sprintf("%s-app-operator-user-values", builtCluster.Cluster.App.Name)
 
 	// Create a ConfigMap with the user values for app-operator
 	configMapData := make(map[string]string, 0)
 	values := `
 service:
+  controller:
+    resyncPeriod: 1m
   operatorkit:
     resyncPeriod: 1m
 `

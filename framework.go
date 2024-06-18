@@ -23,6 +23,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	capi "sigs.k8s.io/cluster-api/api/v1beta1"
 	kubeadm "sigs.k8s.io/cluster-api/controlplane/kubeadm/api/v1beta1"
+	capiexp "sigs.k8s.io/cluster-api/exp/api/v1beta1"
 	cr "sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -430,6 +431,26 @@ func (f *Framework) GetKubeadmControlPlane(ctx context.Context, clusterName stri
 	}
 
 	return controlPlane, nil
+}
+
+// GetMachinePools returns the MachinePool resources. If we don't find the `MachinePools` we assume that the provider is
+// not using MachinePools, so nil pointer is returned without error.
+func (f *Framework) GetMachinePools(ctx context.Context, clusterName string, clusterNamespace string) ([]capiexp.MachinePool, error) {
+	machinePools := &capiexp.MachinePoolList{}
+	machinePoolListOptions := []cr.ListOption{
+		cr.InNamespace(clusterNamespace),
+		cr.MatchingLabels{
+			"cluster.x-k8s.io/cluster-name": clusterName,
+		},
+	}
+	err := f.MC().List(ctx, machinePools, machinePoolListOptions...)
+	if errors.IsNotFound(err) {
+		return nil, nil
+	} else if err != nil {
+		return nil, err
+	}
+
+	return machinePools.Items, nil
 }
 
 // GetExpectedControlPlaneReplicas returns the number of control plane node expected according to the clusters KubeadmControlPlane resource

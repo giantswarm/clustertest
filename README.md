@@ -30,6 +30,10 @@ The following environment variables can be set to control or override different 
 | `E2E_WC_NAME` | The name of an existing Workload Cluster to load from the Management Cluster instead of creating a new one.<br/>Must be used with `E2E_WC_NAMESPACE` |
 | `E2E_WC_NAMESPACE` | The namespace an existing Workload Cluster is in which will be loaded instead of creating a new one.<br/>Must be used with `E2E_WC_NAME` |
 | `E2E_OVERRIDE_VERSIONS` | Sets the version of Apps to use instead of installing the latest released.<br/>Example format: `E2E_OVERRIDE_VERSIONS="cluster-aws=0.38.0-5f4372ac697fce58d524830a985ede2082d7f461"` |
+| `E2E_RELEASE_VERSION` | The base Release version to use when creating the Workload Cluster.<br/>Must be used with `E2E_RELEASE_COMMIT` |
+| `E2E_RELEASE_COMMIT` | The git commit from the `releases` repo that contains the Release version to use when creating the Workload Cluster.<br/>Must be used with `E2E_RELEASE_VERSION` |
+
+All of these can be found in [`./pkg/env/const.go`](./pkg/env/const.go).
 
 ## Documentation
 

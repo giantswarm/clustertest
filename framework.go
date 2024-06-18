@@ -8,6 +8,7 @@ import (
 
 	"github.com/giantswarm/clustertest/pkg/application"
 	"github.com/giantswarm/clustertest/pkg/client"
+	"github.com/giantswarm/clustertest/pkg/env"
 	"github.com/giantswarm/clustertest/pkg/logger"
 	"github.com/giantswarm/clustertest/pkg/organization"
 	"github.com/giantswarm/clustertest/pkg/testuser"
@@ -27,12 +28,6 @@ import (
 	cr "sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-const (
-	EnvKubeconfig               = "E2E_KUBECONFIG"
-	EnvWorkloadClusterName      = "E2E_WC_NAME"
-	EnvWorkloadClusterNamespace = "E2E_WC_NAMESPACE"
-)
-
 // Framework is the overall framework for testing of clusters
 type Framework struct {
 	mcKubeconfigPath string
@@ -42,9 +37,9 @@ type Framework struct {
 
 // New initializes a new Framework instance using the provided context from the kubeconfig found in the env var `E2E_KUBECONFIG`
 func New(contextName string) (*Framework, error) {
-	mcKubeconfig, ok := os.LookupEnv(EnvKubeconfig)
+	mcKubeconfig, ok := os.LookupEnv(env.Kubeconfig)
 	if !ok {
-		return nil, fmt.Errorf("no %s set", EnvKubeconfig)
+		return nil, fmt.Errorf("no %s set", env.Kubeconfig)
 	}
 
 	mcClient, err := client.NewWithContext(mcKubeconfig, contextName)
@@ -93,8 +88,8 @@ func (f *Framework) WC(clusterName string) (*client.Client, error) {
 //	}
 func (f *Framework) LoadCluster() (*application.Cluster, error) {
 	ctx := context.Background()
-	name := os.Getenv(EnvWorkloadClusterName)
-	namespace := os.Getenv(EnvWorkloadClusterNamespace)
+	name := os.Getenv(env.WorkloadClusterName)
+	namespace := os.Getenv(env.WorkloadClusterNamespace)
 	org := organization.NewFromNamespace(namespace)
 
 	if name == "" || namespace == "" {

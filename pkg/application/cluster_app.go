@@ -3,6 +3,7 @@ package application
 import (
 	"context"
 	"fmt"
+	"os"
 	"strings"
 
 	applicationv1alpha1 "github.com/giantswarm/apiextensions-application/api/v1alpha1"
@@ -10,6 +11,7 @@ import (
 	releases "github.com/giantswarm/releases/sdk/api/v1alpha1"
 	corev1 "k8s.io/api/core/v1"
 
+	"github.com/giantswarm/clustertest/pkg/env"
 	"github.com/giantswarm/clustertest/pkg/logger"
 	"github.com/giantswarm/clustertest/pkg/organization"
 	"github.com/giantswarm/clustertest/pkg/utils"
@@ -205,6 +207,17 @@ func (c *Cluster) Build() (*BuiltCluster, error) {
 			releaseBuilder, err := releasesapi.NewBuilder(releaseClient, provider, "")
 			if err != nil {
 				return builtCluster, err
+			}
+
+			overrideReleaseVersion := os.Getenv(env.ReleaseVersion)
+			if overrideReleaseVersion != "" {
+				overrideReleaseCommit := os.Getenv(env.ReleaseCommit)
+				if overrideReleaseCommit == "" {
+					return nil, fmt.Errorf("'%s' was set without also setting '%s'", env.ReleaseVersion, env.ReleaseCommit)
+				}
+
+				// TODO: Load release from PR commit. Not sure if this will return an image builder or a release object.
+
 			}
 
 			releaseBuilder = releaseBuilder.

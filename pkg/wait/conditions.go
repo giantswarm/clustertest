@@ -17,7 +17,6 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	capi "sigs.k8s.io/cluster-api/api/v1beta1"
 	kubeadm "sigs.k8s.io/cluster-api/controlplane/kubeadm/api/v1beta1"
-	capiexp "sigs.k8s.io/cluster-api/exp/api/v1beta1"
 	capiconditions "sigs.k8s.io/cluster-api/util/conditions"
 	cr "sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/client/apiutil"
@@ -261,7 +260,7 @@ func IsKubeadmControlPlaneConditionSet(ctx context.Context, kubeClient *client.C
 	}
 }
 
-// IsClusterApiObjectConditionSet returns a WaitCondition that checks if a cluster has the specified condition with the expected status.
+// IsClusterApiObjectConditionSet checks if a cluster has the specified condition with the expected status.
 func IsClusterApiObjectConditionSet(obj clusterApiObject, conditionType capi.ConditionType, expectedStatus corev1.ConditionStatus, expectedReason string) (bool, error) {
 	condition := capiconditions.Get(obj, conditionType)
 
@@ -312,52 +311,6 @@ func IsClusterApiObjectConditionSet(obj clusterApiObject, conditionType capi.Con
 
 	foundExpectedCondition := condition.Status == expectedStatus && condition.Reason == expectedReason
 	return foundExpectedCondition, nil
-}
-
-// MachinePoolsAreReadyAndRunning returns a WaitCondition that checks if all MachinePool resources have Ready condition
-// with Status True and are in Running phase.
-func MachinePoolsAreReadyAndRunning(ctx context.Context, kubeClient *client.Client, clusterName string, clusterNamespace string) WaitCondition {
-	return func() (bool, error) {
-		machinePools := &capiexp.MachinePoolList{}
-		machinePoolListOptions := []cr.ListOption{
-			cr.InNamespace(clusterNamespace),
-			cr.MatchingLabels{
-				"cluster.x-k8s.io/cluster-name": clusterName,
-			},
-		}
-		err := kubeClient.List(ctx, machinePools, machinePoolListOptions...)
-		if err != nil {
-			return false, err
-		}
-
-		if len(machinePools.Items) == 0 {
-			logger.Log("MachinePools not found.")
-			return true, nil
-		}
-
-		allMachinePoolsAreReadyAndRunning := true
-		for _, machinePool := range machinePools.Items {
-			var machinePoolIsReady bool
-			machinePoolIsReady, err = IsClusterApiObjectConditionSet(&machinePool, capi.ReadyCondition, corev1.ConditionTrue, "")
-			if err != nil {
-				return false, err
-			}
-			allMachinePoolsAreReadyAndRunning = allMachinePoolsAreReadyAndRunning && machinePoolIsReady
-
-			currentMachinePoolPhase := capiexp.MachinePoolPhase(machinePool.Status.Phase)
-			machinePoolIsRunning := currentMachinePoolPhase == capiexp.MachinePoolPhaseRunning
-			allMachinePoolsAreReadyAndRunning = allMachinePoolsAreReadyAndRunning && machinePoolIsRunning
-			if !machinePoolIsRunning {
-				logger.Log(
-					"Machine pool '%s/%s' expected to be in Running phase, but it's in '%s' phase.",
-					machinePool.Namespace,
-					machinePool.Name,
-					machinePool.Status.Phase)
-			}
-		}
-
-		return allMachinePoolsAreReadyAndRunning, nil
-	}
 }
 
 func checkNodesReady(ctx context.Context, kubeClient *client.Client, condition func(int) bool, labels ...cr.ListOption) WaitCondition {

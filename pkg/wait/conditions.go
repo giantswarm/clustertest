@@ -2,11 +2,10 @@ package wait
 
 import (
 	"context"
+	"fmt"
 	"reflect"
 	"strings"
 	"time"
-
-	capiexp "sigs.k8s.io/cluster-api/exp/api/v1beta1"
 
 	"github.com/giantswarm/clustertest/pkg/client"
 	"github.com/giantswarm/clustertest/pkg/logger"
@@ -18,6 +17,7 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	capi "sigs.k8s.io/cluster-api/api/v1beta1"
 	kubeadm "sigs.k8s.io/cluster-api/controlplane/kubeadm/api/v1beta1"
+	capiexp "sigs.k8s.io/cluster-api/exp/api/v1beta1"
 	capiconditions "sigs.k8s.io/cluster-api/util/conditions"
 	cr "sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/client/apiutil"
@@ -240,7 +240,7 @@ func IsClusterConditionSet(ctx context.Context, kubeClient *client.Client, clust
 			return false, err
 		}
 
-		return isClusterApiObjectConditionSet(cluster, conditionType, expectedStatus, expectedReason)
+		return IsClusterApiObjectConditionSet(cluster, conditionType, expectedStatus, expectedReason)
 	}
 }
 
@@ -257,83 +257,12 @@ func IsKubeadmControlPlaneConditionSet(ctx context.Context, kubeClient *client.C
 			return false, err
 		}
 
-		return isClusterApiObjectConditionSet(kcp, conditionType, expectedStatus, expectedReason)
+		return IsClusterApiObjectConditionSet(kcp, conditionType, expectedStatus, expectedReason)
 	}
 }
 
-// IsMachinePoolConditionSetForAllMachinePools returns a WaitCondition that checks if all MachinePool resources have the specified condition with the expected status.
-func IsMachinePoolConditionSetForAllMachinePools(ctx context.Context, kubeClient *client.Client, clusterName string, clusterNamespace string, conditionType capi.ConditionType, expectedStatus corev1.ConditionStatus, expectedReason string) WaitCondition {
-	return func() (bool, error) {
-		machinePools := &capiexp.MachinePoolList{}
-		machinePoolListOptions := []cr.ListOption{
-			cr.InNamespace(clusterNamespace),
-			cr.MatchingLabels{
-				"cluster.x-k8s.io/cluster-name": clusterName,
-			},
-		}
-		err := kubeClient.List(ctx, machinePools, machinePoolListOptions...)
-		if err != nil {
-			return false, err
-		}
-
-		if len(machinePools.Items) == 0 {
-			logger.Log("MachinePools not found.")
-			return true, nil
-		}
-
-		for _, machinePool := range machinePools.Items {
-			var expectedConditionSet bool
-			expectedConditionSet, err = isClusterApiObjectConditionSet(&machinePool, conditionType, expectedStatus, expectedReason)
-			if err != nil {
-				return false, err
-			}
-			if !expectedConditionSet {
-				return false, nil
-			}
-		}
-
-		return true, nil
-	}
-}
-
-// AreMachinePoolsRunning returns a WaitCondition that checks if all MachinePool resources are in Running phase.
-func AreMachinePoolsRunning(ctx context.Context, kubeClient *client.Client, clusterName string, clusterNamespace string, conditionType capi.ConditionType, expectedStatus corev1.ConditionStatus, expectedReason string) WaitCondition {
-	return func() (bool, error) {
-		machinePools := &capiexp.MachinePoolList{}
-		machinePoolListOptions := []cr.ListOption{
-			cr.InNamespace(clusterNamespace),
-			cr.MatchingLabels{
-				"cluster.x-k8s.io/cluster-name": clusterName,
-			},
-		}
-		err := kubeClient.List(ctx, machinePools, machinePoolListOptions...)
-		if err != nil {
-			return false, err
-		}
-
-		if len(machinePools.Items) == 0 {
-			logger.Log("MachinePools not found.")
-			return true, nil
-		}
-
-		for _, machinePool := range machinePools.Items {
-			currentMachinePoolPhase := capiexp.MachinePoolPhase(machinePool.Status.Phase)
-			if currentMachinePoolPhase != capiexp.MachinePoolPhaseRunning {
-				logger.Log(
-					"Machine pool '%s/%s' expected to be in Running phase, but it's in '%s' phase.",
-					machinePool.Namespace,
-					machinePool.Name,
-					machinePool.Status.Phase)
-				return false, nil
-			}
-		}
-
-		return true, nil
-	}
-}
-
-// isClusterApiObjectConditionSet returns a WaitCondition that checks if a cluster has the specified condition with the expected status.
-func isClusterApiObjectConditionSet(obj clusterApiObject, conditionType capi.ConditionType, expectedStatus corev1.ConditionStatus, expectedReason string) (bool, error) {
+// IsClusterApiObjectConditionSet returns a WaitCondition that checks if a cluster has the specified condition with the expected status.
+func IsClusterApiObjectConditionSet(obj clusterApiObject, conditionType capi.ConditionType, expectedStatus corev1.ConditionStatus, expectedReason string) (bool, error) {
 	condition := capiconditions.Get(obj, conditionType)
 
 	// obj.GetObjectKind().GroupVersionKind().Kind should return obj Kind, but that sometimes just returns an empty
@@ -348,19 +277,22 @@ func isClusterApiObjectConditionSet(obj clusterApiObject, conditionType capi.Con
 	} else {
 		objTypeName = objType.Name()
 	}
+	objNamespacedName := fmt.Sprintf("%s/%s", obj.GetNamespace(), obj.GetName())
 
 	if condition == nil {
 		// Condition not being set is equivalent to a condition with Status="Unknown"
 		expectedNotSet := expectedStatus == corev1.ConditionUnknown
 		if expectedNotSet {
 			logger.Log(
-				"%s condition %s is not set, expected condition with unknown status (or condition not set)",
+				"%s %s does not have condition %s set, expected condition with unknown status (or condition not set)",
 				objTypeName,
+				objNamespacedName,
 				conditionType)
 		} else {
 			logger.Log(
-				"%s condition %s is not set, expected condition with Status='%s' and Reason='%s'",
+				"%s %s condition %s is not set, expected condition with Status='%s' and Reason='%s'",
 				objTypeName,
+				objNamespacedName,
 				conditionType,
 				expectedStatus,
 				expectedReason)
@@ -369,8 +301,9 @@ func isClusterApiObjectConditionSet(obj clusterApiObject, conditionType capi.Con
 	}
 
 	logger.Log(
-		"Found %s condition %s with Status='%s' and Reason='%s', expected condition with Status='%s' and Reason='%s'",
+		"Found %s %s condition %s with Status='%s' and Reason='%s', expected condition with Status='%s' and Reason='%s'",
 		objTypeName,
+		objNamespacedName,
 		conditionType,
 		condition.Status,
 		condition.Reason,
@@ -379,6 +312,52 @@ func isClusterApiObjectConditionSet(obj clusterApiObject, conditionType capi.Con
 
 	foundExpectedCondition := condition.Status == expectedStatus && condition.Reason == expectedReason
 	return foundExpectedCondition, nil
+}
+
+// MachinePoolsAreReadyAndRunning returns a WaitCondition that checks if all MachinePool resources have Ready condition
+// with Status True and are in Running phase.
+func MachinePoolsAreReadyAndRunning(ctx context.Context, kubeClient *client.Client, clusterName string, clusterNamespace string) WaitCondition {
+	return func() (bool, error) {
+		machinePools := &capiexp.MachinePoolList{}
+		machinePoolListOptions := []cr.ListOption{
+			cr.InNamespace(clusterNamespace),
+			cr.MatchingLabels{
+				"cluster.x-k8s.io/cluster-name": clusterName,
+			},
+		}
+		err := kubeClient.List(ctx, machinePools, machinePoolListOptions...)
+		if err != nil {
+			return false, err
+		}
+
+		if len(machinePools.Items) == 0 {
+			logger.Log("MachinePools not found.")
+			return true, nil
+		}
+
+		allMachinePoolsAreReadyAndRunning := true
+		for _, machinePool := range machinePools.Items {
+			var machinePoolIsReady bool
+			machinePoolIsReady, err = IsClusterApiObjectConditionSet(&machinePool, capi.ReadyCondition, corev1.ConditionTrue, "")
+			if err != nil {
+				return false, err
+			}
+			allMachinePoolsAreReadyAndRunning = allMachinePoolsAreReadyAndRunning && machinePoolIsReady
+
+			currentMachinePoolPhase := capiexp.MachinePoolPhase(machinePool.Status.Phase)
+			machinePoolIsRunning := currentMachinePoolPhase == capiexp.MachinePoolPhaseRunning
+			allMachinePoolsAreReadyAndRunning = allMachinePoolsAreReadyAndRunning && machinePoolIsRunning
+			if !machinePoolIsRunning {
+				logger.Log(
+					"Machine pool '%s/%s' expected to be in Running phase, but it's in '%s' phase.",
+					machinePool.Namespace,
+					machinePool.Name,
+					machinePool.Status.Phase)
+			}
+		}
+
+		return allMachinePoolsAreReadyAndRunning, nil
+	}
 }
 
 func checkNodesReady(ctx context.Context, kubeClient *client.Client, condition func(int) bool, labels ...cr.ListOption) WaitCondition {

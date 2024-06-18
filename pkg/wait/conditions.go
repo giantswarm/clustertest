@@ -6,6 +6,8 @@ import (
 	"strings"
 	"time"
 
+	capiexp "sigs.k8s.io/cluster-api/exp/api/v1beta1"
+
 	"github.com/giantswarm/clustertest/pkg/client"
 	"github.com/giantswarm/clustertest/pkg/logger"
 
@@ -227,80 +229,156 @@ func IsAppVersion(ctx context.Context, kubeClient *client.Client, appName string
 
 // IsClusterConditionSet returns a WaitCondition that checks if a Cluster resource has the specified condition with the expected status.
 func IsClusterConditionSet(ctx context.Context, kubeClient *client.Client, clusterName string, clusterNamespace string, conditionType capi.ConditionType, expectedStatus corev1.ConditionStatus, expectedReason string) WaitCondition {
-	cluster := &capi.Cluster{
-		ObjectMeta: v1.ObjectMeta{
-			Name:      clusterName,
-			Namespace: clusterNamespace,
-		},
-	}
+	return func() (bool, error) {
+		cluster := &capi.Cluster{
+			ObjectMeta: v1.ObjectMeta{
+				Name:      clusterName,
+				Namespace: clusterNamespace,
+			},
+		}
+		if err := kubeClient.Client.Get(ctx, cr.ObjectKeyFromObject(cluster), cluster); err != nil {
+			return false, err
+		}
 
-	return isClusterApiObjectConditionSet(ctx, kubeClient, cluster, conditionType, expectedStatus, expectedReason)
+		return isClusterApiObjectConditionSet(cluster, conditionType, expectedStatus, expectedReason)
+	}
 }
 
 // IsKubeadmControlPlaneConditionSet returns a WaitCondition that checks if a KubeadmControlPlane resource has the specified condition with the expected status.
 func IsKubeadmControlPlaneConditionSet(ctx context.Context, kubeClient *client.Client, clusterName string, clusterNamespace string, conditionType capi.ConditionType, expectedStatus corev1.ConditionStatus, expectedReason string) WaitCondition {
-	kcp := &kubeadm.KubeadmControlPlane{
-		ObjectMeta: v1.ObjectMeta{
-			Name:      clusterName,
-			Namespace: clusterNamespace,
-		},
-	}
+	return func() (bool, error) {
+		kcp := &kubeadm.KubeadmControlPlane{
+			ObjectMeta: v1.ObjectMeta{
+				Name:      clusterName,
+				Namespace: clusterNamespace,
+			},
+		}
+		if err := kubeClient.Client.Get(ctx, cr.ObjectKeyFromObject(kcp), kcp); err != nil {
+			return false, err
+		}
 
-	return isClusterApiObjectConditionSet(ctx, kubeClient, kcp, conditionType, expectedStatus, expectedReason)
+		return isClusterApiObjectConditionSet(kcp, conditionType, expectedStatus, expectedReason)
+	}
+}
+
+// IsMachinePoolConditionSetForAllMachinePools returns a WaitCondition that checks if all MachinePool resources have the specified condition with the expected status.
+func IsMachinePoolConditionSetForAllMachinePools(ctx context.Context, kubeClient *client.Client, clusterName string, clusterNamespace string, conditionType capi.ConditionType, expectedStatus corev1.ConditionStatus, expectedReason string) WaitCondition {
+	return func() (bool, error) {
+		machinePools := &capiexp.MachinePoolList{}
+		machinePoolListOptions := []cr.ListOption{
+			cr.InNamespace(clusterNamespace),
+			cr.MatchingLabels{
+				"cluster.x-k8s.io/cluster-name": clusterName,
+			},
+		}
+		err := kubeClient.List(ctx, machinePools, machinePoolListOptions...)
+		if err != nil {
+			return false, err
+		}
+
+		if len(machinePools.Items) == 0 {
+			logger.Log("MachinePools not found.")
+			return true, nil
+		}
+
+		for _, machinePool := range machinePools.Items {
+			var expectedConditionSet bool
+			expectedConditionSet, err = isClusterApiObjectConditionSet(&machinePool, conditionType, expectedStatus, expectedReason)
+			if err != nil {
+				return false, err
+			}
+			if !expectedConditionSet {
+				return false, nil
+			}
+		}
+
+		return true, nil
+	}
+}
+
+// AreMachinePoolsRunning returns a WaitCondition that checks if all MachinePool resources are in Running phase.
+func AreMachinePoolsRunning(ctx context.Context, kubeClient *client.Client, clusterName string, clusterNamespace string, conditionType capi.ConditionType, expectedStatus corev1.ConditionStatus, expectedReason string) WaitCondition {
+	return func() (bool, error) {
+		machinePools := &capiexp.MachinePoolList{}
+		machinePoolListOptions := []cr.ListOption{
+			cr.InNamespace(clusterNamespace),
+			cr.MatchingLabels{
+				"cluster.x-k8s.io/cluster-name": clusterName,
+			},
+		}
+		err := kubeClient.List(ctx, machinePools, machinePoolListOptions...)
+		if err != nil {
+			return false, err
+		}
+
+		if len(machinePools.Items) == 0 {
+			logger.Log("MachinePools not found.")
+			return true, nil
+		}
+
+		for _, machinePool := range machinePools.Items {
+			currentMachinePoolPhase := capiexp.MachinePoolPhase(machinePool.Status.Phase)
+			if currentMachinePoolPhase != capiexp.MachinePoolPhaseRunning {
+				logger.Log(
+					"Machine pool '%s/%s' expected to be in Running phase, but it's in '%s' phase.",
+					machinePool.Namespace,
+					machinePool.Name,
+					machinePool.Status.Phase)
+				return false, nil
+			}
+		}
+
+		return true, nil
+	}
 }
 
 // isClusterApiObjectConditionSet returns a WaitCondition that checks if a cluster has the specified condition with the expected status.
-func isClusterApiObjectConditionSet(ctx context.Context, kubeClient *client.Client, obj clusterApiObject, conditionType capi.ConditionType, expectedStatus corev1.ConditionStatus, expectedReason string) WaitCondition {
-	return func() (bool, error) {
-		if err := kubeClient.Client.Get(ctx, cr.ObjectKeyFromObject(obj), obj); err != nil {
-			return false, err
-		}
-		condition := capiconditions.Get(obj, conditionType)
+func isClusterApiObjectConditionSet(obj clusterApiObject, conditionType capi.ConditionType, expectedStatus corev1.ConditionStatus, expectedReason string) (bool, error) {
+	condition := capiconditions.Get(obj, conditionType)
 
-		// obj.GetObjectKind().GroupVersionKind().Kind should return obj Kind, but that sometimes just returns an empty
-		// string, so here we just get the name of the struct.
-		// See these Kubernetes issues for more details:
-		// - https://github.com/kubernetes/kubernetes/issues/3030
-		// - https://github.com/kubernetes/kubernetes/issues/80609
-		var objTypeName string
-		objType := reflect.TypeOf(obj)
-		if objType.Kind() == reflect.Ptr {
-			objTypeName = objType.Elem().Name()
-		} else {
-			objTypeName = objType.Name()
-		}
-
-		if condition == nil {
-			// Condition not being set is equivalent to a condition with Status="Unknown"
-			expectedNotSet := expectedStatus == corev1.ConditionUnknown
-			if expectedNotSet {
-				logger.Log(
-					"%s condition %s is not set, expected condition with unknown status (or condition not set)",
-					objTypeName,
-					conditionType)
-			} else {
-				logger.Log(
-					"%s condition %s is not set, expected condition with Status='%s' and Reason='%s'",
-					objTypeName,
-					conditionType,
-					expectedStatus,
-					expectedReason)
-			}
-			return expectedNotSet, nil
-		}
-
-		logger.Log(
-			"Found %s condition %s with Status='%s' and Reason='%s', expected condition with Status='%s' and Reason='%s'",
-			objTypeName,
-			conditionType,
-			condition.Status,
-			condition.Reason,
-			expectedStatus,
-			expectedReason)
-
-		foundExpectedCondition := condition.Status == expectedStatus && condition.Reason == expectedReason
-		return foundExpectedCondition, nil
+	// obj.GetObjectKind().GroupVersionKind().Kind should return obj Kind, but that sometimes just returns an empty
+	// string, so here we just get the name of the struct.
+	// See these Kubernetes issues for more details:
+	// - https://github.com/kubernetes/kubernetes/issues/3030
+	// - https://github.com/kubernetes/kubernetes/issues/80609
+	var objTypeName string
+	objType := reflect.TypeOf(obj)
+	if objType.Kind() == reflect.Ptr {
+		objTypeName = objType.Elem().Name()
+	} else {
+		objTypeName = objType.Name()
 	}
+
+	if condition == nil {
+		// Condition not being set is equivalent to a condition with Status="Unknown"
+		expectedNotSet := expectedStatus == corev1.ConditionUnknown
+		if expectedNotSet {
+			logger.Log(
+				"%s condition %s is not set, expected condition with unknown status (or condition not set)",
+				objTypeName,
+				conditionType)
+		} else {
+			logger.Log(
+				"%s condition %s is not set, expected condition with Status='%s' and Reason='%s'",
+				objTypeName,
+				conditionType,
+				expectedStatus,
+				expectedReason)
+		}
+		return expectedNotSet, nil
+	}
+
+	logger.Log(
+		"Found %s condition %s with Status='%s' and Reason='%s', expected condition with Status='%s' and Reason='%s'",
+		objTypeName,
+		conditionType,
+		condition.Status,
+		condition.Reason,
+		expectedStatus,
+		expectedReason)
+
+	foundExpectedCondition := condition.Status == expectedStatus && condition.Reason == expectedReason
+	return foundExpectedCondition, nil
 }
 
 func checkNodesReady(ctx context.Context, kubeClient *client.Client, condition func(int) bool, labels ...cr.ListOption) WaitCondition {

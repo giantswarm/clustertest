@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.2.0] - 2024-06-19
+
 ## [1.1.0] - 2024-06-13
 
 ### Fixed
@@ -383,7 +385,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added initial framework layout
 - Added Kubernetes client extended from controller-runtime client
 
-[Unreleased]: https://github.com/giantswarm/clustertest/compare/v1.1.0...HEAD
+[Unreleased]: https://github.com/giantswarm/clustertest/compare/v1.2.0...HEAD
+[1.2.0]: https://github.com/giantswarm/clustertest/compare/v1.1.0...v1.2.0
 [1.1.0]: https://github.com/giantswarm/clustertest/compare/v1.0.1...v1.1.0
 [1.0.1]: https://github.com/giantswarm/clustertest/compare/v1.0.0...v1.0.1
 [1.0.0]: https://github.com/giantswarm/clustertest/compare/v0.22.0...v1.0.0

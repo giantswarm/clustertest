@@ -23,6 +23,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	capi "sigs.k8s.io/cluster-api/api/v1beta1"
 	kubeadm "sigs.k8s.io/cluster-api/controlplane/kubeadm/api/v1beta1"
+	capiexp "sigs.k8s.io/cluster-api/exp/api/v1beta1"
 	cr "sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -160,7 +161,7 @@ func (f *Framework) LoadCluster() (*application.Cluster, error) {
 	return cluster, nil
 }
 
-// ApplyCluster takes a Cluster object, applies it to the MC in the correct order and then waits for a valid Kubeconfig to be available
+// ApplyCluster takes a Cluster object, builds it, then applies it to the MC in the correct order and then waits for a valid Kubeconfig to be available
 //
 // A timeout can be provided via the given `ctx` value by using `context.WithTimeout()`
 //
@@ -178,13 +179,29 @@ func (f *Framework) ApplyCluster(ctx context.Context, cluster *application.Clust
 		return nil, fmt.Errorf("failed to build cluster app: %v", err)
 	}
 
+	return f.ApplyBuiltCluster(ctx, builtCluster)
+}
+
+// ApplyBuiltCluster takes a pre-built Cluster object, applies it to the MC in the correct order and then waits for a valid Kubeconfig to be available
+//
+// A timeout can be provided via the given `ctx` value by using `context.WithTimeout()`
+//
+// Example:
+//
+//	timeoutCtx, cancelTimeout := context.WithTimeout(context.Background(), 20*time.Minute)
+//	defer cancelTimeout()
+//
+//	cluster := application.NewClusterApp(utils.GenerateRandomName("t"), application.ProviderAWS)
+//	builtCluster, _ := cluster.Build()
+//	client, err := framework.ApplyBuiltCluster(timeoutCtx, builtCluster)
+func (f *Framework) ApplyBuiltCluster(ctx context.Context, builtCluster *application.BuiltCluster) (*client.Client, error) {
 	if builtCluster.Release != nil {
 		if err := f.MC().CreateOrUpdate(ctx, builtCluster.Release); err != nil {
 			return nil, fmt.Errorf("failed to apply release resources: %v", err)
 		}
 	}
 
-	err = f.CreateOrg(ctx, cluster.Organization)
+	err := f.CreateOrg(ctx, builtCluster.SourceCluster.Organization)
 	if err != nil {
 		return nil, err
 	}
@@ -200,7 +217,7 @@ func (f *Framework) ApplyCluster(ctx context.Context, cluster *application.Clust
 		}
 	}
 
-	kubeClient, err := f.WaitForClusterReady(ctx, cluster.Name, cluster.GetNamespace())
+	kubeClient, err := f.WaitForClusterReady(ctx, builtCluster.SourceCluster.Name, builtCluster.SourceCluster.GetNamespace())
 	if err != nil {
 		return nil, err
 	}
@@ -212,7 +229,7 @@ func (f *Framework) ApplyCluster(ctx context.Context, cluster *application.Clust
 	}
 
 	// Store the WC client for use in the tests
-	f.wcClients[cluster.Name] = testClient
+	f.wcClients[builtCluster.SourceCluster.Name] = testClient
 
 	return testClient, nil
 }
@@ -414,6 +431,26 @@ func (f *Framework) GetKubeadmControlPlane(ctx context.Context, clusterName stri
 	}
 
 	return controlPlane, nil
+}
+
+// GetMachinePools returns the MachinePool resources. If we don't find the `MachinePools` we assume that the provider is
+// not using MachinePools, so nil pointer is returned without error.
+func (f *Framework) GetMachinePools(ctx context.Context, clusterName string, clusterNamespace string) ([]capiexp.MachinePool, error) {
+	machinePools := &capiexp.MachinePoolList{}
+	machinePoolListOptions := []cr.ListOption{
+		cr.InNamespace(clusterNamespace),
+		cr.MatchingLabels{
+			"cluster.x-k8s.io/cluster-name": clusterName,
+		},
+	}
+	err := f.MC().List(ctx, machinePools, machinePoolListOptions...)
+	if errors.IsNotFound(err) {
+		return nil, nil
+	} else if err != nil {
+		return nil, err
+	}
+
+	return machinePools.Items, nil
 }
 
 // GetExpectedControlPlaneReplicas returns the number of control plane node expected according to the clusters KubeadmControlPlane resource

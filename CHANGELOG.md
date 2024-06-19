@@ -11,6 +11,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Add support for unified cluster-azure app. With cluster-azure v0.14.0 and newer, default apps are deployed with cluster-azure nd default-apps-azure app is not deployed anymore.
 
+## [1.2.0] - 2024-06-19
+
+## [1.1.0] - 2024-06-13
+
+### Fixed
+
+- Switched to using `sigs.k8s.io/yaml` for yaml parsing.
+
+### Added
+
+- Added a new `ApplyBuiltCluster` function to the framework to avoid building a Cluster twice if the result types are needed in testing. This helps to ensure that the Release generated is the same as applied in the case where `cluster.Build()` is called within a test case to access the generated properties.
+
+## [1.0.1] - 2024-06-13
+
+### Fixed
+
+- Upgraded `releases` SDK to latest so the date of Release CRs is set to the current date instead of matching the latest from Git.
 
 ## [1.0.0] - 2024-06-10
 
@@ -372,7 +389,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added initial framework layout
 - Added Kubernetes client extended from controller-runtime client
 
-[Unreleased]: https://github.com/giantswarm/clustertest/compare/v1.0.0...HEAD
+[Unreleased]: https://github.com/giantswarm/clustertest/compare/v1.2.0...HEAD
+[1.2.0]: https://github.com/giantswarm/clustertest/compare/v1.1.0...v1.2.0
+[1.1.0]: https://github.com/giantswarm/clustertest/compare/v1.0.1...v1.1.0
+[1.0.1]: https://github.com/giantswarm/clustertest/compare/v1.0.0...v1.0.1
 [1.0.0]: https://github.com/giantswarm/clustertest/compare/v0.22.0...v1.0.0
 [0.22.0]: https://github.com/giantswarm/clustertest/compare/v0.21.0...v0.22.0
 [0.21.0]: https://github.com/giantswarm/clustertest/compare/v0.20.1...v0.21.0

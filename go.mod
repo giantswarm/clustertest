@@ -21,12 +21,12 @@ require (
 	github.com/google/go-github/v62 v62.0.0
 	github.com/mittwald/go-helm-client v0.12.1
 	golang.org/x/oauth2 v0.21.0
-	k8s.io/api v0.26.3
+	k8s.io/api v0.26.15
 	k8s.io/apimachinery v0.26.15
-	k8s.io/client-go v0.26.3
-	k8s.io/kubectl v0.26.1
+	k8s.io/client-go v0.26.15
+	k8s.io/kubectl v0.26.15
 	sigs.k8s.io/cluster-api v1.4.0-beta.2
-	sigs.k8s.io/controller-runtime v0.14.5
+	sigs.k8s.io/controller-runtime v0.14.7
 	sigs.k8s.io/e2e-framework v0.1.0
 	sigs.k8s.io/kind v0.17.0
 	sigs.k8s.io/yaml v1.4.0
@@ -165,11 +165,11 @@ require (
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 	helm.sh/helm/v3 v3.11.3 // indirect
-	k8s.io/apiextensions-apiserver v0.26.3 // indirect
-	k8s.io/apiserver v0.26.3 // indirect
-	k8s.io/cli-runtime v0.26.3 // indirect
+	k8s.io/apiextensions-apiserver v0.26.10 // indirect
+	k8s.io/apiserver v0.26.10 // indirect
+	k8s.io/cli-runtime v0.26.15 // indirect
 	k8s.io/cluster-bootstrap v0.25.0 // indirect
-	k8s.io/component-base v0.26.3 // indirect
+	k8s.io/component-base v0.26.15 // indirect
 	k8s.io/klog/v2 v2.100.1 // indirect
 	k8s.io/kube-openapi v0.0.0-20221012153701-172d655c2280 // indirect
 	k8s.io/utils v0.0.0-20230726121419-3b25d923346b // indirect

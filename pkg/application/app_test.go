@@ -528,10 +528,16 @@ func TestIsUnifiedClusterAppWithDefaultApps(t *testing.T) {
 			expectedResult: false,
 		},
 		{
-			description:    "cluster-azure is not a unified cluster app",
+			description:    "cluster-azure v0.13.1 is not a unified cluster app",
 			appName:        "cluster-azure",
-			appVersion:     "v0.100.0",
-			expectedResult: false,
+			appVersion:     "v0.13.1",
+			expectedResult: true,
+		},
+		{
+			description:    "cluster-azure is a unified cluster app",
+			appName:        "cluster-azure",
+			appVersion:     "v0.14.0",
+			expectedResult: true,
 		},
 		{
 			description:    "cluster-vsphere is not a unified cluster app",

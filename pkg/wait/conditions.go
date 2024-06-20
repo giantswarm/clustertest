@@ -334,6 +334,10 @@ func checkNodesReady(ctx context.Context, kubeClient *client.Client, condition f
 		}
 
 		if condition(readyNodes) {
+			for _, node := range nodes.Items {
+				logger.Log("Node status: NodeName='%s', Taints='%v'", node.ObjectMeta.Name, node.Spec.Taints)
+			}
+
 			return false, nil
 		}
 

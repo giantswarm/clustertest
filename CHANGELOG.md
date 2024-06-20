@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Extra logging when `checkNodesReady` fails condition check that shows the current node taints.
+
 ## [1.3.0] - 2024-06-20
 
 ### Added

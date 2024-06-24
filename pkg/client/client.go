@@ -120,7 +120,11 @@ func NewWithContext(kubeconfigPath string, contextName string) (*Client, error) 
 }
 
 func newClient(config *rest.Config, clusterName string) (*Client, error) {
-	mapper, err := apiutil.NewDynamicRESTMapper(config, apiutil.WithLazyDiscovery)
+	httpClient, err := rest.HTTPClientFor(config)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create http client - %v", err)
+	}
+	mapper, err := apiutil.NewDynamicRESTMapper(config, httpClient)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create new dynamic client - %v", err)
 	}

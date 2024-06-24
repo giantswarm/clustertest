@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Updated all dependencies to latest versions
+- Changed `NewDynamicRESTMapper` to use http client
+
 ## [1.3.1] - 2024-06-20
 
 ### Added

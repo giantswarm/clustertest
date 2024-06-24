@@ -198,6 +198,8 @@ func (c *Cluster) Build() (*BuiltCluster, error) {
 	}
 
 	{
+		var release *releases.Release
+
 		// Release
 		provider := releases.Provider(c.Provider)
 		if releases.IsProviderSupported(provider) {
@@ -216,21 +218,29 @@ func (c *Cluster) Build() (*BuiltCluster, error) {
 					return nil, fmt.Errorf("'%s' was set without also setting '%s'", env.ReleaseVersion, env.ReleaseCommit)
 				}
 
-				// TODO: Load release from PR commit. Not sure if this will return an image builder or a release object.
+				// Remove the provider prefix from the release version
+				overrideReleaseVersion = strings.TrimPrefix(overrideReleaseVersion, fmt.Sprintf("%s-", provider))
 
-			}
+				release, err = releaseClient.GetReleaseForGitReference(context.Background(), provider, overrideReleaseVersion, overrideReleaseCommit)
+				if err != nil {
+					return builtCluster, err
+				}
 
-			releaseBuilder = releaseBuilder.
-				// Ensure release has a unique name
-				WithPreReleasePrefix("t").WithRandomPreRelease(10).
-				// Set the Cluster App to use
-				WithClusterApp(strings.TrimPrefix(builtCluster.Cluster.App.Spec.Version, "v"), builtCluster.Cluster.App.Spec.Catalog)
+				// TODO: Override the release name with a unique suffix to avoid conflicts
 
-			// TODO: Override default App versions if needed
+			} else {
+				releaseBuilder = releaseBuilder.
+					// Ensure release has a unique name
+					WithPreReleasePrefix("t").WithRandomPreRelease(10).
+					// Set the Cluster App to use
+					WithClusterApp(strings.TrimPrefix(builtCluster.Cluster.App.Spec.Version, "v"), builtCluster.Cluster.App.Spec.Catalog)
 
-			release, err := releaseBuilder.Build(context.Background())
-			if err != nil {
-				return builtCluster, err
+				// TODO: Override default App versions if needed
+
+				release, err = releaseBuilder.Build(context.Background())
+				if err != nil {
+					return builtCluster, err
+				}
 			}
 
 			// Set test-specific labels onto the Release CR

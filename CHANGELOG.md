@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Updated all dependencies (including transient) to latest versions
+- Added replace directive for `mergo` (see note: https://github.com/darccio/mergo#100)
+
 ## [1.5.0] - 2024-06-25
 
 ### Added

@@ -227,7 +227,18 @@ func (c *Cluster) Build() (*BuiltCluster, error) {
 				}
 
 				// Override the release name with a unique suffix to avoid conflicts
-				release.Name = fmt.Sprintf("%s-%s", release.Name, strings.TrimPrefix(utils.GenerateRandomName("r"), "r-"))
+				joiner := "-"
+				if len(strings.Split(release.Name, "-")) > 2 {
+					// If the release name already has a prerelease suffix we need to use a different joining character to pass the regex
+					joiner = "."
+				}
+				release.Name = fmt.Sprintf("%s%s%s", release.Name, joiner, strings.TrimPrefix(utils.GenerateRandomName("r"), "r-"))
+
+				// Add the override release version and commit sha as annotations on the created Release CR
+				release.ObjectMeta.Annotations = mergeMaps(release.GetObjectMeta().GetAnnotations(), map[string]string{
+					"ci.giantswarm.io/release-version": overrideReleaseVersion,
+					"ci.giantswarm.io/release-commit":  overrideReleaseCommit,
+				})
 			} else {
 				releaseBuilder = releaseBuilder.
 					// Ensure release has a unique name

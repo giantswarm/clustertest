@@ -9,26 +9,26 @@ import (
 	"reflect"
 	"strings"
 
+	certmanager "github.com/cert-manager/cert-manager/pkg/api"
+	applicationv1alpha1 "github.com/giantswarm/apiextensions-application/api/v1alpha1"
+	orgv1alpha1 "github.com/giantswarm/organization-operator/api/v1alpha1"
 	releasev1alpha1 "github.com/giantswarm/releases/sdk/api/v1alpha1"
+	helmclient "github.com/mittwald/go-helm-client"
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/types"
 	_ "k8s.io/client-go/plugin/pkg/client/auth/oidc"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
-	"k8s.io/kubectl/pkg/scheme"
-	"sigs.k8s.io/controller-runtime/pkg/client/apiutil"
-	"sigs.k8s.io/yaml"
-
-	applicationv1alpha1 "github.com/giantswarm/apiextensions-application/api/v1alpha1"
-	orgv1alpha1 "github.com/giantswarm/organization-operator/api/v1alpha1"
-	helmclient "github.com/mittwald/go-helm-client"
-	corev1 "k8s.io/api/core/v1"
 	clientcmdapi "k8s.io/client-go/tools/clientcmd/api/v1"
+	"k8s.io/kubectl/pkg/scheme"
 	capi "sigs.k8s.io/cluster-api/api/v1beta1"
 	kubeadm "sigs.k8s.io/cluster-api/controlplane/kubeadm/api/v1beta1"
 	capiexp "sigs.k8s.io/cluster-api/exp/api/v1beta1"
 	cr "sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/client/apiutil"
+	"sigs.k8s.io/yaml"
 
 	"github.com/giantswarm/clustertest/pkg/application"
 )
@@ -141,6 +141,7 @@ func newClient(config *rest.Config, clusterName string) (*Client, error) {
 	_ = capiexp.AddToScheme(client.Scheme())
 	_ = kubeadm.AddToScheme(client.Scheme())
 	_ = releasev1alpha1.AddToScheme(client.Scheme())
+	_ = certmanager.AddToScheme(client.Scheme())
 
 	return &Client{
 		Client:      client,

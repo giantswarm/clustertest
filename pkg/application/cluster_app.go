@@ -226,8 +226,8 @@ func (c *Cluster) Build() (*BuiltCluster, error) {
 					return builtCluster, err
 				}
 
-				// TODO: Override the release name with a unique suffix to avoid conflicts
-
+				// Override the release name with a unique suffix to avoid conflicts
+				release.Name = fmt.Sprintf("%s-%s", release.Name, strings.TrimPrefix(utils.GenerateRandomName("r"), "r-"))
 			} else {
 				releaseBuilder = releaseBuilder.
 					// Ensure release has a unique name

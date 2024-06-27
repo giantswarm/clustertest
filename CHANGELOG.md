@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Added helper functions for getting Events related to a given Kubernetes resource
+
 ## [1.7.0] - 2024-06-27
 
 ### Added

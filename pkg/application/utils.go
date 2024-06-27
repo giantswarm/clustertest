@@ -8,6 +8,8 @@ import (
 
 	"dario.cat/mergo"
 	"sigs.k8s.io/yaml"
+
+	"github.com/giantswarm/clustertest/pkg/env"
 )
 
 // TemplateValues is the properties made available to the Values string when templating.
@@ -57,12 +59,10 @@ func parseTemplate(manifest string, config *TemplateValues) (string, error) {
 	return manifestBuffer.String(), nil
 }
 
-const VersionOverrideEnvVar = "E2E_OVERRIDE_VERSIONS"
-
 func getOverrideVersions() map[string]string {
 	versions := map[string]string{}
 
-	overrides := os.Getenv(VersionOverrideEnvVar)
+	overrides := os.Getenv(env.OverrideVersions)
 	if overrides != "" {
 		overridesList := strings.Split(overrides, ",")
 		for _, pair := range overridesList {

@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Support the `E2E_RELEASE_VERSION` and `E2E_RELEASE_COMMIT` environment variables to control what base Release to use
+
+### Changed
+
+- Refactored all supported environment variables into their own module
+
 ## [1.6.0] - 2024-06-25
 
 ### Changed

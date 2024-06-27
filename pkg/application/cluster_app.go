@@ -3,6 +3,7 @@ package application
 import (
 	"context"
 	"fmt"
+	"os"
 	"strings"
 
 	applicationv1alpha1 "github.com/giantswarm/apiextensions-application/api/v1alpha1"
@@ -10,6 +11,7 @@ import (
 	releases "github.com/giantswarm/releases/sdk/api/v1alpha1"
 	corev1 "k8s.io/api/core/v1"
 
+	"github.com/giantswarm/clustertest/pkg/env"
 	"github.com/giantswarm/clustertest/pkg/logger"
 	"github.com/giantswarm/clustertest/pkg/organization"
 	"github.com/giantswarm/clustertest/pkg/utils"
@@ -196,6 +198,8 @@ func (c *Cluster) Build() (*BuiltCluster, error) {
 	}
 
 	{
+		var release *releases.Release
+
 		// Release
 		provider := releases.Provider(c.Provider)
 		if releases.IsProviderSupported(provider) {
@@ -207,17 +211,47 @@ func (c *Cluster) Build() (*BuiltCluster, error) {
 				return builtCluster, err
 			}
 
-			releaseBuilder = releaseBuilder.
-				// Ensure release has a unique name
-				WithPreReleasePrefix("t").WithRandomPreRelease(10).
-				// Set the Cluster App to use
-				WithClusterApp(strings.TrimPrefix(builtCluster.Cluster.App.Spec.Version, "v"), builtCluster.Cluster.App.Spec.Catalog)
+			overrideReleaseVersion := os.Getenv(env.ReleaseVersion)
+			if overrideReleaseVersion != "" {
+				overrideReleaseCommit := os.Getenv(env.ReleaseCommit)
+				if overrideReleaseCommit == "" {
+					return nil, fmt.Errorf("'%s' was set without also setting '%s'", env.ReleaseVersion, env.ReleaseCommit)
+				}
 
-			// TODO: Override default App versions if needed
+				// Remove the provider prefix from the release version
+				overrideReleaseVersion = strings.TrimPrefix(overrideReleaseVersion, fmt.Sprintf("%s-", provider))
 
-			release, err := releaseBuilder.Build(context.Background())
-			if err != nil {
-				return builtCluster, err
+				release, err = releaseClient.GetReleaseForGitReference(context.Background(), provider, overrideReleaseVersion, overrideReleaseCommit)
+				if err != nil {
+					return builtCluster, err
+				}
+
+				// Override the release name with a unique suffix to avoid conflicts
+				joiner := "-"
+				if len(strings.Split(release.Name, "-")) > 2 {
+					// If the release name already has a prerelease suffix we need to use a different joining character to pass the regex
+					joiner = "."
+				}
+				release.Name = fmt.Sprintf("%s%s%s", release.Name, joiner, strings.TrimPrefix(utils.GenerateRandomName("r"), "r-"))
+
+				// Add the override release version and commit sha as annotations on the created Release CR
+				release.ObjectMeta.Annotations = mergeMaps(release.GetObjectMeta().GetAnnotations(), map[string]string{
+					"ci.giantswarm.io/release-version": overrideReleaseVersion,
+					"ci.giantswarm.io/release-commit":  overrideReleaseCommit,
+				})
+			} else {
+				releaseBuilder = releaseBuilder.
+					// Ensure release has a unique name
+					WithPreReleasePrefix("t").WithRandomPreRelease(10).
+					// Set the Cluster App to use
+					WithClusterApp(strings.TrimPrefix(builtCluster.Cluster.App.Spec.Version, "v"), builtCluster.Cluster.App.Spec.Catalog)
+
+				// TODO: Override default App versions if needed
+
+				release, err = releaseBuilder.Build(context.Background())
+				if err != nil {
+					return builtCluster, err
+				}
 			}
 
 			// Set test-specific labels onto the Release CR

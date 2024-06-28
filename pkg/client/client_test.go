@@ -1,6 +1,7 @@
 package client
 
 import (
+	"context"
 	"flag"
 	"fmt"
 	"os"
@@ -8,7 +9,9 @@ import (
 	"testing"
 	"time"
 
+	appsv1 "k8s.io/api/apps/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/kind/pkg/cluster"
 )
 
@@ -128,4 +131,35 @@ func TestCheckConnection_Failure(t *testing.T) {
 		fmt.Println("IsUnexpectedServerError")
 	}
 	fmt.Println(errors.ReasonForError(err))
+}
+
+func TestGetPodsForDeployment(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping test in short mode.")
+	}
+
+	deployment := &appsv1.Deployment{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "coredns",
+			Namespace: "kube-system",
+		},
+	}
+
+	// Testing against Kind cluster
+	c, err := New(kindKubeconfig)
+	if err != nil {
+		t.Errorf("Not expecting an error to be returned - %v", err)
+	}
+	if c == nil {
+		t.Errorf("Was expecting a client to be returned")
+	}
+
+	pods, err := c.GetPodsForDeployment(context.Background(), deployment)
+	if err != nil {
+		t.Errorf("Not expecting an error to be returned - %v", err)
+	}
+
+	if len(pods.Items) == 0 {
+		t.Errorf("Was expecting some pods to be returned")
+	}
 }

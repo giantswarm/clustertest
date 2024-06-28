@@ -14,8 +14,10 @@ import (
 	orgv1alpha1 "github.com/giantswarm/organization-operator/api/v1alpha1"
 	releasev1alpha1 "github.com/giantswarm/releases/sdk/api/v1alpha1"
 	helmclient "github.com/mittwald/go-helm-client"
+	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/types"
 	_ "k8s.io/client-go/plugin/pkg/client/auth/oidc"
@@ -371,4 +373,21 @@ func (c *Client) GetAPIServerEndpoint() string {
 // GetClusterName returns the friendly name of the Cluster from the KubeConfig
 func (c *Client) GetClusterName() string {
 	return c.clusterName
+}
+
+// GetPodsForDeployment returns a list of Pods that match the given Deployments selector
+func (c *Client) GetPodsForDeployment(ctx context.Context, deployment *appsv1.Deployment) (*corev1.PodList, error) {
+	pods := &corev1.PodList{}
+
+	selector, err := metav1.LabelSelectorAsSelector(deployment.Spec.Selector)
+	if err != nil {
+		return pods, err
+	}
+
+	err = c.List(ctx, pods, cr.MatchingLabelsSelector{Selector: selector})
+	if err != nil {
+		return pods, err
+	}
+
+	return pods, nil
 }

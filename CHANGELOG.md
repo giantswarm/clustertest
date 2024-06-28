@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Added a helper function to get the logs from a given Pod
+- Added a helper function to get all pods for a given Deployment
+
 ## [1.8.0] - 2024-06-27
 
 ### Added

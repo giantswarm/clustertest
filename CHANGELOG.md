@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Added a helper function to get the logs from a given Pod
 - Added a helper function to get all pods for a given Deployment
+- Added new `failurehandlers` package to provide extra debugging when Gomega assertions fail - includes the first helper `AppIssues` to be used to debug why Apps might not be installed correctly
 
 ## [1.8.0] - 2024-06-27
 

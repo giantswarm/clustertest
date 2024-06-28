@@ -19,6 +19,8 @@ func AppIssues(ctx context.Context, framework *clustertest.Framework, cluster *a
 	return Wrap(func() {
 		logger.Log("Attempting to get debug info for App related failure")
 
+		// Note: This doesn't check the MCs own app-operator so issues with bundles won't be surfaced by this.
+
 		maxLines := int64(25)
 
 		{

@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Refactored Release handling to support upgrade logic similar to `E2E_OVERRIDE_VERSIONS`
+
 ## [1.9.0] - 2024-06-28
 
 ### Added

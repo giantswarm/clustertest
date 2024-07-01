@@ -23,4 +23,8 @@ const (
 	// ReleaseCommit is the git commit from the `giantswarm/releases` repo to
 	// fetch the release from
 	ReleaseCommit = "E2E_RELEASE_COMMIT"
+
+	// ReleasePreUpgradeVersion is intended to be used in E2E tests to indicate what
+	// Release version to make use of before performing an upgade to a newer Release.
+	ReleasePreUpgradeVersion = "E2E_RELEASE_PRE_UPGRADE"
 )

@@ -197,6 +197,37 @@ func (f *Framework) ApplyBuiltCluster(ctx context.Context, builtCluster *applica
 	}
 
 	err := f.CreateOrg(ctx, builtCluster.SourceCluster.Organization)
+
+	ns := builtCluster.Cluster.App.Namespace
+	configMapName := fmt.Sprintf("%s-app-operator-user-values", builtCluster.Cluster.App.Name)
+
+	// Create a ConfigMap with the user values for app-operator
+	configMapData := make(map[string]string, 0)
+	values := `
+service:
+  controller:
+    resyncPeriod: 1m
+  operatorkit:
+    resyncPeriod: 1m
+`
+	configMapData["values"] = values
+
+	cm := corev1.ConfigMap{
+		TypeMeta: metav1.TypeMeta{
+			Kind:       "ConfigMap",
+			APIVersion: "v1",
+		},
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      configMapName,
+			Namespace: ns,
+		},
+		Data: configMapData,
+	}
+
+	if err := f.mcClient.CreateOrUpdate(ctx, &cm); err != nil {
+		fmt.Printf("Failed to create user-values for app-operator - %v\n", err)
+	}
+
 	if err != nil {
 		return nil, err
 	}

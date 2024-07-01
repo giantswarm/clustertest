@@ -24,12 +24,20 @@ type Cluster struct {
 	ClusterApp     *Application
 	DefaultAppsApp *Application
 	Organization   *organization.Org
+	Release        ReleasePair
 }
 
 type AppPair struct {
 	App       *applicationv1alpha1.App
 	ConfigMap *corev1.ConfigMap
 }
+
+type ReleasePair struct {
+	Version string
+	Commit  string
+}
+
+const ReleaseLatest = "latest"
 
 type BuiltCluster struct {
 	SourceCluster *Cluster
@@ -64,6 +72,7 @@ func NewClusterApp(clusterName string, provider Provider) *Cluster {
 		ClusterApp:     clusterApp,
 		DefaultAppsApp: defaultAppsApp,
 		Organization:   org,
+		Release:        ReleasePair{Version: "", Commit: ""},
 	}
 }
 
@@ -129,6 +138,105 @@ func (c *Cluster) WithUserConfigSecret(secretName string) *Cluster {
 func (c *Cluster) WithExtraConfigs(extraConfigs []applicationv1alpha1.AppExtraConfig) *Cluster {
 	c.ClusterApp = c.ClusterApp.WithExtraConfigs(extraConfigs)
 	return c
+}
+
+// WithRelease sets the release version and commit to use for this Cluster
+func (c *Cluster) WithRelease(releasePair ReleasePair) *Cluster {
+	c.Release = releasePair
+	return c
+}
+
+// GetRelease builds the Release for the Cluster
+// If `Release.Version` or `Release.Commit` are empty string this will attempt to use the override release values from
+// environment variables, if found.
+// If `Release.Version` is set to `latest` then the environment variables will be ignored and the latest available
+// Release will be used.
+func (c *Cluster) GetRelease() (*releases.Release, error) {
+	var release *releases.Release
+	var err error
+
+	provider := releases.Provider(c.Provider)
+
+	if releases.IsProviderSupported(provider) {
+		logger.Log("Cluster App is supported by Releases")
+
+		releaseClient := releasesapi.NewClientWithGitHubToken(utils.GetGitHubToken())
+		releaseBuilder, err := releasesapi.NewBuilder(releaseClient, provider, "")
+		if err != nil {
+			return release, err
+		}
+
+		releaseVersion := c.Release.Version
+		releaseCommit := c.Release.Commit
+
+		if releaseVersion == "" && os.Getenv(env.ReleaseVersion) != "" {
+			releaseVersion = strings.TrimPrefix(os.Getenv(env.ReleaseVersion), fmt.Sprintf("%s-", provider))
+		} else if releaseVersion == "" {
+			releaseVersion = ReleaseLatest
+		}
+
+		if releaseCommit == "" && os.Getenv(env.ReleaseCommit) != "" {
+			releaseCommit = os.Getenv(env.ReleaseCommit)
+		} else if releaseCommit == "" {
+			releaseCommit = "master"
+		}
+
+		if releaseVersion == ReleaseLatest {
+			// Use the latest published release for this provider
+			clusterApplication, _, err := c.ClusterApp.Build()
+			if err != nil {
+				return release, err
+			}
+
+			releaseBuilder = releaseBuilder.
+				// Ensure release has a unique name
+				WithPreReleasePrefix("t").WithRandomPreRelease(10).
+				// Set the Cluster App to use
+				WithClusterApp(strings.TrimPrefix(clusterApplication.Spec.Version, "v"), clusterApplication.Spec.Catalog)
+
+			// TODO: Override default App versions if needed
+
+			release, err = releaseBuilder.Build(context.Background())
+			if err != nil {
+				return release, err
+			}
+		} else {
+			// Get in-progress release for a `giantswarm/releases` PR
+			release, err = releaseClient.GetReleaseForGitReference(context.Background(), provider, releaseVersion, releaseCommit)
+			if err != nil {
+				return release, err
+			}
+
+			// Override the release name with a unique suffix to avoid conflicts
+			joiner := "-"
+			if len(strings.Split(release.Name, "-")) > 2 {
+				// If the release name already has a prerelease suffix we need to use a different joining character to pass the regex
+				joiner = "."
+			}
+			release.Name = fmt.Sprintf("%s%s%s", release.Name, joiner, strings.TrimPrefix(utils.GenerateRandomName("r"), "r-"))
+
+			// Add the override release version and commit sha as annotations on the created Release CR
+			release.ObjectMeta.Annotations = mergeMaps(release.GetObjectMeta().GetAnnotations(), map[string]string{
+				"ci.giantswarm.io/release-version": releaseVersion,
+				"ci.giantswarm.io/release-commit":  releaseCommit,
+			})
+		}
+
+		// Set test-specific labels onto the Release CR
+		release.ObjectMeta.Labels = mergeMaps(release.GetObjectMeta().GetLabels(), getBaseLabels())
+		release.ObjectMeta.Labels = mergeMaps(release.GetObjectMeta().GetLabels(), map[string]string{
+			"giantswarm.io/cluster": c.Name,
+		})
+
+		// Mark the Release as being safe to delete from E2E tests
+		release.ObjectMeta.Annotations = mergeMaps(release.GetObjectMeta().GetAnnotations(), map[string]string{
+			utils.DeleteAnnotation: "true",
+		})
+
+		logger.Log("Release name: '%s'", release.ObjectMeta.Name)
+	}
+
+	return release, err
 }
 
 // GetNamespace returns the cluster organization namespace.
@@ -198,77 +306,14 @@ func (c *Cluster) Build() (*BuiltCluster, error) {
 	}
 
 	{
-		var release *releases.Release
-
 		// Release
-		provider := releases.Provider(c.Provider)
-		if releases.IsProviderSupported(provider) {
-			logger.Log("Cluster App is supported by Releases")
+		release, err := c.GetRelease()
+		if err != nil {
+			return builtCluster, err
+		}
 
-			releaseClient := releasesapi.NewClientWithGitHubToken(utils.GetGitHubToken())
-			releaseBuilder, err := releasesapi.NewBuilder(releaseClient, provider, "")
-			if err != nil {
-				return builtCluster, err
-			}
-
-			overrideReleaseVersion := os.Getenv(env.ReleaseVersion)
-			if overrideReleaseVersion != "" {
-				overrideReleaseCommit := os.Getenv(env.ReleaseCommit)
-				if overrideReleaseCommit == "" {
-					return nil, fmt.Errorf("'%s' was set without also setting '%s'", env.ReleaseVersion, env.ReleaseCommit)
-				}
-
-				// Remove the provider prefix from the release version
-				overrideReleaseVersion = strings.TrimPrefix(overrideReleaseVersion, fmt.Sprintf("%s-", provider))
-
-				release, err = releaseClient.GetReleaseForGitReference(context.Background(), provider, overrideReleaseVersion, overrideReleaseCommit)
-				if err != nil {
-					return builtCluster, err
-				}
-
-				// Override the release name with a unique suffix to avoid conflicts
-				joiner := "-"
-				if len(strings.Split(release.Name, "-")) > 2 {
-					// If the release name already has a prerelease suffix we need to use a different joining character to pass the regex
-					joiner = "."
-				}
-				release.Name = fmt.Sprintf("%s%s%s", release.Name, joiner, strings.TrimPrefix(utils.GenerateRandomName("r"), "r-"))
-
-				// Add the override release version and commit sha as annotations on the created Release CR
-				release.ObjectMeta.Annotations = mergeMaps(release.GetObjectMeta().GetAnnotations(), map[string]string{
-					"ci.giantswarm.io/release-version": overrideReleaseVersion,
-					"ci.giantswarm.io/release-commit":  overrideReleaseCommit,
-				})
-			} else {
-				releaseBuilder = releaseBuilder.
-					// Ensure release has a unique name
-					WithPreReleasePrefix("t").WithRandomPreRelease(10).
-					// Set the Cluster App to use
-					WithClusterApp(strings.TrimPrefix(builtCluster.Cluster.App.Spec.Version, "v"), builtCluster.Cluster.App.Spec.Catalog)
-
-				// TODO: Override default App versions if needed
-
-				release, err = releaseBuilder.Build(context.Background())
-				if err != nil {
-					return builtCluster, err
-				}
-			}
-
-			// Set test-specific labels onto the Release CR
-			release.ObjectMeta.Labels = mergeMaps(release.GetObjectMeta().GetLabels(), baseLabels)
-			release.ObjectMeta.Labels = mergeMaps(release.GetObjectMeta().GetLabels(), map[string]string{
-				"giantswarm.io/cluster": c.Name,
-			})
-
-			// Mark the Release as being safe to delete from E2E tests
-			release.ObjectMeta.Annotations = mergeMaps(release.GetObjectMeta().GetAnnotations(), map[string]string{
-				utils.DeleteAnnotation: "true",
-			})
-
-			logger.Log("Release name: '%s'", release.ObjectMeta.Name)
-
-			builtCluster.Release = release
-
+		builtCluster.Release = release
+		if builtCluster.Release != nil {
 			// Override the Cluster values with the release version
 			releaseVersion, err := release.GetVersion()
 			if err != nil {
@@ -276,8 +321,8 @@ func (c *Cluster) Build() (*BuiltCluster, error) {
 			}
 
 			releaseValues := fmt.Sprintf(`global:
-  release:
-    version: "%s"`, releaseVersion)
+    release:
+      version: "%s"`, releaseVersion)
 
 			builtCluster.Cluster.ConfigMap.Data["values"], err = mergeValues(builtCluster.Cluster.ConfigMap.Data["values"], releaseValues)
 			if err != nil {

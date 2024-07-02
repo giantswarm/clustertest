@@ -11,6 +11,7 @@ import (
 	"github.com/giantswarm/clustertest/pkg/env"
 	"github.com/giantswarm/clustertest/pkg/logger"
 	"github.com/giantswarm/clustertest/pkg/organization"
+	"github.com/giantswarm/clustertest/pkg/teleport"
 	"github.com/giantswarm/clustertest/pkg/testuser"
 	"github.com/giantswarm/clustertest/pkg/utils"
 	"github.com/giantswarm/clustertest/pkg/wait"
@@ -32,6 +33,7 @@ import (
 type Framework struct {
 	mcKubeconfigPath string
 	mcClient         *client.Client
+	teleportClient   *teleport.Client
 	wcClients        map[string]*client.Client
 }
 
@@ -47,8 +49,18 @@ func New(contextName string) (*Framework, error) {
 		return nil, err
 	}
 
+	var teleportClient *teleport.Client
+	teleportIdentityFile, ok := os.LookupEnv(env.TeleportIdentityFile)
+	if ok {
+		teleportClient, err = teleport.New(context.Background(), teleportIdentityFile)
+		if err != nil {
+			return nil, err
+		}
+	}
+
 	return &Framework{
 		mcKubeconfigPath: mcKubeconfig,
+		teleportClient:   teleportClient,
 		mcClient:         mcClient,
 		wcClients:        map[string]*client.Client{},
 	}, nil
@@ -240,12 +252,22 @@ func (f *Framework) ApplyBuiltCluster(ctx context.Context, builtCluster *applica
 //
 //	wcClient, err := framework.WaitForClusterReady(timeoutCtx, "test-cluster", "default")
 func (f *Framework) WaitForClusterReady(ctx context.Context, clusterName string, namespace string) (*client.Client, error) {
-	err := wait.For(wait.IsClusterReadyCondition(ctx, f.MC(), clusterName, namespace), wait.WithContext(ctx), wait.WithInterval(10*time.Second))
+	c := f.getKubeConfigClient()
+
+	err := wait.For(wait.IsClusterReadyCondition(ctx, c, clusterName, namespace), wait.WithContext(ctx), wait.WithInterval(10*time.Second))
 	if err != nil {
 		return nil, err
 	}
 
-	return client.NewFromSecret(ctx, f.MC(), clusterName, namespace)
+	return client.NewFromClient(ctx, c, clusterName, namespace)
+}
+
+func (f *Framework) getKubeConfigClient() any {
+	if f.teleportClient != nil {
+		return f.teleportClient
+	}
+
+	return f.MC()
 }
 
 // WaitForControlPlane polls the provided cluster and waits until the provided number of Control Plane nodes are reporting as ready

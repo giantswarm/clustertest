@@ -5,6 +5,8 @@ const (
 	// will be used to connect to the MC
 	Kubeconfig = "E2E_KUBECONFIG"
 
+	TeleportIdentityFile = "TELEPORT_IDENTITY_FILE"
+
 	// WorkloadClusterName is the environment variable containing the name of the
 	// WC to load instead of creating a new one
 	WorkloadClusterName = "E2E_WC_NAME"

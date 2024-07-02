@@ -33,6 +33,7 @@ import (
 	"sigs.k8s.io/yaml"
 
 	"github.com/giantswarm/clustertest/pkg/application"
+	"github.com/giantswarm/clustertest/pkg/teleport"
 )
 
 // Client extends the client from controller-runtime
@@ -74,6 +75,17 @@ func NewFromRawKubeconfig(kubeconfig string) (*Client, error) {
 	return newClient(restConfig, clusterName)
 }
 
+func NewFromClient(ctx context.Context, client any, clusterName string, namespace string) (*Client, error) {
+	switch c := client.(type) {
+	case *Client:
+		return NewFromSecret(ctx, c, clusterName, namespace)
+	case *teleport.Client:
+		return NewFromTeleport(ctx, c, clusterName)
+	default:
+		return nil, fmt.Errorf("unsupported client type")
+	}
+}
+
 // NewFromSecret create a new Kubernetes client from a cluster kubeconfig found in a secret on the MC.
 // This function may return a Not Found error if the kubeconfig secret is not found on the cluster.
 //
@@ -82,6 +94,16 @@ func NewFromRawKubeconfig(kubeconfig string) (*Client, error) {
 // so the client can be created while the cluster is still being set up.
 func NewFromSecret(ctx context.Context, kubeClient *Client, clusterName string, namespace string) (*Client, error) {
 	kubeconfig, err := kubeClient.GetClusterKubeConfig(ctx, clusterName, namespace)
+	if err != nil {
+		return nil, err
+	}
+
+	return NewFromRawKubeconfig(string(kubeconfig))
+}
+
+// NewFromTeleport creates a new Kubernetes client for the provided cluster name using the Teleport client
+func NewFromTeleport(ctx context.Context, teleportClient *teleport.Client, clusterName string) (*Client, error) {
+	kubeconfig, err := teleportClient.GetKubeConfig(ctx, clusterName)
 	if err != nil {
 		return nil, err
 	}

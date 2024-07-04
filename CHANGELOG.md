@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.10.1] - 2024-07-04
+
 ### Fixed
 
 - Added `E2E_WC_KEEP` environment variable constant
@@ -451,7 +453,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added initial framework layout
 - Added Kubernetes client extended from controller-runtime client
 
-[Unreleased]: https://github.com/giantswarm/clustertest/compare/v1.10.0...HEAD
+[Unreleased]: https://github.com/giantswarm/clustertest/compare/v1.10.1...HEAD
+[1.10.1]: https://github.com/giantswarm/clustertest/compare/v1.10.0...v1.10.1
 [1.10.0]: https://github.com/giantswarm/clustertest/compare/v1.9.0...v1.10.0
 [1.9.0]: https://github.com/giantswarm/clustertest/compare/v1.8.0...v1.9.0
 [1.8.0]: https://github.com/giantswarm/clustertest/compare/v1.7.0...v1.8.0

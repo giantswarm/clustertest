@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- HTTP Client must use its own dialer to be able to access the `addr` var
+
 ## [1.11.0] - 2024-07-04
 
 ### Added

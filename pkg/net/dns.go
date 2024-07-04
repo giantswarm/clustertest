@@ -9,7 +9,7 @@ import (
 	"github.com/giantswarm/clustertest/pkg/logger"
 )
 
-// NewResovler returns an initialized Resolver that uses an external nameserver to help avoid negative caching
+// NewResolver returns an initialized Resolver that uses an external nameserver to help avoid negative caching
 func NewResolver() *net.Resolver {
 	return &net.Resolver{
 		PreferGo:     true,

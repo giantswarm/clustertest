@@ -12,6 +12,11 @@ const (
 	// that the WC to load is in
 	WorkloadClusterNamespace = "E2E_WC_NAMESPACE"
 
+	// KeepWorkloadCluster is used to indicate if the teardown of the workload cluster
+	// should be skipped. Setting this env var to any non-empty value will ensure the
+	// cluster is kept at the end of a test run.
+	KeepWorkloadCluster = "E2E_WC_KEEP" //nolint:gosec
+
 	// OverrideVersions is the environment variable containing App versions to use
 	// instead of the latest release.
 	// This is a comma separated list in the format `app-name=version-number`

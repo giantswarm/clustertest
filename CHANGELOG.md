@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Added `E2E_WC_KEEP` environment variable constant
+
 ## [1.10.0] - 2024-07-01
 
 ### Changed

@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Moved `ShouldSkipUpgrade` from cluster-test-suites so it can be reused by cluster-standup-teardown also.
+
 ## [1.11.1] - 2024-07-04
 
 ### Fixed

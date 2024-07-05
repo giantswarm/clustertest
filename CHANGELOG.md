@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.12.0] - 2024-07-05
+
 ### Added
 
 - Moved `ShouldSkipUpgrade` from cluster-test-suites so it can be reused by cluster-standup-teardown also.
@@ -470,7 +472,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added initial framework layout
 - Added Kubernetes client extended from controller-runtime client
 
-[Unreleased]: https://github.com/giantswarm/clustertest/compare/v1.11.1...HEAD
+[Unreleased]: https://github.com/giantswarm/clustertest/compare/v1.12.0...HEAD
+[1.12.0]: https://github.com/giantswarm/clustertest/compare/v1.11.1...v1.12.0
 [1.11.1]: https://github.com/giantswarm/clustertest/compare/v1.11.0...v1.11.1
 [1.11.0]: https://github.com/giantswarm/clustertest/compare/v1.10.1...v1.11.0
 [1.10.1]: https://github.com/giantswarm/clustertest/compare/v1.10.0...v1.10.1

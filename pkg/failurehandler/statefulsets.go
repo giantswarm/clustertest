@@ -53,11 +53,8 @@ func StatefulSetsNotReady(framework *clustertest.Framework, cluster *application
 					if err != nil {
 						logger.Log("Failed to get Pods for StatefulSet '%s' - %v", statefulset.ObjectMeta.Name, err)
 					} else {
-						for _, pod := range pods.Items {
-							logger.Log("Pod '%s' status: Phase='%s'", pod.ObjectMeta.Name, pod.Status.Phase)
-							for _, condition := range pod.Status.Conditions {
-								logger.Log("Pod '%s' condition: Type='%s', Status='%s', Message='%s'", pod.ObjectMeta.Name, condition.Type, condition.Status, condition.Message)
-							}
+						for i := range pods.Items {
+							debugPod(ctx, wcClient, &pods.Items[i])
 						}
 					}
 				}

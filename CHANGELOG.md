@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Also print out the last 5 lines of logs when debugging pods
+
 ## [1.13.0] - 2024-07-08
 
 ### Breaking Changed

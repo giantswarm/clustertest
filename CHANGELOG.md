@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Breaking Changed
+
+- The `failurehandler.AppIssues` function no longer takes in a context and instead creates its own to ensure it isn't passed in an already timed-out context
+
+### Added
+
+- New failurehandler functions: `DeploymentsNotReady`, `DaemonSetsNotReady` & `StatefulSetsNotReady`
+- Added `GetPodsForStatefulSet` and `GetPodsForDaemonSet` to client
+
 ## [1.12.0] - 2024-07-05
 
 ### Added

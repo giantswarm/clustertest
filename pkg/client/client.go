@@ -391,3 +391,37 @@ func (c *Client) GetPodsForDeployment(ctx context.Context, deployment *appsv1.De
 
 	return pods, nil
 }
+
+// GetPodsForStatefulSet returns a list of Pods that match the given StatefulSet selector
+func (c *Client) GetPodsForStatefulSet(ctx context.Context, statefulset *appsv1.StatefulSet) (*corev1.PodList, error) {
+	pods := &corev1.PodList{}
+
+	selector, err := metav1.LabelSelectorAsSelector(statefulset.Spec.Selector)
+	if err != nil {
+		return pods, err
+	}
+
+	err = c.List(ctx, pods, cr.MatchingLabelsSelector{Selector: selector})
+	if err != nil {
+		return pods, err
+	}
+
+	return pods, nil
+}
+
+// GetPodsForDaemonSet returns a list of Pods that match the given DaemonSet selector
+func (c *Client) GetPodsForDaemonSet(ctx context.Context, daemonset *appsv1.DaemonSet) (*corev1.PodList, error) {
+	pods := &corev1.PodList{}
+
+	selector, err := metav1.LabelSelectorAsSelector(daemonset.Spec.Selector)
+	if err != nil {
+		return pods, err
+	}
+
+	err = c.List(ctx, pods, cr.MatchingLabelsSelector{Selector: selector})
+	if err != nil {
+		return pods, err
+	}
+
+	return pods, nil
+}

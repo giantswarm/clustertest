@@ -1,0 +1,67 @@
+package failurehandler
+
+import (
+	appsv1 "k8s.io/api/apps/v1"
+
+	"github.com/giantswarm/clustertest"
+	"github.com/giantswarm/clustertest/pkg/application"
+	"github.com/giantswarm/clustertest/pkg/logger"
+)
+
+// StatefulSetsNotReady collects debug information for all StatefulSets in the workload cluster that currently don't
+// have the expected number of replicas. This information includes events for the StatefulSet and the status of any
+// associated pods.
+func StatefulSetsNotReady(framework *clustertest.Framework, cluster *application.Cluster) FailureHandler {
+	return Wrap(func() {
+		ctx, cancel := newContext()
+		defer cancel()
+
+		logger.Log("Attempting to get debug info for non-ready StatefulSets")
+
+		wcClient, err := framework.WC(cluster.Name)
+		if err != nil {
+			logger.Log("Failed to get client for workload cluster - %v", err)
+			return
+		}
+
+		statefulSetsList := &appsv1.StatefulSetList{}
+		err = wcClient.List(ctx, statefulSetsList)
+		if err != nil {
+			logger.Log("Failed to get list of statefulsets")
+			return
+		}
+
+		for i := range statefulSetsList.Items {
+			statefulset := statefulSetsList.Items[i]
+			available := statefulset.Status.AvailableReplicas
+			desired := *statefulset.Spec.Replicas
+			if available != desired {
+				{
+					// Events
+					events, err := wcClient.GetEventsForResource(ctx, &statefulset)
+					if err != nil {
+						logger.Log("Failed to get events for StatefulSet '%s' - %v", statefulset.ObjectMeta.Name, err)
+					} else {
+						for _, event := range events.Items {
+							logger.Log("StatefulSet '%s' Event: Reason='%s', Message='%s', Last Occurred='%v'", statefulset.ObjectMeta.Name, event.Reason, event.Message, event.LastTimestamp)
+						}
+					}
+				}
+				{
+					// Pods
+					pods, err := wcClient.GetPodsForStatefulSet(ctx, &statefulset)
+					if err != nil {
+						logger.Log("Failed to get Pods for StatefulSet '%s' - %v", statefulset.ObjectMeta.Name, err)
+					} else {
+						for _, pod := range pods.Items {
+							logger.Log("Pod '%s' status: Phase='%s'", pod.ObjectMeta.Name, pod.Status.Phase)
+							for _, condition := range pod.Status.Conditions {
+								logger.Log("Pod '%s' condition: Type='%s', Status='%s', Message='%s'", pod.ObjectMeta.Name, condition.Type, condition.Status, condition.Message)
+							}
+						}
+					}
+				}
+			}
+		}
+	})
+}

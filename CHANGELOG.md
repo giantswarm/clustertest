@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.13.0] - 2024-07-08
+
 ### Breaking Changed
 
 - The `failurehandler.AppIssues` function no longer takes in a context and instead creates its own to ensure it isn't passed in an already timed-out context
@@ -481,7 +483,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added initial framework layout
 - Added Kubernetes client extended from controller-runtime client
 
-[Unreleased]: https://github.com/giantswarm/clustertest/compare/v1.12.0...HEAD
+[Unreleased]: https://github.com/giantswarm/clustertest/compare/v1.13.0...HEAD
+[1.13.0]: https://github.com/giantswarm/clustertest/compare/v1.12.0...v1.13.0
 [1.12.0]: https://github.com/giantswarm/clustertest/compare/v1.11.1...v1.12.0
 [1.11.1]: https://github.com/giantswarm/clustertest/compare/v1.11.0...v1.11.1
 [1.11.0]: https://github.com/giantswarm/clustertest/compare/v1.10.1...v1.11.0

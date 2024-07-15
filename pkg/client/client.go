@@ -199,9 +199,47 @@ func (c *Client) CheckConnection() error {
 }
 
 // GetClusterKubeConfig retrieves the Kubeconfig from the secret associated with the provided cluster name.
+
+func (c *Client) GetClusterKubeConfig(ctx context.Context, clusterName string, clusterNamespace string) (string, error) {
+	if os.Getenv("E2E_TELEPORT_KUBECONFIG") != "" {
+		return c.getTeleportKubeConfig(ctx, clusterName, clusterNamespace)
+	}
+
+	return c.getCAPIKubeConfig(ctx, clusterName, clusterNamespace)
+}
+
+// getTeleportKubeConfig retrieves the Kubeconfig from the secret that is created by Teleport tbot on the MC
+func (c *Client) getTeleportKubeConfig(ctx context.Context, clusterName string, clusterNamespace string) (string, error) {
+	var kubeconfigSecret corev1.Secret
+	err := c.Get(ctx, types.NamespacedName{Name: fmt.Sprintf("%s-tbot-kubeconfig", clusterName), Namespace: clusterNamespace}, &kubeconfigSecret)
+	if err != nil {
+		return "", err
+	}
+	// Todo: change if "value is not actually the key"
+	if len(kubeconfigSecret.Data["value"]) == 0 {
+		return "", fmt.Errorf("kubeconfig secret found for data not populated")
+	}
+
+	kubeconfig := clientcmdapi.Config{}
+	err = yaml.Unmarshal(kubeconfigSecret.Data["value"], &kubeconfig)
+	if err != nil {
+		return "", err
+	}
+
+	// todo: figure out whether any changes are needed to the kubeconfig as is the case with CAPI kubeconfigs
+
+	kc, err := yaml.Marshal(kubeconfig)
+	if err != nil {
+		return "", err
+	}
+
+	return string(kc), nil
+}
+
+// getCAPIKubeConfig retrieves the Kubeconfig from the secret that is created by CAPI controllers on the MC
 //
 // The server hostname used in the kubeconfig is modified to use the DNS name if it is found to be using an IP address.
-func (c *Client) GetClusterKubeConfig(ctx context.Context, clusterName string, clusterNamespace string) (string, error) {
+func (c *Client) getCAPIKubeConfig(ctx context.Context, clusterName string, clusterNamespace string) (string, error) {
 	var kubeconfigSecret corev1.Secret
 	err := c.Get(ctx, types.NamespacedName{Name: fmt.Sprintf("%s-kubeconfig", clusterName), Namespace: clusterNamespace}, &kubeconfigSecret)
 	if err != nil {

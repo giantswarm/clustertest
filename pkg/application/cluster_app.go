@@ -25,6 +25,8 @@ type Cluster struct {
 	DefaultAppsApp *Application
 	Organization   *organization.Org
 	Release        ReleasePair
+
+	appOverrides []Application
 }
 
 type AppPair struct {
@@ -73,6 +75,8 @@ func NewClusterApp(clusterName string, provider Provider) *Cluster {
 		DefaultAppsApp: defaultAppsApp,
 		Organization:   org,
 		Release:        ReleasePair{Version: "", Commit: ""},
+
+		appOverrides: []Application{},
 	}
 }
 
@@ -158,8 +162,6 @@ func (c *Cluster) GetRelease() (*releases.Release, error) {
 	provider := releases.Provider(c.Provider)
 
 	if releases.IsProviderSupported(provider) {
-		logger.Log("Cluster App is supported by Releases")
-
 		releaseClient := releasesapi.NewClientWithGitHubToken(utils.GetGitHubToken())
 		releaseBuilder, err := releasesapi.NewBuilder(releaseClient, provider, "")
 		if err != nil {
@@ -194,7 +196,10 @@ func (c *Cluster) GetRelease() (*releases.Release, error) {
 				// Set the Cluster App to use
 				WithClusterApp(strings.TrimPrefix(clusterApplication.Spec.Version, "v"), clusterApplication.Spec.Catalog)
 
-			// TODO: Override default App versions if needed
+			for _, overrideApp := range c.appOverrides {
+				logger.Log("Overriding Release app '%s'", overrideApp.AppName)
+				releaseBuilder = releaseBuilder.WithApp(overrideApp.AppName, overrideApp.Version, overrideApp.Catalog, []string{})
+			}
 
 			release, err = releaseBuilder.Build(context.Background())
 			if err != nil {
@@ -232,8 +237,6 @@ func (c *Cluster) GetRelease() (*releases.Release, error) {
 		release.ObjectMeta.Annotations = mergeMaps(release.GetObjectMeta().GetAnnotations(), map[string]string{
 			utils.DeleteAnnotation: "true",
 		})
-
-		logger.Log("Release name: '%s'", release.ObjectMeta.Name)
 	}
 
 	return release, err
@@ -248,6 +251,35 @@ func (c *Cluster) GetNamespace() string {
 // that deploys all default apps.
 func (c *Cluster) UsesUnifiedClusterApp() (bool, error) {
 	return c.ClusterApp.IsUnifiedClusterAppWithDefaultApps()
+}
+
+// IsDefaultApp checks if the provided Application is defined as a default app in the Release
+func (c *Cluster) IsDefaultApp(app Application) (bool, error) {
+	release, err := c.GetRelease()
+	if err != nil {
+		return false, err
+	}
+
+	for _, defaultApp := range release.Spec.Apps {
+		if app.AppName == defaultApp.Name {
+			return true, nil
+		}
+	}
+
+	return false, nil
+}
+
+// WithAppOverride uses the provided Application to override a default app when creating the cluster
+func (c *Cluster) WithAppOverride(app Application) *Cluster {
+	isDefault, err := c.IsDefaultApp(app)
+	if err != nil {
+		return c
+	}
+	if isDefault {
+		c.appOverrides = append(c.appOverrides, app)
+	}
+
+	return c
 }
 
 // Build defaults and populates some required values on the apps then generated the App and Configmap pairs for both the
@@ -268,6 +300,15 @@ func (c *Cluster) Build() (*BuiltCluster, error) {
 			WithConfigMapLabels(mergeMaps(baseLabels, map[string]string{
 				"giantswarm.io/cluster": c.Name,
 			}))
+
+		var err error
+		for _, defaultApp := range c.appOverrides {
+			c.ClusterApp.Values, err = mergeValues(c.ClusterApp.Values, buildDefaultAppValues(defaultApp))
+			if err != nil {
+				return builtCluster, err
+			}
+		}
+
 		clusterApplication, clusterCM, err := c.ClusterApp.Build()
 		if err != nil {
 			return builtCluster, err
@@ -314,6 +355,8 @@ func (c *Cluster) Build() (*BuiltCluster, error) {
 
 		builtCluster.Release = release
 		if builtCluster.Release != nil {
+			logger.Log("Cluster App is supported by Releases")
+			logger.Log("Release name: '%s'", release.ObjectMeta.Name)
 			// Override the Cluster values with the release version
 			releaseVersion, err := release.GetVersion()
 			if err != nil {

@@ -23,7 +23,7 @@ const (
 )
 
 // If commit SHA based version we'll change the catalog
-var isShaVersion = regexp.MustCompile(`(?m)^v?[0-9]+\.[0-9]+\.[0-9]+\-\w{40}`)
+var isShaVersion = regexp.MustCompile(`(?m)^v?[0-9]+\.[0-9]+\.[0-9]+(\-\w+)?\-\w{40}`)
 
 func init() {
 	_ = applicationv1alpha1.AddToScheme(scheme.Scheme)
@@ -223,7 +223,7 @@ func (a *Application) Build() (*applicationv1alpha1.App, *corev1.ConfigMap, erro
 		}
 		fallthrough
 	case "latest":
-		latestVersion, err := getLatestReleaseVersion(a.RepoName)
+		latestVersion, err := GetLatestAppVersion(a.RepoName)
 		if err != nil {
 			return nil, nil, err
 		}
@@ -331,7 +331,7 @@ func (a *Application) IsUnifiedClusterAppWithDefaultApps() (bool, error) {
 		appVersionString, ok = getOverrideVersion(a.AppName)
 		if !ok {
 			var err error
-			appVersionString, err = getLatestReleaseVersion(a.AppName)
+			appVersionString, err = GetLatestAppVersion(a.AppName)
 			if err != nil {
 				return false, err
 			}

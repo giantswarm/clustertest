@@ -26,12 +26,12 @@ func newGitHubClient(ctx context.Context) *github.Client {
 	return github.NewClient(ghHTTPClient)
 }
 
-// getLatestReleaseVersion returns the latest version (tag) name for a given repos release.
+// GetLatestAppVersion returns the latest version (tag) name for a given repos release.
 //
 // This function attempts to check for repos both with and without the `-app` suffix of the provided `applicationName`.
 // The provided `applicationName` is used as preference when looking up releases but if fails will fallback to the
 // suffix variation.
-func getLatestReleaseVersion(applicationName string) (string, error) {
+func GetLatestAppVersion(applicationName string) (string, error) {
 	ctx := context.Background()
 	gh := newGitHubClient(ctx)
 

@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Fixed `isShaVersion` regex to also allow for versions with pre-release suffix already (e.g. `-gs3`)
+
+### Changed
+
+- Replaced `getLatestReleaseVersion` with `GetLatestAppVersion`
+- Log output of release name now handled in `Build` instead of `GetRelease`
+
+### Added
+
+- Added `IsDefaultApp` to Cluster to allow checking if a given App is a default app installed for that cluster
+- Added `WithAppOverride` to Cluster to allow overriding default apps included on a Release (note: only supports providers that have moved to Releases already)
+
 ## [1.14.0] - 2024-07-08
 
 ### Added

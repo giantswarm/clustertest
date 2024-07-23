@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Bump releases SDK to actually handle Azure
+
 ## [1.16.0] - 2024-07-23
 
 ### Changed

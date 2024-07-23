@@ -8,7 +8,7 @@ import (
 	cr "sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-// GetEventsForResources returns all existing events related to the provided resource
+// GetEventsForResource returns all existing events related to the provided resource
 func (c *Client) GetEventsForResource(ctx context.Context, resource cr.Object, extraFieldSelectors ...fields.Selector) (*corev1.EventList, error) {
 	events := &corev1.EventList{}
 

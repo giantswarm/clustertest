@@ -29,18 +29,22 @@ type Cluster struct {
 	appOverrides []Application
 }
 
+// AppPair wraps an App and it's ConfigMap into a single struct
 type AppPair struct {
 	App       *applicationv1alpha1.App
 	ConfigMap *corev1.ConfigMap
 }
 
+// ReleasePair contains the Version and Commit sha for a specific Release
 type ReleasePair struct {
 	Version string
 	Commit  string
 }
 
+// ReleaseLatest is the value to use when fetching whatever the latest Release version is
 const ReleaseLatest = "latest"
 
+// BuiltCluster represents a Cluster after built into the resources that will be applied to Kubernetes
 type BuiltCluster struct {
 	SourceCluster *Cluster
 	Cluster       *AppPair
@@ -51,6 +55,7 @@ type BuiltCluster struct {
 // Provider is the supported cluster provider name used to determine the cluster and default-apps to use
 type Provider string
 
+// nolint:revive
 const (
 	ProviderAWS           Provider = "aws"
 	ProviderEKS           Provider = "eks"

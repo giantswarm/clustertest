@@ -13,6 +13,7 @@ import (
 	"github.com/giantswarm/clustertest/pkg/logger"
 )
 
+// ExecInPod runs a given command within a pod running within the cluster and returns back the stdout and stderr
 func (c *Client) ExecInPod(ctx context.Context, podName, namespace, containerName string, command []string) (string, string, error) {
 	logger.Log("Running %v in container '%s' in pod '%s'", command, containerName, podName)
 

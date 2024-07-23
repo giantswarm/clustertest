@@ -1,0 +1,16 @@
+linters:
+  enable:
+    - revive
+
+linters-settings:
+  revive:
+    rules:
+      - name: exported
+        arguments:
+          - disableStutteringCheck
+
+issues:
+  include:
+    - EXC0012
+    - EXC0013
+    - EXC0014

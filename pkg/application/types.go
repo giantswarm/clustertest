@@ -40,10 +40,12 @@ func (np *NodePools) UnmarshalJSON(b []byte) error {
 	return nil
 }
 
+// ControlPlane contains the minimum require values for the Control Plane values
 type ControlPlane struct {
 	Replicas int `yaml:"replicas"`
 }
 
+// NodePool contains the minimum required values for a Node Pools values
 type NodePool struct {
 	Replicas int     `yaml:"replicas"`
 	MaxSize  int     `yaml:"maxSize"`

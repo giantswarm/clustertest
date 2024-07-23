@@ -22,6 +22,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client/apiutil"
 )
 
+// Range is a wrapper for min and max values
 type Range struct {
 	Min int
 	Max int

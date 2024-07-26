@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.16.2] - 2024-07-26
+
 ### Fixed
 
 - Bump releases SDK to correctly get latest release
@@ -521,7 +523,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added initial framework layout
 - Added Kubernetes client extended from controller-runtime client
 
-[Unreleased]: https://github.com/giantswarm/clustertest/compare/v1.16.1...HEAD
+[Unreleased]: https://github.com/giantswarm/clustertest/compare/v1.16.2...HEAD
+[1.16.2]: https://github.com/giantswarm/clustertest/compare/v1.16.1...v1.16.2
 [1.16.1]: https://github.com/giantswarm/clustertest/compare/v1.16.0...v1.16.1
 [1.16.0]: https://github.com/giantswarm/clustertest/compare/v1.15.0...v1.16.0
 [1.15.0]: https://github.com/giantswarm/clustertest/compare/v1.14.0...v1.15.0

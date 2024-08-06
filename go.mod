@@ -17,7 +17,7 @@ require (
 	github.com/google/go-github/v63 v63.0.0
 	github.com/mittwald/go-helm-client v0.12.11
 	golang.org/x/oauth2 v0.22.0
-	golang.org/x/text v0.16.0
+	golang.org/x/text v0.17.0
 	k8s.io/api v0.30.3
 	k8s.io/apimachinery v0.30.3
 	k8s.io/client-go v0.30.3
@@ -154,7 +154,7 @@ require (
 	golang.org/x/crypto v0.24.0 // indirect
 	golang.org/x/exp v0.0.0-20240613232115-7f521ea00fb8 // indirect
 	golang.org/x/net v0.26.0 // indirect
-	golang.org/x/sync v0.7.0 // indirect
+	golang.org/x/sync v0.8.0 // indirect
 	golang.org/x/sys v0.21.0 // indirect
 	golang.org/x/term v0.21.0 // indirect
 	golang.org/x/time v0.5.0 // indirect

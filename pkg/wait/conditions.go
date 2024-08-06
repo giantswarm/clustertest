@@ -67,26 +67,34 @@ func Consistent(action func() error, attempts int, pollInterval time.Duration) f
 // IsClusterReadyCondition returns a WaitCondition to check when a cluster is considered ready and accessible
 func IsClusterReadyCondition(ctx context.Context, kubeClient *client.Client, clusterName string, namespace string) WaitCondition {
 	return func() (bool, error) {
-		logger.Log("Checking for valid Kubeconfig for cluster %s", clusterName)
+		select {
+		case <-ctx.Done():
+			// Context timed out so we exit early
+			return false, ctx.Err()
+		default:
+			logger.Log("Checking for valid Kubeconfig for cluster %s", clusterName)
 
-		wcClient, err := client.NewFromSecret(ctx, kubeClient, clusterName, namespace)
-		if err != nil && cr.IgnoreNotFound(err) == nil {
-			// Kubeconfig not yet available
-			logger.Log("kubeconfig secret not yet available")
-			return false, nil
-		} else if err != nil {
-			return false, err
+			wcClient, err := client.NewFromSecret(ctx, kubeClient, clusterName, namespace)
+			if err != nil && cr.IgnoreNotFound(err) == nil {
+				// Kubeconfig not yet available
+				logger.Log("kubeconfig secret not yet available")
+				return false, nil
+			} else if err != nil {
+				logger.Log("Error occurred while trying to get kubeconfig secret - %v", err)
+				// Note: We're not going to return the error here so that we can try again in case of transient issue
+				return false, nil
+			}
+
+			if err := wcClient.CheckConnection(); err != nil {
+				// Cluster not yet ready
+				logger.Log("connection to api-server not yet available - %v", err)
+				return false, nil
+			}
+
+			logger.Log("Got valid kubeconfig!")
+
+			return true, nil
 		}
-
-		if err := wcClient.CheckConnection(); err != nil {
-			// Cluster not yet ready
-			logger.Log("connection to api-server not yet available - %v", err)
-			return false, nil
-		}
-
-		logger.Log("Got valid kubeconfig!")
-
-		return true, nil
 	}
 }
 

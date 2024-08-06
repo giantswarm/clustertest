@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Changed `IsClusterReadyCondition` to no longer return an error when failed to lookup kubeconfig secret due to possibly transient network errors, instead returns `false, nil` with logging of the error so a retry can be performed. Now also checks if `ctx` has timed out.
+
 ## [1.16.2] - 2024-07-26
 
 ### Fixed

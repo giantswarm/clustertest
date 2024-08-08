@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.17.1] - 2024-08-08
+
 ### Fixed
 
 - Ensure release version is correctly removing the prefix if found
@@ -533,7 +535,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added initial framework layout
 - Added Kubernetes client extended from controller-runtime client
 
-[Unreleased]: https://github.com/giantswarm/clustertest/compare/v1.17.0...HEAD
+[Unreleased]: https://github.com/giantswarm/clustertest/compare/v1.17.1...HEAD
+[1.17.1]: https://github.com/giantswarm/clustertest/compare/v1.17.0...v1.17.1
 [1.17.0]: https://github.com/giantswarm/clustertest/compare/v1.16.2...v1.17.0
 [1.16.2]: https://github.com/giantswarm/clustertest/compare/v1.16.1...v1.16.2
 [1.16.1]: https://github.com/giantswarm/clustertest/compare/v1.16.0...v1.16.1

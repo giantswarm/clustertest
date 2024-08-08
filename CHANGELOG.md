@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Ensure release version is correctly removing the prefix if found
+
 ## [1.17.0] - 2024-08-06
 
 ### Changed

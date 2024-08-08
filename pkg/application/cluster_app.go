@@ -173,7 +173,7 @@ func (c *Cluster) GetRelease() (*releases.Release, error) {
 			return release, err
 		}
 
-		releaseVersion := c.Release.Version
+		releaseVersion := strings.TrimPrefix(c.Release.Version, fmt.Sprintf("%s-", provider))
 		releaseCommit := c.Release.Commit
 
 		if releaseVersion == "" && os.Getenv(env.ReleaseVersion) != "" {

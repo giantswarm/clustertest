@@ -202,6 +202,9 @@ func (c *Client) CheckConnection() error {
 
 func (c *Client) GetClusterKubeConfig(ctx context.Context, clusterName string, clusterNamespace string) (string, error) {
 	if os.Getenv("E2E_TELEPORT_KUBECONFIG") != "" {
+		// Unlike, CAPI, the kubeconfig secret by Teleport tbot is created
+		// in namespace where tbot is deployed, and we deploy tbot in `giantswarm` namespace.
+		clusterNamespace = "giantswarm"
 		return c.getTeleportKubeConfig(ctx, clusterName, clusterNamespace)
 	}
 
@@ -211,23 +214,21 @@ func (c *Client) GetClusterKubeConfig(ctx context.Context, clusterName string, c
 // getTeleportKubeConfig retrieves the Kubeconfig from the secret that is created by Teleport tbot on the MC
 func (c *Client) getTeleportKubeConfig(ctx context.Context, clusterName string, clusterNamespace string) (string, error) {
 	var kubeconfigSecret corev1.Secret
-	err := c.Get(ctx, types.NamespacedName{Name: fmt.Sprintf("%s-tbot-kubeconfig", clusterName), Namespace: clusterNamespace}, &kubeconfigSecret)
+	err := c.Get(ctx, types.NamespacedName{Name: fmt.Sprintf("teleport-%s-kubeconfig", clusterName), Namespace: clusterNamespace}, &kubeconfigSecret)
 	if err != nil {
 		return "", err
 	}
-	// Todo: change if "value is not actually the key"
-	if len(kubeconfigSecret.Data["value"]) == 0 {
-		return "", fmt.Errorf("kubeconfig secret found for data not populated")
+	if len(kubeconfigSecret.Data["kubeconfig.yaml"]) == 0 {
+		return "", fmt.Errorf("kubeconfig secret found but data[kubeconfig.yaml] not populated")
 	}
 
 	kubeconfig := clientcmdapi.Config{}
-	err = yaml.Unmarshal(kubeconfigSecret.Data["value"], &kubeconfig)
+	err = yaml.Unmarshal(kubeconfigSecret.Data["kubeconfig.yaml"], &kubeconfig)
 	if err != nil {
 		return "", err
 	}
 
 	// todo: figure out whether any changes are needed to the kubeconfig as is the case with CAPI kubeconfigs
-
 	kc, err := yaml.Marshal(kubeconfig)
 	if err != nil {
 		return "", err

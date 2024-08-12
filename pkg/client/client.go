@@ -199,7 +199,6 @@ func (c *Client) CheckConnection() error {
 }
 
 // GetClusterKubeConfig retrieves the Kubeconfig from the secret associated with the provided cluster name.
-
 func (c *Client) GetClusterKubeConfig(ctx context.Context, clusterName string, clusterNamespace string) (string, error) {
 	if os.Getenv("E2E_TELEPORT_KUBECONFIG") != "" {
 		// Unlike, CAPI, the kubeconfig secret by Teleport tbot is created

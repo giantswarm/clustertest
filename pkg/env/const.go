@@ -36,5 +36,5 @@ const (
 	// TeleportKubeConfig is used to indicate that instead of the wc kubeconfig created by CAPI,
 	// the kubeconfig created by teleport tbot should be used. Setting this env var to any non-empty
 	// value will ensure the teleport kubeconfig is used.
-	TeleportKubeConfig = "E2E_TELEPORT_KUBECONFIG"
+	UseTeleportKubeConfig = "E2E_USE_TELEPORT_KUBECONFIG"
 )

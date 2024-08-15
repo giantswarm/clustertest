@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Updated all modules to latest (including support for Kubernetes v1.31)
+
 ## [1.17.1] - 2024-08-08
 
 ### Fixed

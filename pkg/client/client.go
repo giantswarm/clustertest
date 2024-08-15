@@ -189,7 +189,7 @@ func getClusterNameFromKubeConfig(data []byte, contextName string) (string, erro
 }
 
 // getTLSServerNameFromKubeConfig gets the TLS server name of the cluster selected for the provided context.
-// TLS server name is used to check server certificate only valid for cluster access via teleport.
+// TLS server name is used to check server certificate, and is only valid for teleport kubeconfig.
 func getTLSServerNameFromKubeConfig(data []byte) (string, error) {
 	if len(data) == 0 {
 		return "", fmt.Errorf("Empty kubeconfig provided")

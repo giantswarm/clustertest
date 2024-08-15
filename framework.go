@@ -217,10 +217,13 @@ func (f *Framework) ApplyBuiltCluster(ctx context.Context, builtCluster *applica
 		return nil, err
 	}
 
-	// Create the E2E test service account and create a new client authenticated as it
-	testClient, err := testuser.Create(ctx, kubeClient)
-	if err != nil {
-		return nil, err
+	testClient := kubeClient
+	if os.Getenv("E2E_USE_TELEPORT_KUBECONFIG") == "" {
+		// Create the E2E test service account and create a new client authenticated as it
+		testClient, err = testuser.Create(ctx, kubeClient)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	// Store the WC client for use in the tests

@@ -34,6 +34,7 @@ The following environment variables can be set to control or override different 
 | `E2E_RELEASE_VERSION` | The base Release version to use when creating the Workload Cluster.<br/>Must be used with `E2E_RELEASE_COMMIT` |
 | `E2E_RELEASE_COMMIT` | The git commit from the `releases` repo that contains the Release version to use when creating the Workload Cluster.<br/>Must be used with `E2E_RELEASE_VERSION` |
 | `E2E_RELEASE_PRE_UPGRADE` | Intended to be used in E2E tests to indicate what Release version to make use of before performing an upgade to a newer Release. Note: not used within this codebase but exposed for use by tests. |
+| `E2E_USE_TELEPORT_KUBECONFIG` | This environment variable is used to indicate that instead of the using WC kubeconfig created by CAPI, the kubeconfig created by teleport tbot should be used. Setting this env var to any non-empty value will ensure the teleport kubeconfig is used. Note: [teleport-tbot app](https://github.com/giantswarm/teleport-tbot) must be deployed on the MC. |
 
 All of these can be found in [`./pkg/env/const.go`](./pkg/env/const.go).
 

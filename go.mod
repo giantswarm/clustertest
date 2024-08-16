@@ -27,7 +27,7 @@ require (
 	sigs.k8s.io/cluster-api v1.8.1
 	sigs.k8s.io/controller-runtime v0.19.0
 	sigs.k8s.io/e2e-framework v0.4.0
-	sigs.k8s.io/kind v0.23.0
+	sigs.k8s.io/kind v0.24.0
 	sigs.k8s.io/yaml v1.4.0
 )
 

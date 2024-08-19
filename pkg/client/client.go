@@ -70,6 +70,10 @@ func NewFromRawKubeconfig(kubeconfig string) (*Client, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to create rest config - %v", err)
 	}
+	restConfig.ServerName, err = getTLSServerNameFromKubeConfig([]byte(kubeconfig))
+	if err != nil {
+		return nil, fmt.Errorf("failed to get TLS server name - %v", err)
+	}
 
 	return newClient(restConfig, clusterName)
 }
@@ -182,6 +186,30 @@ func getClusterNameFromKubeConfig(data []byte, contextName string) (string, erro
 	return clusterName, nil
 }
 
+// getTLSServerNameFromKubeConfig gets the TLS server name of the cluster selected for the provided context.
+// TLS server name is used to check server certificate, and is only valid for teleport kubeconfig.
+func getTLSServerNameFromKubeConfig(data []byte) (string, error) {
+	if len(data) == 0 {
+		return "", fmt.Errorf("Empty kubeconfig provided")
+	}
+
+	kubeconfig := clientcmdapi.Config{}
+	err := yaml.Unmarshal(data, &kubeconfig)
+	if err != nil {
+		return "", err
+	}
+
+	tlsServerName := ""
+	for _, cluster := range kubeconfig.Clusters {
+		if cluster.Cluster.TLSServerName != "" {
+			tlsServerName = cluster.Cluster.TLSServerName
+			break
+		}
+	}
+
+	return tlsServerName, nil
+}
+
 // CheckConnection attempts to connect to the clusters API server and returns an error if not successful.
 // A successful connection is defined as a valid response from the api-server but not necessarily a success response.
 // For example, both a "Not Found" and a "Forbidden" response from the server is still a valid, working connection to
@@ -199,9 +227,58 @@ func (c *Client) CheckConnection() error {
 }
 
 // GetClusterKubeConfig retrieves the Kubeconfig from the secret associated with the provided cluster name.
+func (c *Client) GetClusterKubeConfig(ctx context.Context, clusterName string, clusterNamespace string) (string, error) {
+	kubeconfig, err := c.getTeleportKubeConfig(ctx, clusterName, "giantswarm")
+	if err != nil {
+		return kubeconfig, err
+	}
+
+	// Fallback to CAPI kubeconfig if no teleport
+	if kubeconfig == "" {
+		kubeconfig, err = c.getCAPIKubeConfig(ctx, clusterName, clusterNamespace)
+	}
+
+	return kubeconfig, err
+}
+
+// getTeleportKubeConfig retrieves the Kubeconfig from the secret that is created by Teleport tbot on the MC.
+func (c *Client) getTeleportKubeConfig(ctx context.Context, clusterName string, clusterNamespace string) (string, error) {
+	var kubeconfigSecret corev1.Secret
+	err := c.Get(ctx, types.NamespacedName{Name: fmt.Sprintf("teleport-%s-kubeconfig", clusterName), Namespace: clusterNamespace}, &kubeconfigSecret)
+	if err != nil {
+		if errors.IsNotFound(err) {
+			// If not found we will return nothing
+			return "", nil
+		}
+		return "", err
+	}
+	if len(kubeconfigSecret.Data["kubeconfig.yaml"]) == 0 {
+		return "", fmt.Errorf("kubeconfig secret found but data[kubeconfig.yaml] not populated")
+	}
+
+	kubeconfig := clientcmdapi.Config{}
+	err = yaml.Unmarshal(kubeconfigSecret.Data["kubeconfig.yaml"], &kubeconfig)
+	if err != nil {
+		return "", err
+	}
+
+	kc, err := yaml.Marshal(kubeconfig)
+	if err != nil {
+		return "", err
+	}
+
+	return string(kc), nil
+}
+
+// IsTeleportKubeconfig checks if the kubeconfig being used is one provided by Teleport or not
+func (c *Client) IsTeleportKubeconfig() bool {
+	return strings.Contains(c.config.ServerName, "teleport")
+}
+
+// getCAPIKubeConfig retrieves the Kubeconfig from the secret that is created by CAPI controllers on the MC
 //
 // The server hostname used in the kubeconfig is modified to use the DNS name if it is found to be using an IP address.
-func (c *Client) GetClusterKubeConfig(ctx context.Context, clusterName string, clusterNamespace string) (string, error) {
+func (c *Client) getCAPIKubeConfig(ctx context.Context, clusterName string, clusterNamespace string) (string, error) {
 	var kubeconfigSecret corev1.Secret
 	err := c.Get(ctx, types.NamespacedName{Name: fmt.Sprintf("%s-kubeconfig", clusterName), Namespace: clusterNamespace}, &kubeconfigSecret)
 	if err != nil {

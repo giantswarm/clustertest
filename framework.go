@@ -217,10 +217,15 @@ func (f *Framework) ApplyBuiltCluster(ctx context.Context, builtCluster *applica
 		return nil, err
 	}
 
-	// Create the E2E test service account and create a new client authenticated as it
-	testClient, err := testuser.Create(ctx, kubeClient)
-	if err != nil {
-		return nil, err
+	testClient := kubeClient
+	// Do not switch to using test user if the kubeconfig is from Teleport
+	if !kubeClient.IsTeleportKubeconfig() {
+		// Create the E2E test service account and create a new client authenticated as it
+		logger.Log("KubeConfig isn't managed by Teleport, generating ServiceAccount in WC to assume")
+		testClient, err = testuser.Create(ctx, kubeClient)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	// Store the WC client for use in the tests

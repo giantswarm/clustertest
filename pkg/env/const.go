@@ -32,9 +32,4 @@ const (
 	// ReleasePreUpgradeVersion is intended to be used in E2E tests to indicate what
 	// Release version to make use of before performing an upgade to a newer Release.
 	ReleasePreUpgradeVersion = "E2E_RELEASE_PRE_UPGRADE"
-
-	// UseTeleportKubeConfig is used to indicate that instead of using the WC kubeconfig created by CAPI,
-	// the kubeconfig created by teleport tbot should be used. Setting this env var to any non-empty
-	// value will ensure the teleport kubeconfig is used.
-	UseTeleportKubeConfig = "E2E_USE_TELEPORT_KUBECONFIG"
 )

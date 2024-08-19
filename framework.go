@@ -217,10 +217,11 @@ func (f *Framework) ApplyBuiltCluster(ctx context.Context, builtCluster *applica
 		return nil, err
 	}
 
-	// Do not switch to using test user if the E2E_USE_TELEPORT_KUBECONFIG env var is set
 	testClient := kubeClient
-	if os.Getenv("E2E_USE_TELEPORT_KUBECONFIG") == "" {
+	// Do not switch to using test user if the kubeconfig is from Teleport
+	if !kubeClient.IsTeleportKubeconfig() {
 		// Create the E2E test service account and create a new client authenticated as it
+		logger.Log("KubeConfig isn't managed by Teleport, generating ServiceAccount in WC to assume")
 		testClient, err = testuser.Create(ctx, kubeClient)
 		if err != nil {
 			return nil, err

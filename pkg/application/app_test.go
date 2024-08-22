@@ -549,7 +549,7 @@ func TestIsUnifiedClusterAppWithDefaultApps(t *testing.T) {
 		{
 			description:    "cluster-vsphere is not a unified cluster app",
 			appName:        "cluster-vsphere",
-			appVersion:     "v0.60.0",
+			appVersion:     "v0.59.0",
 			expectedResult: false,
 		},
 		{

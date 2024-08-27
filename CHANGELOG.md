@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.20.0] - 2024-08-27
+
 ### Added
 
 - Add support for unified cluster-vsphere app. With cluster-vsphere v0.61.0 and newer, default apps are deployed with cluster-vsphere, and default-apps-vsphere app is not deployed anymore.
@@ -551,7 +553,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added initial framework layout
 - Added Kubernetes client extended from controller-runtime client
 
-[Unreleased]: https://github.com/giantswarm/clustertest/compare/v1.19.0...HEAD
+[Unreleased]: https://github.com/giantswarm/clustertest/compare/v1.20.0...HEAD
+[1.20.0]: https://github.com/giantswarm/clustertest/compare/v1.19.0...v1.20.0
 [1.19.0]: https://github.com/giantswarm/clustertest/compare/v1.18.0...v1.19.0
 [1.18.0]: https://github.com/giantswarm/clustertest/compare/v1.17.1...v1.18.0
 [1.17.1]: https://github.com/giantswarm/clustertest/compare/v1.17.0...v1.17.1

@@ -15,7 +15,7 @@ jobs:
           apptestctl-version: v0.14.1
           helm-version: v3.8.2
           kubernetes-version: v1.21.1
-      - architect/go-cahce-restore
+      - architect/go-cache-restore
       - run:
           name: "Install golang-lint"
           command: |
@@ -28,7 +28,7 @@ jobs:
             chmod +x nancy
             sudo cp nancy /usr/local/bin/nancy
       - architect/go-test
-      - architect/go-cahce-save
+      - architect/go-cache-save
 
 workflows:
   test:

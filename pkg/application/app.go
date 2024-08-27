@@ -315,8 +315,9 @@ func (a *Application) IsUnifiedClusterAppWithDefaultApps() (bool, error) {
 
 	// Define a map with the minimum versions for each app
 	minVersions := map[string]*semver.Version{
-		"cluster-aws":   semver.New(0, 76, 0, "", ""),
-		"cluster-azure": semver.New(0, 14, 0, "", ""),
+		"cluster-aws":     semver.New(0, 76, 0, "", ""),
+		"cluster-azure":   semver.New(0, 14, 0, "", ""),
+		"cluster-vsphere": semver.New(0, 61, 0, "", ""),
 	}
 
 	// Check if the app is in the map

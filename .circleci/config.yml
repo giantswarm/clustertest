@@ -1,7 +1,6 @@
 version: 2.1
 orbs:
-  architect: giantswarm/architect@5.5.1
-
+  architect: giantswarm/architect@5.6.0
 
 jobs:
   tests:
@@ -11,10 +10,16 @@ jobs:
     steps:
       - checkout
       - architect/machine-install-go
+      - run:
+          name: "Create cache dir"
+          command: |
+            sudo mkdir -p /golancilint-cache
+            sudo chown -R $USER:$USER /golancilint-cache
       - architect/integration-test-install-tools:
           apptestctl-version: v0.14.1
           helm-version: v3.8.2
           kubernetes-version: v1.21.1
+      - architect/go-cache-restore
       - run:
           name: "Install golang-lint"
           command: |
@@ -27,7 +32,7 @@ jobs:
             chmod +x nancy
             sudo cp nancy /usr/local/bin/nancy
       - architect/go-test
-
+      - architect/go-cache-save
 
 workflows:
   test:

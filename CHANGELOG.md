@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.21.0] - 2024-08-30
+
 ### Changed
 
 - Updated the default base labels to cover more CICD provided env vars
@@ -557,7 +559,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added initial framework layout
 - Added Kubernetes client extended from controller-runtime client
 
-[Unreleased]: https://github.com/giantswarm/clustertest/compare/v1.20.0...HEAD
+[Unreleased]: https://github.com/giantswarm/clustertest/compare/v1.21.0...HEAD
+[1.21.0]: https://github.com/giantswarm/clustertest/compare/v1.20.0...v1.21.0
 [1.20.0]: https://github.com/giantswarm/clustertest/compare/v1.19.0...v1.20.0
 [1.19.0]: https://github.com/giantswarm/clustertest/compare/v1.18.0...v1.19.0
 [1.18.0]: https://github.com/giantswarm/clustertest/compare/v1.17.1...v1.18.0

@@ -119,17 +119,3 @@ func mergeValues(layers ...string) (string, error) {
 
 	return string(data), nil
 }
-
-func getBaseLabels() map[string]string {
-	baseLabels := map[string]string{}
-
-	// If found, populate details about Tekton run as labels
-	if os.Getenv("TEKTON_PIPELINE_RUN") != "" {
-		baseLabels["cicd.giantswarm.io/pipelinerun"] = os.Getenv("TEKTON_PIPELINE_RUN")
-	}
-	if os.Getenv("TEKTON_TASK_RUN") != "" {
-		baseLabels["cicd.giantswarm.io/taskrun"] = os.Getenv("TEKTON_TASK_RUN")
-	}
-
-	return baseLabels
-}

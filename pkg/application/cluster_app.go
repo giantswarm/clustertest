@@ -233,7 +233,7 @@ func (c *Cluster) GetRelease() (*releases.Release, error) {
 		}
 
 		// Set test-specific labels onto the Release CR
-		release.ObjectMeta.Labels = mergeMaps(release.GetObjectMeta().GetLabels(), getBaseLabels())
+		release.ObjectMeta.Labels = mergeMaps(release.GetObjectMeta().GetLabels(), utils.GetBaseLabels())
 		release.ObjectMeta.Labels = mergeMaps(release.GetObjectMeta().GetLabels(), map[string]string{
 			"giantswarm.io/cluster": c.Name,
 		})
@@ -294,7 +294,7 @@ func (c *Cluster) Build() (*BuiltCluster, error) {
 		SourceCluster: c,
 	}
 
-	baseLabels := getBaseLabels()
+	baseLabels := utils.GetBaseLabels()
 
 	{
 		// Cluster App

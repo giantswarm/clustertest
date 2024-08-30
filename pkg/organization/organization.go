@@ -2,7 +2,6 @@ package organization
 
 import (
 	"fmt"
-	"os"
 	"strings"
 
 	templateorg "github.com/giantswarm/kubectl-gs/v2/pkg/template/organization"
@@ -65,13 +64,7 @@ func (o *Org) Build() (*orgv1alpha1.Organization, error) {
 	}
 
 	// If found, populate details about Tekton run as labels
-	orgCR.ObjectMeta.Labels = map[string]string{}
-	if os.Getenv("TEKTON_PIPELINE_RUN") != "" {
-		orgCR.ObjectMeta.Labels["cicd.giantswarm.io/pipelinerun"] = os.Getenv("TEKTON_PIPELINE_RUN")
-	}
-	if os.Getenv("TEKTON_TASK_RUN") != "" {
-		orgCR.ObjectMeta.Labels["cicd.giantswarm.io/taskrun"] = os.Getenv("TEKTON_TASK_RUN")
-	}
+	orgCR.ObjectMeta.Labels = utils.GetBaseLabels()
 
 	orgCR.Status.Namespace = o.GetNamespace()
 

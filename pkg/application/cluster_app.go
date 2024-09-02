@@ -202,8 +202,8 @@ func (c *Cluster) GetRelease() (*releases.Release, error) {
 				WithClusterApp(strings.TrimPrefix(clusterApplication.Spec.Version, "v"), clusterApplication.Spec.Catalog)
 
 			for _, overrideApp := range c.appOverrides {
-				logger.Log("Overriding Release app '%s'", overrideApp.AppName)
-				releaseBuilder = releaseBuilder.WithApp(overrideApp.AppName, overrideApp.Version, overrideApp.Catalog, []string{})
+				logger.Log("Overriding Release app '%s' version '%s' from catalog '%s'", overrideApp.AppName, overrideApp.Version, overrideApp.Catalog)
+				releaseBuilder = releaseBuilder.WithApp(overrideApp.AppName, strings.TrimPrefix(overrideApp.Version, "v"), overrideApp.Catalog, []string{})
 			}
 
 			release, err = releaseBuilder.Build(context.Background())

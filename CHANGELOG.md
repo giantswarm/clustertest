@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Add support for Flux HelmRelease v2beta1 API.
+
 ## [1.21.1] - 2024-09-02
 
 ### Fixed

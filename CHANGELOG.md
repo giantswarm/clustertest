@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Update module sigs.k8s.io/cluster-api to v1.8.2
+
 ## [1.22.0] - 2024-09-05
 
 ### Added

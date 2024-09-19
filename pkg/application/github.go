@@ -42,19 +42,19 @@ func GetLatestAppVersion(applicationName string) (string, error) {
 		appNameVariations = append(appNameVariations, applicationName+"-app")
 	}
 
-	var releases []*github.RepositoryRelease
+	var release *github.RepositoryRelease
 	var err error
 	for _, appName := range appNameVariations {
-		releases, _, err = gh.Repositories.ListReleases(ctx, "giantswarm", appName, &github.ListOptions{PerPage: 1})
+		release, _, err = gh.Repositories.GetLatestRelease(ctx, "giantswarm", appName)
 		if err == nil {
 			// We've found a matching repo so no need to keep checking
 			break
 		}
 	}
 
-	if len(releases) == 0 {
+	if release == nil {
 		return "", fmt.Errorf("unable to get latest release of %s", applicationName)
 	}
 
-	return *releases[0].TagName, nil
+	return *release.TagName, nil
 }

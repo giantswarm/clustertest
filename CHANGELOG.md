@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.24.1] - 2024-09-19
+
 ### Fixed
 
 - Correctly get the latest release of an App from GitHub API
@@ -587,7 +589,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added initial framework layout
 - Added Kubernetes client extended from controller-runtime client
 
-[Unreleased]: https://github.com/giantswarm/clustertest/compare/v1.24.0...HEAD
+[Unreleased]: https://github.com/giantswarm/clustertest/compare/v1.24.1...HEAD
+[1.24.1]: https://github.com/giantswarm/clustertest/compare/v1.24.0...v1.24.1
 [1.24.0]: https://github.com/giantswarm/clustertest/compare/v1.23.0...v1.24.0
 [1.23.0]: https://github.com/giantswarm/clustertest/compare/v1.22.0...v1.23.0
 [1.22.0]: https://github.com/giantswarm/clustertest/compare/v1.21.1...v1.22.0

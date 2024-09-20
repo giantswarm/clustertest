@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Fallback to the default context in the Kubeconfig if empty context name provided
+
 ## [1.24.1] - 2024-09-19
 
 ### Fixed

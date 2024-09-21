@@ -239,7 +239,7 @@ func AreAllJobsSucceeded(ctx context.Context, kubeClient *client.Client) WaitCon
 		for _, job := range jobList.Items {
 			if job.Status.Succeeded == 0 {
 				logger.Log("Job %s/%s has not succeeded. (Failed: '%d')", job.ObjectMeta.Namespace, job.ObjectMeta.Name, job.Status.Failed)
-				// We wrap the erros so that we can log out for all failures, not just the first found
+				// We wrap the errors so that we can log out for all failures, not just the first found
 				if loopErr != nil {
 					loopErr = fmt.Errorf("%w, job %s/%s has not succeeded", loopErr, job.ObjectMeta.Namespace, job.ObjectMeta.Name)
 				} else {

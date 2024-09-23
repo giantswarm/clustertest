@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Added several cluster-wide WaitConditions for Deployments, DaemonSets, StatefulSets, Jobs and Pods being in an expected state.
+
 ### Fixed
 
 - Fallback to the default context in the Kubeconfig if empty context name provided

@@ -11,6 +11,8 @@ import (
 	"github.com/giantswarm/clustertest/pkg/logger"
 
 	applicationv1alpha1 "github.com/giantswarm/apiextensions-application/api/v1alpha1"
+	appsv1 "k8s.io/api/apps/v1"
+	batchv1 "k8s.io/api/batch/v1"
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -38,6 +40,20 @@ type clusterApiObject interface {
 	capiconditions.Getter
 }
 
+// WithoutDone returns a WaitCondition that only returns an error (or nill if condition is met)
+func WithoutDone(wc WaitCondition) func() error {
+	return func() error {
+		ok, err := wc()
+		if err != nil {
+			return err
+		}
+		if !ok {
+			return fmt.Errorf("condition failed")
+		}
+		return nil
+	}
+}
+
 // Consistent is a modifier for functions. It will return a function that will
 // perform the provided action and return an error if that action doesn't
 // consistently pass. You can configure the attempts and interval between
@@ -62,6 +78,11 @@ func Consistent(action func() error, attempts int, pollInterval time.Duration) f
 
 		return nil
 	}
+}
+
+// ConsistentWaitCondition is like Consistent but takes in a WaitCondition
+func ConsistentWaitCondition(wc WaitCondition, attempts int, pollInterval time.Duration) func() error {
+	return Consistent(WithoutDone(wc), attempts, pollInterval)
 }
 
 // IsClusterReadyCondition returns a WaitCondition to check when a cluster is considered ready and accessible
@@ -132,6 +153,127 @@ func DoesResourceExist(ctx context.Context, kubeClient *client.Client, resource 
 			return false, nil
 		}
 
+		return true, nil
+	}
+}
+
+// AreAllDeploymentsReady returns a WaitCondition that checks if all Deployments found in the cluster have the expected number of replicas ready
+func AreAllDeploymentsReady(ctx context.Context, kubeClient *client.Client) WaitCondition {
+	return func() (bool, error) {
+		deploymentList := &appsv1.DeploymentList{}
+		err := kubeClient.List(ctx, deploymentList)
+		if err != nil {
+			return false, err
+		}
+
+		for _, deployment := range deploymentList.Items {
+			available := deployment.Status.AvailableReplicas
+			desired := *deployment.Spec.Replicas
+			if available != desired {
+				logger.Log("deployment %s/%s has %d/%d replicas available", deployment.Namespace, deployment.Name, available, desired)
+				return false, fmt.Errorf("deployment %s/%s has %d/%d replicas available", deployment.Namespace, deployment.Name, available, desired)
+			}
+		}
+
+		logger.Log("All (%d) deployments have all replicas running", len(deploymentList.Items))
+		return true, nil
+	}
+}
+
+// AreAllStatefulSetsReady returns a WaitCondition that checks if all StatefulSets found in the cluster have the expected number of replicas ready
+func AreAllStatefulSetsReady(ctx context.Context, kubeClient *client.Client) WaitCondition {
+	return func() (bool, error) {
+		statefulSetList := &appsv1.StatefulSetList{}
+		err := kubeClient.List(ctx, statefulSetList)
+		if err != nil {
+			return false, err
+		}
+
+		for _, statefulSet := range statefulSetList.Items {
+			available := statefulSet.Status.AvailableReplicas
+			desired := *statefulSet.Spec.Replicas
+			if available != desired {
+				logger.Log("statefulSet %s/%s has %d/%d replicas available", statefulSet.Namespace, statefulSet.Name, available, desired)
+				return false, fmt.Errorf("statefulSet %s/%s has %d/%d replicas available", statefulSet.Namespace, statefulSet.Name, available, desired)
+			}
+		}
+
+		logger.Log("All (%d) statefulSets have all replicas running", len(statefulSetList.Items))
+		return true, nil
+	}
+}
+
+// AreAllDaemonSetsReady returns a WaitCondition that checks if all DaemonSets found in the cluster have the expected number of replicas ready
+func AreAllDaemonSetsReady(ctx context.Context, kubeClient *client.Client) WaitCondition {
+	return func() (bool, error) {
+		daemonSetList := &appsv1.DaemonSetList{}
+		err := kubeClient.List(ctx, daemonSetList)
+		if err != nil {
+			return false, err
+		}
+
+		for _, daemonSet := range daemonSetList.Items {
+			current := daemonSet.Status.CurrentNumberScheduled
+			desired := daemonSet.Status.DesiredNumberScheduled
+			if current != desired {
+				logger.Log("daemonSet %s/%s has %d/%d daemon pods available", daemonSet.Namespace, daemonSet.Name, current, desired)
+				return false, fmt.Errorf("daemonSet %s/%s has %d/%d daemon pods available", daemonSet.Namespace, daemonSet.Name, current, desired)
+			}
+		}
+
+		logger.Log("All (%d) daemonSets have all daemon pods running", len(daemonSetList.Items))
+		return true, nil
+	}
+}
+
+// AreAllJobsSucceeded returns a WaitCondition that checks if all Jobs found in the cluster have completed successfully
+func AreAllJobsSucceeded(ctx context.Context, kubeClient *client.Client) WaitCondition {
+	return func() (bool, error) {
+		jobList := &batchv1.JobList{}
+		err := kubeClient.List(ctx, jobList)
+		if err != nil {
+			return false, err
+		}
+
+		var loopErr error
+		for _, job := range jobList.Items {
+			if job.Status.Succeeded == 0 {
+				logger.Log("Job %s/%s has not succeeded. (Failed: '%d')", job.ObjectMeta.Namespace, job.ObjectMeta.Name, job.Status.Failed)
+				// We wrap the errors so that we can log out for all failures, not just the first found
+				if loopErr != nil {
+					loopErr = fmt.Errorf("%w, job %s/%s has not succeeded", loopErr, job.ObjectMeta.Namespace, job.ObjectMeta.Name)
+				} else {
+					loopErr = fmt.Errorf("job %s/%s has not succeeded", job.ObjectMeta.Namespace, job.ObjectMeta.Name)
+				}
+			}
+		}
+		if loopErr != nil {
+			return false, loopErr
+		}
+
+		logger.Log("All (%d) Jobs have completed successfully", len(jobList.Items))
+		return true, nil
+	}
+}
+
+// AreAllPodsInSuccessfulPhase returns a WaitCondition that checks if all Pods found in the cluster are in a successful phase (e.g. running or completed)
+func AreAllPodsInSuccessfulPhase(ctx context.Context, kubeClient *client.Client) WaitCondition {
+	return func() (bool, error) {
+		podList := &corev1.PodList{}
+		err := kubeClient.List(ctx, podList)
+		if err != nil {
+			return false, err
+		}
+
+		for _, pod := range podList.Items {
+			phase := pod.Status.Phase
+			if phase != corev1.PodRunning && phase != corev1.PodSucceeded {
+				logger.Log("pod %s/%s in %s phase", pod.Namespace, pod.Name, phase)
+				return false, fmt.Errorf("pod %s/%s in %s phase", pod.Namespace, pod.Name, phase)
+			}
+		}
+
+		logger.Log("All (%d) pods currently in a running or completed state", len(podList.Items))
 		return true, nil
 	}
 }

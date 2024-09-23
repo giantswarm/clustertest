@@ -113,6 +113,14 @@ func NewWithContext(kubeconfigPath string, contextName string) (*Client, error) 
 		return nil, fmt.Errorf("failed to get cluster name - %v", err)
 	}
 
+	// Allow falling back to the default context if not actually provided
+	if contextName == "" {
+		contextName, err = getCurrentContext(data)
+		if err != nil {
+			return nil, fmt.Errorf("failed to get current context name from kubeconfig - %v", err)
+		}
+	}
+
 	cfg, err := clientcmd.NewNonInteractiveDeferredLoadingClientConfig(
 		&clientcmd.ClientConfigLoadingRules{ExplicitPath: kubeconfigPath},
 		&clientcmd.ConfigOverrides{
@@ -186,6 +194,21 @@ func getClusterNameFromKubeConfig(data []byte, contextName string) (string, erro
 	}
 
 	return clusterName, nil
+}
+
+// getCurrentContext returns the set current context from the provided kubeconfig
+func getCurrentContext(data []byte) (string, error) {
+	if len(data) == 0 {
+		return "", fmt.Errorf("Empty kubeconfig provided")
+	}
+
+	kubeconfig := clientcmdapi.Config{}
+	err := yaml.Unmarshal(data, &kubeconfig)
+	if err != nil {
+		return "", err
+	}
+
+	return kubeconfig.CurrentContext, nil
 }
 
 // getTLSServerNameFromKubeConfig gets the TLS server name of the cluster selected for the provided context.

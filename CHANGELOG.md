@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- If attempting to get a WC client that isn't found but matches the name of the MC we'll return the MC Kube client. This helps reuse existing framework functions for testing of MCs without a lot of breaking changes to functions.
+
+### Added
+
+- Added a new `JobsUnsuccessful` failure handler to attempt to get more information about why a cluster has failing Jobs.
+
 ## [1.25.0] - 2024-09-23
 
 ### Added

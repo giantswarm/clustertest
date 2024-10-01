@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.26.0] - 2024-10-01
+
 ### Changed
 
 - If attempting to get a WC client that isn't found but matches the name of the MC we'll return the MC Kube client. This helps reuse existing framework functions for testing of MCs without a lot of breaking changes to functions.
@@ -607,7 +609,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added initial framework layout
 - Added Kubernetes client extended from controller-runtime client
 
-[Unreleased]: https://github.com/giantswarm/clustertest/compare/v1.25.0...HEAD
+[Unreleased]: https://github.com/giantswarm/clustertest/compare/v1.26.0...HEAD
+[1.26.0]: https://github.com/giantswarm/clustertest/compare/v1.25.0...v1.26.0
 [1.25.0]: https://github.com/giantswarm/clustertest/compare/v1.24.1...v1.25.0
 [1.24.1]: https://github.com/giantswarm/clustertest/compare/v1.24.0...v1.24.1
 [1.24.0]: https://github.com/giantswarm/clustertest/compare/v1.23.0...v1.24.0

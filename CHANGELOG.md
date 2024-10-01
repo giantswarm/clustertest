@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Updated GetLogs to support pods with multiple containers.
+
 ## [1.26.0] - 2024-10-01
 
 ### Changed

@@ -64,6 +64,11 @@ func (f *Framework) MC() *client.Client {
 func (f *Framework) WC(clusterName string) (*client.Client, error) {
 	c, ok := f.wcClients[clusterName]
 	if !ok {
+		if clusterName == f.MC().GetClusterName() {
+			// Looks like we're actually attempting to get the MC, not a WC so we'll return the MC client
+			return f.MC(), nil
+		}
+
 		return nil, fmt.Errorf("workload cluster not found for name %s", clusterName)
 	}
 	return c, nil

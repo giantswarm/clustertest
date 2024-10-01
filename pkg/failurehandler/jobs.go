@@ -32,7 +32,7 @@ func JobsUnsuccessful(framework *clustertest.Framework, cluster *application.Clu
 
 		for i := range jobList.Items {
 			job := jobList.Items[i]
-			if job.Status.Succeeded == 0 {
+			if job.Status.Succeeded == 0 && job.Status.Active == 0 {
 				logger.Log("Job %s/%s has not succeeded. (Number Failed: '%d')", job.ObjectMeta.Namespace, job.ObjectMeta.Name, job.Status.Failed)
 				for _, condition := range job.Status.Conditions {
 					logger.Log("Job '%s' condition: Type='%s', Status='%s', Message='%s'", job.ObjectMeta.Name, condition.Type, condition.Status, condition.Message)

@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Updated GetLogs to support pods with multiple containers.
+- Exclude currently running jobs when looking for Jobs that haven't succeeded
 
 ## [1.26.0] - 2024-10-01
 

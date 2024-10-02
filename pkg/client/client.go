@@ -14,6 +14,7 @@ import (
 	applicationv1alpha1 "github.com/giantswarm/apiextensions-application/api/v1alpha1"
 	orgv1alpha1 "github.com/giantswarm/organization-operator/api/v1alpha1"
 	releasev1alpha1 "github.com/giantswarm/releases/sdk/api/v1alpha1"
+	kyvernov2beta1 "github.com/kyverno/kyverno/api/kyverno/v2beta1"
 	helmclient "github.com/mittwald/go-helm-client"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -158,6 +159,7 @@ func newClient(config *rest.Config, clusterName string) (*Client, error) {
 	_ = releasev1alpha1.AddToScheme(client.Scheme())
 	_ = certmanager.AddToScheme(client.Scheme())
 	_ = helmv2beta1.AddToScheme(client.Scheme())
+	_ = kyvernov2beta1.AddToScheme(client.Scheme())
 
 	return &Client{
 		Client:      client,

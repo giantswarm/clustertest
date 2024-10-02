@@ -18,7 +18,6 @@ require (
 	github.com/google/go-github/v65 v65.0.0
 	github.com/kyverno/kyverno v1.12.6
 	github.com/mittwald/go-helm-client v0.12.14
-	github.com/onsi/gomega v1.34.2
 	golang.org/x/oauth2 v0.23.0
 	golang.org/x/text v0.18.0
 	k8s.io/api v0.31.1
@@ -232,6 +231,7 @@ require (
 	github.com/oklog/ulid v1.3.1 // indirect
 	github.com/oleiade/reflections v1.0.1 // indirect
 	github.com/oliveagle/jsonpath v0.0.0-20180606110733-2e52cf6e6852 // indirect
+	github.com/onsi/gomega v1.34.2 // indirect
 	github.com/open-policy-agent/gatekeeper/v3 v3.14.0 // indirect
 	github.com/open-policy-agent/opa v0.63.0 // indirect
 	github.com/opencontainers/go-digest v1.0.0 // indirect

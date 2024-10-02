@@ -6,6 +6,8 @@ replace github.com/imdario/mergo => github.com/imdario/mergo v0.3.16
 
 replace github.com/alessio/shellescape => al.essio.dev/pkg/shellescape v1.4.2
 
+replace k8s.io/pod-security-admission v0.29.2 => github.com/kyverno/pod-security-admission v0.0.0-20240715131510-7fb54a8d376d
+
 require (
 	dario.cat/mergo v1.0.1
 	github.com/Masterminds/semver/v3 v3.3.0

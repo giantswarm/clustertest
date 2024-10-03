@@ -9,6 +9,8 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
+
+	"github.com/giantswarm/clustertest/pkg/logger"
 )
 
 // GetLogs fetches the logs from the provided Pod. If `numOfLines` is provided (instead of `nil`) then that
@@ -40,13 +42,15 @@ func (c *Client) GetLogs(ctx context.Context, pod *corev1.Pod, numOfLines *int64
 		})
 		podLogs, err := req.Stream(ctx)
 		if err != nil {
-			return "", fmt.Errorf("error in opening log stream - %v", err)
+			logger.Log("Error in opening log stream of container '%s' - %v", containerName, err)
+			continue
 		}
 		defer podLogs.Close()
 
 		_, err = io.Copy(buf, podLogs)
 		if err != nil {
-			return "", fmt.Errorf("error in copying from podLogs to buffer - %v", err)
+			logger.Log("Error in copying from podLogs to buffer for container '%s' - %v", containerName, err)
+			continue
 		}
 	}
 

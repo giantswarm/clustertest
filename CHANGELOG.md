@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.27.2] - 2024-10-03
+
 ### Fixed
 
 - Correctly handle pointer in log output
@@ -637,7 +639,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added initial framework layout
 - Added Kubernetes client extended from controller-runtime client
 
-[Unreleased]: https://github.com/giantswarm/clustertest/compare/v1.27.1...HEAD
+[Unreleased]: https://github.com/giantswarm/clustertest/compare/v1.27.2...HEAD
+[1.27.2]: https://github.com/giantswarm/clustertest/compare/v1.27.1...v1.27.2
 [1.27.1]: https://github.com/giantswarm/clustertest/compare/v1.27.0...v1.27.1
 [1.27.0]: https://github.com/giantswarm/clustertest/compare/v1.26.1...v1.27.0
 [1.26.1]: https://github.com/giantswarm/clustertest/compare/v1.26.0...v1.26.1

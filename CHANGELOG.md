@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Added new failurehandler for non-ready Pods
+
+### Changed
+
+- Also get Pod events when debugging pods from a failurehandler
+
 ## [1.26.1] - 2024-10-01
 
 ### Fixed

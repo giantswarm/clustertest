@@ -64,6 +64,24 @@ func debugPod(ctx context.Context, wcClient *client.Client, pod *corev1.Pod) {
 	}
 
 	{
+		// Container Statuses
+		for _, containerStatus := range pod.Status.ContainerStatuses {
+			logger.Log(
+				"Pod '%s' - Container '%s': StartupProbePassed='%v', ReadinessProbePassed='%t', RestartCount='%d'",
+				pod.ObjectMeta.Name, containerStatus.Name,
+				containerStatus.Started, containerStatus.Ready, containerStatus.RestartCount,
+			)
+			if containerStatus.LastTerminationState.Terminated != nil {
+				logger.Log(
+					"Pod '%s' - Container '%s' was last terminated with: ExitCode='%d', Reason='%s', Message='%s'",
+					pod.ObjectMeta.Name, containerStatus.Name,
+					containerStatus.LastTerminationState.Terminated.ExitCode, containerStatus.LastTerminationState.Terminated.Reason, containerStatus.LastTerminationState.Terminated.Message,
+				)
+			}
+		}
+	}
+
+	{
 		// Logs
 		maxLines := int64(5)
 		logs, err := wcClient.GetLogs(ctx, pod, &maxLines)

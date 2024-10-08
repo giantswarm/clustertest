@@ -132,6 +132,7 @@ func (f *Framework) LoadCluster() (*application.Cluster, error) {
 			ConfigMapLabels: clusterValues.Labels,
 		},
 		Organization: org,
+		Provider:     application.ProviderFromClusterApplication(clusterApp),
 	}
 
 	skipDefaultAppsApp, err := cluster.UsesUnifiedClusterApp()

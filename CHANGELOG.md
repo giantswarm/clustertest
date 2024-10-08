@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Enusre the cluster Provider value is populated when loading an existing workload cluster
+
 ## [1.27.2] - 2024-10-03
 
 ### Fixed

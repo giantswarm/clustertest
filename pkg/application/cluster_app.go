@@ -52,20 +52,6 @@ type BuiltCluster struct {
 	Release       *releases.Release
 }
 
-// Provider is the supported cluster provider name used to determine the cluster and default-apps to use
-type Provider string
-
-// nolint:revive
-const (
-	ProviderAWS           Provider = "aws"
-	ProviderEKS           Provider = "eks"
-	ProviderGCP           Provider = "gcp"
-	ProviderAzure         Provider = "azure"
-	ProviderCloudDirector Provider = "cloud-director"
-	ProviderOpenStack     Provider = "openstack"
-	ProviderVSphere       Provider = "vsphere"
-)
-
 // NewClusterApp generates a new Cluster object to handle creation of Cluster related apps
 func NewClusterApp(clusterName string, provider Provider) *Cluster {
 	org := organization.NewRandomOrg()

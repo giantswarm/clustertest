@@ -4,7 +4,7 @@ go 1.23.1
 
 replace github.com/imdario/mergo => github.com/imdario/mergo v0.3.16
 
-replace github.com/alessio/shellescape => al.essio.dev/pkg/shellescape v1.4.2
+replace github.com/alessio/shellescape => al.essio.dev/pkg/shellescape v1.5.1
 
 require (
 	dario.cat/mergo v1.0.1

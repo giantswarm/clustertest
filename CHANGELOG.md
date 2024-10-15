@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Updated releases SDK to include support for VSphere and Cloud Director
+
 ## [1.27.3] - 2024-10-08
 
 ### Fixed

@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.28.0] - 2024-10-15
+
 ### Changed
 
 - Updated releases SDK to include support for VSphere and Cloud Director
@@ -649,7 +651,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added initial framework layout
 - Added Kubernetes client extended from controller-runtime client
 
-[Unreleased]: https://github.com/giantswarm/clustertest/compare/v1.27.3...HEAD
+[Unreleased]: https://github.com/giantswarm/clustertest/compare/v1.28.0...HEAD
+[1.28.0]: https://github.com/giantswarm/clustertest/compare/v1.27.3...v1.28.0
 [1.27.3]: https://github.com/giantswarm/clustertest/compare/v1.27.2...v1.27.3
 [1.27.2]: https://github.com/giantswarm/clustertest/compare/v1.27.1...v1.27.2
 [1.27.1]: https://github.com/giantswarm/clustertest/compare/v1.27.0...v1.27.1

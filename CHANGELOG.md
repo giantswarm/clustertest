@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Add support for the unified cluster-cloud-director app. As of cluster-cloud-director v0.62.0, default apps are deployed by cluster-cloud-director
+
 ## [1.28.0] - 2024-10-15
 
 ### Changed

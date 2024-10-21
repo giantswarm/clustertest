@@ -561,8 +561,14 @@ func TestIsUnifiedClusterAppWithDefaultApps(t *testing.T) {
 		{
 			description:    "cluster-cloud-director is not a unified cluster app",
 			appName:        "cluster-cloud-director",
-			appVersion:     "v0.100.0",
+			appVersion:     "v0.61.2",
 			expectedResult: false,
+		},
+		{
+			description:    "cluster-cloud-director is a unified cluster app",
+			appName:        "cluster-cloud-director",
+			appVersion:     "v0.62.0",
+			expectedResult: true,
 		},
 	} {
 		t.Run(scenario.description, func(t *testing.T) {

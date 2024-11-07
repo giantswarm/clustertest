@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Fix override the release name with a unique suffix to avoid conflicts for provider with a hyphen.
+
 ## [1.30.1] - 2024-11-07
 
 ### Fixed

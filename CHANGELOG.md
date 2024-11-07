@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Updated releases SDK to include Cloud Director
+
 ## [1.29.0] - 2024-10-21
 
 ### Added

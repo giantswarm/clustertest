@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.30.1] - 2024-11-07
+
 ### Fixed
 
 - Releases SDK for Cloud Director
@@ -667,7 +669,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added initial framework layout
 - Added Kubernetes client extended from controller-runtime client
 
-[Unreleased]: https://github.com/giantswarm/clustertest/compare/v1.30.0...HEAD
+[Unreleased]: https://github.com/giantswarm/clustertest/compare/v1.30.1...HEAD
+[1.30.1]: https://github.com/giantswarm/clustertest/compare/v1.30.0...v1.30.1
 [1.30.0]: https://github.com/giantswarm/clustertest/compare/v1.29.0...v1.30.0
 [1.29.0]: https://github.com/giantswarm/clustertest/compare/v1.28.0...v1.29.0
 [1.28.0]: https://github.com/giantswarm/clustertest/compare/v1.27.3...v1.28.0

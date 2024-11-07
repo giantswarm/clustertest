@@ -205,7 +205,8 @@ func (c *Cluster) GetRelease() (*releases.Release, error) {
 
 			// Override the release name with a unique suffix to avoid conflicts
 			joiner := "-"
-			if len(strings.Split(release.Name, "-")) > 2 {
+			releaseNameVersion := strings.TrimPrefix(release.Name, fmt.Sprintf("%s-", provider))
+			if len(strings.Split(releaseNameVersion, "-")) > 2 {
 				// If the release name already has a prerelease suffix we need to use a different joining character to pass the regex
 				joiner = "."
 			}

@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.31.0] - 2024-11-28
+
 ### Added
 
 - Added a `Bundle` function to allow using multiple FailureHandlers together
@@ -679,7 +681,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added initial framework layout
 - Added Kubernetes client extended from controller-runtime client
 
-[Unreleased]: https://github.com/giantswarm/clustertest/compare/v1.30.2...HEAD
+[Unreleased]: https://github.com/giantswarm/clustertest/compare/v1.31.0...HEAD
+[1.31.0]: https://github.com/giantswarm/clustertest/compare/v1.30.2...v1.31.0
 [1.30.2]: https://github.com/giantswarm/clustertest/compare/v1.30.1...v1.30.2
 [1.30.1]: https://github.com/giantswarm/clustertest/compare/v1.30.0...v1.30.1
 [1.30.0]: https://github.com/giantswarm/clustertest/compare/v1.29.0...v1.30.0

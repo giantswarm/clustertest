@@ -11,3 +11,12 @@ func Wrap(fn func()) FailureHandler {
 		return ""
 	}
 }
+
+// Bundle allows multiple different FailureHandler functions to be used in a chain
+func Bundle(failureHandlers ...FailureHandler) FailureHandler {
+	return Wrap(func() {
+		for _, fn := range failureHandlers {
+			fn.(func() string)()
+		}
+	})
+}

@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Added a `Bundle` function to allow using multiple FailureHandlers together
+
 ## [1.30.2] - 2024-11-07
 
 ### Fixed

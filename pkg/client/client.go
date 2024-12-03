@@ -269,7 +269,8 @@ func (c *Client) GetClusterKubeConfig(ctx context.Context, clusterName string, c
 // getTeleportKubeConfig retrieves the Kubeconfig from the secret that is created by Teleport tbot on the MC.
 func (c *Client) getTeleportKubeConfig(ctx context.Context, clusterName string, clusterNamespace string) (string, error) {
 	var kubeconfigSecret corev1.Secret
-	err := c.Get(ctx, types.NamespacedName{Name: fmt.Sprintf("teleport-%s-kubeconfig", clusterName), Namespace: clusterNamespace}, &kubeconfigSecret)
+	secretName := fmt.Sprintf("teleport-%s-kubeconfig", clusterName)
+	err := c.Get(ctx, types.NamespacedName{Name: secretName, Namespace: clusterNamespace}, &kubeconfigSecret)
 	if err != nil {
 		if errors.IsNotFound(err) {
 			// If not found we will return nothing
@@ -278,7 +279,7 @@ func (c *Client) getTeleportKubeConfig(ctx context.Context, clusterName string, 
 		return "", err
 	}
 	if len(kubeconfigSecret.Data["kubeconfig.yaml"]) == 0 {
-		return "", fmt.Errorf("kubeconfig secret found but data[kubeconfig.yaml] not populated")
+		return "", fmt.Errorf("kubeconfig secret '%s' found in namespace '%s' but data[kubeconfig.yaml] not populated", secretName, clusterNamespace)
 	}
 
 	kubeconfig := clientcmdapi.Config{}

@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Improved error message when KubeConfig data not populated
+
 ## [1.31.0] - 2024-11-28
 
 ### Added

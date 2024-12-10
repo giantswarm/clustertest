@@ -16,7 +16,7 @@ require (
 	github.com/giantswarm/organization-operator v1.6.4
 	github.com/giantswarm/releases/sdk v0.10.0
 	github.com/google/go-github/v67 v67.0.0
-	github.com/mittwald/go-helm-client v0.12.14
+	github.com/mittwald/go-helm-client v0.12.15
 	golang.org/x/oauth2 v0.24.0
 	golang.org/x/text v0.21.0
 	k8s.io/api v0.31.3
@@ -172,7 +172,7 @@ require (
 	gopkg.in/inf.v0 v0.9.1 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
-	helm.sh/helm/v3 v3.16.1 // indirect
+	helm.sh/helm/v3 v3.16.2 // indirect
 	k8s.io/apiextensions-apiserver v0.31.1 // indirect
 	k8s.io/apiserver v0.31.1 // indirect
 	k8s.io/cli-runtime v0.31.3 // indirect

@@ -16,7 +16,7 @@ require (
 	github.com/giantswarm/organization-operator v1.6.4
 	github.com/giantswarm/releases/sdk v0.10.0
 	github.com/google/go-github/v67 v67.0.0
-	github.com/mittwald/go-helm-client v0.12.15
+	github.com/mittwald/go-helm-client v0.12.16
 	golang.org/x/oauth2 v0.24.0
 	golang.org/x/text v0.21.0
 	k8s.io/api v0.32.0
@@ -45,11 +45,11 @@ require (
 	github.com/blang/semver/v4 v4.0.0 // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
 	github.com/chai2010/gettext-go v1.0.3 // indirect
-	github.com/containerd/containerd v1.7.21 // indirect
-	github.com/containerd/errdefs v0.1.0 // indirect
+	github.com/containerd/containerd v1.7.23 // indirect
+	github.com/containerd/errdefs v0.3.0 // indirect
 	github.com/containerd/log v0.1.0 // indirect
 	github.com/containerd/platforms v0.2.1 // indirect
-	github.com/cyphar/filepath-securejoin v0.3.1 // indirect
+	github.com/cyphar/filepath-securejoin v0.3.4 // indirect
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
 	github.com/distribution/reference v0.6.0 // indirect
 	github.com/docker/cli v27.2.0+incompatible // indirect
@@ -168,9 +168,9 @@ require (
 	gopkg.in/evanphx/json-patch.v4 v4.12.0 // indirect
 	gopkg.in/inf.v0 v0.9.1 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
-	helm.sh/helm/v3 v3.16.2 // indirect
-	k8s.io/apiextensions-apiserver v0.31.3 // indirect
-	k8s.io/apiserver v0.31.3 // indirect
+	helm.sh/helm/v3 v3.16.4 // indirect
+	k8s.io/apiextensions-apiserver v0.32.0 // indirect
+	k8s.io/apiserver v0.32.0 // indirect
 	k8s.io/cli-runtime v0.32.0 // indirect
 	k8s.io/cluster-bootstrap v0.31.3 // indirect
 	k8s.io/component-base v0.32.0 // indirect

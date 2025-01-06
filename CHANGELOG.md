@@ -13,7 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Added `AreAllPodsNotCrashLooping` wait function to check for pods with containers restarting too much
+- Added `AreNoPodsCrashLooping` wait function to check for pods with containers restarting too much
 
 ## [1.31.0] - 2024-11-28
 

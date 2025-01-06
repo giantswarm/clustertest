@@ -278,8 +278,8 @@ func AreAllPodsInSuccessfulPhase(ctx context.Context, kubeClient *client.Client)
 	}
 }
 
-// AreAllPodsNotCrashLooping checks that all pods within the cluster have fewer than the provided number of restarts
-func AreAllPodsNotCrashLooping(ctx context.Context, kubeClient *client.Client, maxRestartCount int32) WaitCondition {
+// AreNoPodsCrashLooping checks that all pods within the cluster have fewer than the provided number of restarts
+func AreNoPodsCrashLooping(ctx context.Context, kubeClient *client.Client, maxRestartCount int32) WaitCondition {
 	return func() (bool, error) {
 		podList := &corev1.PodList{}
 		err := kubeClient.List(ctx, podList)

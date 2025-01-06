@@ -11,6 +11,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Improved error message when KubeConfig data not populated
 
+### Added
+
+- Added `AreNoPodsCrashLooping` wait function to check for pods with containers restarting too much
+
 ## [1.31.0] - 2024-11-28
 
 ### Added

@@ -278,6 +278,29 @@ func AreAllPodsInSuccessfulPhase(ctx context.Context, kubeClient *client.Client)
 	}
 }
 
+// AreNoPodsCrashLooping checks that all pods within the cluster have fewer than the provided number of restarts
+func AreNoPodsCrashLooping(ctx context.Context, kubeClient *client.Client, maxRestartCount int32) WaitCondition {
+	return func() (bool, error) {
+		podList := &corev1.PodList{}
+		err := kubeClient.List(ctx, podList)
+		if err != nil {
+			return false, err
+		}
+
+		for _, pod := range podList.Items {
+			for _, container := range pod.Status.ContainerStatuses {
+				if container.RestartCount > maxRestartCount {
+					logger.Log("pod %s/%s has container %s with %d restarts (max allowed: %d)", pod.Namespace, pod.Name, container.Name, container.RestartCount, maxRestartCount)
+					return false, fmt.Errorf("pod %s/%s has container %s with %d restarts (max allowed: %d)", pod.Namespace, pod.Name, container.Name, container.RestartCount, maxRestartCount)
+				}
+			}
+		}
+
+		logger.Log("All (%d) pods have containers with less restarts than the max allowed (%d)", len(podList.Items), maxRestartCount)
+		return true, nil
+	}
+}
+
 // AreNumNodesReadyWithinRange returns a WaitCondition that checks if the number of ready nodes are within the expected range. It also receives a variadic arguments for list options
 func AreNumNodesReadyWithinRange(ctx context.Context, kubeClient *client.Client, expectedNodes Range, listOptions ...cr.ListOption) WaitCondition {
 	condition := func(readyNodes int) bool {

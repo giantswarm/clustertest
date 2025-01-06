@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.32.0] - 2025-01-06
+
 ### Fixed
 
 - Improved error message when KubeConfig data not populated
@@ -689,7 +691,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added initial framework layout
 - Added Kubernetes client extended from controller-runtime client
 
-[Unreleased]: https://github.com/giantswarm/clustertest/compare/v1.31.0...HEAD
+[Unreleased]: https://github.com/giantswarm/clustertest/compare/v1.32.0...HEAD
+[1.32.0]: https://github.com/giantswarm/clustertest/compare/v1.31.0...v1.32.0
 [1.31.0]: https://github.com/giantswarm/clustertest/compare/v1.30.2...v1.31.0
 [1.30.2]: https://github.com/giantswarm/clustertest/compare/v1.30.1...v1.30.2
 [1.30.1]: https://github.com/giantswarm/clustertest/compare/v1.30.0...v1.30.1

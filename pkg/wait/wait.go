@@ -16,7 +16,7 @@ const (
 type Options struct {
 	Context  context.Context
 	Interval time.Duration
-	Timeout  time.Duration
+	// Timeout  time.Duration
 }
 
 // Option is a function that can be optionally provided to override default options of a wait condition
@@ -25,7 +25,9 @@ type Option func(*Options)
 // WithTimeout overrides the default timeout when waiting
 func WithTimeout(timeout time.Duration) Option {
 	return func(options *Options) {
-		options.Timeout = timeout
+		//nolint:govet
+		ctx, _ := context.WithTimeout(options.Context, timeout)
+		options.Context = ctx
 	}
 }
 
@@ -47,16 +49,17 @@ func WithContext(context context.Context) Option {
 // For continuously polls the provided WaitCondition function until either
 // the timeout is reached or the function returns as done
 func For(fn WaitCondition, opts ...Option) error {
+	//nolint:govet
+	defaultContext, _ := context.WithTimeout(context.Background(), DefaultTimeout)
 	options := &Options{
-		Context:  context.Background(),
+		Context:  defaultContext,
 		Interval: DefaultInterval,
-		Timeout:  DefaultTimeout,
 	}
 	for _, optFn := range opts {
 		optFn(options)
 	}
 
-	ctx, cancel := context.WithTimeout(options.Context, options.Timeout)
+	ctx, cancel := context.WithCancel(options.Context)
 	defer cancel()
 
 	for {

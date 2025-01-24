@@ -24,7 +24,7 @@ require (
 	k8s.io/client-go v0.32.1
 	k8s.io/kubectl v0.32.1
 	sigs.k8s.io/cluster-api v1.9.4
-	sigs.k8s.io/controller-runtime v0.20.0
+	sigs.k8s.io/controller-runtime v0.20.1
 	sigs.k8s.io/e2e-framework v0.6.0
 	sigs.k8s.io/kind v0.26.0
 	sigs.k8s.io/yaml v1.4.0

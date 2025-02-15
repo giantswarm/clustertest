@@ -26,11 +26,12 @@ require (
 	sigs.k8s.io/cluster-api v1.9.4
 	sigs.k8s.io/controller-runtime v0.20.2
 	sigs.k8s.io/e2e-framework v0.6.0
-	sigs.k8s.io/kind v0.26.0
+	sigs.k8s.io/kind v0.27.0
 	sigs.k8s.io/yaml v1.4.0
 )
 
 require (
+	al.essio.dev/pkg/shellescape v1.5.1 // indirect
 	github.com/AdaLogics/go-fuzz-headers v0.0.0-20240806141605-e8a1dd7889d6 // indirect
 	github.com/Azure/go-ansiterm v0.0.0-20230124172434-306776ec8161 // indirect
 	github.com/BurntSushi/toml v1.4.0 // indirect
@@ -39,7 +40,6 @@ require (
 	github.com/Masterminds/sprig/v3 v3.3.0 // indirect
 	github.com/Masterminds/squirrel v1.5.4 // indirect
 	github.com/Microsoft/hcsshim v0.12.5 // indirect
-	github.com/alessio/shellescape v1.5.0 // indirect
 	github.com/asaskevich/govalidator v0.0.0-20230301143203-a9d515a09cc2 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/blang/semver/v4 v4.0.0 // indirect

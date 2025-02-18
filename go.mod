@@ -23,7 +23,7 @@ require (
 	k8s.io/apimachinery v0.32.2
 	k8s.io/client-go v0.32.2
 	k8s.io/kubectl v0.32.2
-	sigs.k8s.io/cluster-api v1.9.4
+	sigs.k8s.io/cluster-api v1.9.5
 	sigs.k8s.io/controller-runtime v0.20.2
 	sigs.k8s.io/e2e-framework v0.6.0
 	sigs.k8s.io/kind v0.27.0

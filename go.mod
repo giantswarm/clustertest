@@ -15,7 +15,7 @@ require (
 	github.com/giantswarm/kubectl-gs/v2 v2.57.0
 	github.com/giantswarm/organization-operator v1.6.4
 	github.com/giantswarm/releases/sdk v0.10.0
-	github.com/google/go-github/v69 v69.1.0
+	github.com/google/go-github/v69 v69.2.0
 	github.com/mittwald/go-helm-client v0.12.16
 	golang.org/x/oauth2 v0.26.0
 	golang.org/x/text v0.22.0

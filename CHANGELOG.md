@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Handle `E2E_WC_KEEP` env var in framework when deleting a cluster
+
 ## [1.32.1] - 2025-01-09
 
 ### Fixed

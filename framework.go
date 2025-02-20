@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/giantswarm/clustertest/pkg/application"
@@ -276,6 +277,19 @@ func (f *Framework) WaitForControlPlane(ctx context.Context, c *client.Client, e
 
 // DeleteCluster removes the Cluster app from the MC
 func (f *Framework) DeleteCluster(ctx context.Context, cluster *application.Cluster) error {
+	keep := strings.ToLower(os.Getenv(env.KeepWorkloadCluster))
+	if keep != "" && keep != "false" {
+		logger.Log("⚠️ The %s env var is set, skipping deletion of workload cluster", env.KeepWorkloadCluster)
+		logger.Log("⚠️ This means the Cluster '%s' will remain on the management cluster only until the cluster-cleaner decides to remove it later. To disable the cluster-cleaner behavior please manually add the 'alpha.giantswarm.io/ignore-cluster-deletion' annotation to your test cluster.", cluster.Name)
+		logger.Log("⚠️ Please be sure to manually delete the '%s' Organisation and any associated Releases when you are finished.", cluster.Organization.Name)
+		logger.Log("⚠️ Failure to clean up resources will result in alerts being triggered.")
+		return nil
+	} else if os.Getenv(env.WorkloadClusterName) != "" {
+		// Helpful note to let people know that they might want to use the keep env var
+		// when providing an existing cluster
+		logger.Log("⚠️ The workload cluster is being deleted. If you wanted to reuse this cluster please make sure to set the '%s' env var in the future to skip deletion.", env.KeepWorkloadCluster)
+	}
+
 	app := applicationv1alpha1.App{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      cluster.Name,

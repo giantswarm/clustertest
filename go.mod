@@ -19,10 +19,10 @@ require (
 	github.com/mittwald/go-helm-client v0.12.16
 	golang.org/x/oauth2 v0.28.0
 	golang.org/x/text v0.23.0
-	k8s.io/api v0.32.2
-	k8s.io/apimachinery v0.32.2
-	k8s.io/client-go v0.32.2
-	k8s.io/kubectl v0.32.2
+	k8s.io/api v0.32.3
+	k8s.io/apimachinery v0.32.3
+	k8s.io/client-go v0.32.3
+	k8s.io/kubectl v0.32.3
 	sigs.k8s.io/cluster-api v1.9.5
 	sigs.k8s.io/controller-runtime v0.20.3
 	sigs.k8s.io/e2e-framework v0.6.0
@@ -172,9 +172,9 @@ require (
 	helm.sh/helm/v3 v3.16.4 // indirect
 	k8s.io/apiextensions-apiserver v0.32.1 // indirect
 	k8s.io/apiserver v0.32.1 // indirect
-	k8s.io/cli-runtime v0.32.2 // indirect
+	k8s.io/cli-runtime v0.32.3 // indirect
 	k8s.io/cluster-bootstrap v0.31.3 // indirect
-	k8s.io/component-base v0.32.2 // indirect
+	k8s.io/component-base v0.32.3 // indirect
 	k8s.io/klog/v2 v2.130.1 // indirect
 	k8s.io/kube-openapi v0.0.0-20241212222426-2c72e554b1e7 // indirect
 	k8s.io/utils v0.0.0-20241210054802-24370beab758 // indirect

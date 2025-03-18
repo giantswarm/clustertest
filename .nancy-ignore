@@ -1,6 +1,9 @@
 # pkg:golang/golang.org/x/crypto@v0.32.0
 CVE-2025-22869
 
+# pkg:golang/golang.org/x/net@v0.34.0
+CVE-2025-22870
+
 # pkg:golang/helm.sh/helm/v3@v3.16.4
 CVE-2019-25210
 

@@ -15,7 +15,7 @@ require (
 	github.com/giantswarm/kubectl-gs/v2 v2.57.0
 	github.com/giantswarm/organization-operator v1.6.4
 	github.com/giantswarm/releases/sdk v0.10.0
-	github.com/google/go-github/v69 v69.2.0
+	github.com/google/go-github/v70 v70.0.0
 	github.com/mittwald/go-helm-client v0.12.16
 	golang.org/x/oauth2 v0.28.0
 	golang.org/x/text v0.23.0
@@ -85,7 +85,7 @@ require (
 	github.com/golang/protobuf v1.5.4 // indirect
 	github.com/google/btree v1.1.3 // indirect
 	github.com/google/gnostic-models v0.6.9 // indirect
-	github.com/google/go-cmp v0.6.0 // indirect
+	github.com/google/go-cmp v0.7.0 // indirect
 	github.com/google/go-github/v66 v66.0.0 // indirect
 	github.com/google/go-querystring v1.1.0 // indirect
 	github.com/google/gofuzz v1.2.0 // indirect

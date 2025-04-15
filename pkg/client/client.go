@@ -171,7 +171,7 @@ func newClient(config *rest.Config, clusterName string) (*Client, error) {
 // If an empty `contextName` is provided it will use the `CurrentContext` from the provided KubeConfig.
 func getClusterNameFromKubeConfig(data []byte, contextName string) (string, error) {
 	if len(data) == 0 {
-		return "", fmt.Errorf("Empty kubeconfig provided")
+		return "", fmt.Errorf("empty kubeconfig provided")
 	}
 
 	kubeconfig := clientcmdapi.Config{}
@@ -199,7 +199,7 @@ func getClusterNameFromKubeConfig(data []byte, contextName string) (string, erro
 // getCurrentContext returns the set current context from the provided kubeconfig
 func getCurrentContext(data []byte) (string, error) {
 	if len(data) == 0 {
-		return "", fmt.Errorf("Empty kubeconfig provided")
+		return "", fmt.Errorf("empty kubeconfig provided")
 	}
 
 	kubeconfig := clientcmdapi.Config{}
@@ -215,7 +215,7 @@ func getCurrentContext(data []byte) (string, error) {
 // TLS server name is used to check server certificate, and is only valid for teleport kubeconfig.
 func getTLSServerNameFromKubeConfig(data []byte) (string, error) {
 	if len(data) == 0 {
-		return "", fmt.Errorf("Empty kubeconfig provided")
+		return "", fmt.Errorf("empty kubeconfig provided")
 	}
 
 	kubeconfig := clientcmdapi.Config{}

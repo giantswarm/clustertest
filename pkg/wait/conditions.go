@@ -123,7 +123,7 @@ func IsClusterReadyCondition(ctx context.Context, kubeClient *client.Client, clu
 func IsResourceDeleted(ctx context.Context, kubeClient *client.Client, resource cr.Object) WaitCondition {
 	return func() (bool, error) {
 		logger.Log("Checking if %s '%s' still exists", getResourceKind(kubeClient, resource), resource.GetName())
-		err := kubeClient.Client.Get(ctx, cr.ObjectKeyFromObject(resource), resource, &cr.GetOptions{})
+		err := kubeClient.Get(ctx, cr.ObjectKeyFromObject(resource), resource, &cr.GetOptions{})
 		if err != nil {
 			switch {
 			case apierrors.IsNotFound(err):
@@ -148,7 +148,7 @@ func IsResourceDeleted(ctx context.Context, kubeClient *client.Client, resource 
 // DoesResourceExist returns a WaitCondition that checks if the given resource exists in the cluster
 func DoesResourceExist(ctx context.Context, kubeClient *client.Client, resource cr.Object) WaitCondition {
 	return func() (bool, error) {
-		if err := kubeClient.Client.Get(ctx, cr.ObjectKeyFromObject(resource), resource); err != nil {
+		if err := kubeClient.Get(ctx, cr.ObjectKeyFromObject(resource), resource); err != nil {
 			logger.Log("Waiting for %s '%s' to be created", getResourceKind(kubeClient, resource), resource.GetName())
 			return false, nil
 		}
@@ -238,12 +238,12 @@ func AreAllJobsSucceeded(ctx context.Context, kubeClient *client.Client) WaitCon
 		var loopErr error
 		for _, job := range jobList.Items {
 			if job.Status.Succeeded == 0 && job.Status.Active == 0 {
-				logger.Log("Job %s/%s has not succeeded. (Failed: '%d')", job.ObjectMeta.Namespace, job.ObjectMeta.Name, job.Status.Failed)
+				logger.Log("Job %s/%s has not succeeded. (Failed: '%d')", job.Namespace, job.Name, job.Status.Failed)
 				// We wrap the errors so that we can log out for all failures, not just the first found
 				if loopErr != nil {
-					loopErr = fmt.Errorf("%w, job %s/%s has not succeeded", loopErr, job.ObjectMeta.Namespace, job.ObjectMeta.Name)
+					loopErr = fmt.Errorf("%w, job %s/%s has not succeeded", loopErr, job.Namespace, job.Name)
 				} else {
-					loopErr = fmt.Errorf("job %s/%s has not succeeded", job.ObjectMeta.Namespace, job.ObjectMeta.Name)
+					loopErr = fmt.Errorf("job %s/%s has not succeeded", job.Namespace, job.Name)
 				}
 			}
 		}
@@ -334,7 +334,7 @@ func IsAppStatus(ctx context.Context, kubeClient *client.Client, appName string,
 				Namespace: appNamespace,
 			},
 		}
-		if err := kubeClient.Client.Get(ctx, cr.ObjectKeyFromObject(app), app); err != nil {
+		if err := kubeClient.Get(ctx, cr.ObjectKeyFromObject(app), app); err != nil {
 			return false, err
 		}
 
@@ -362,7 +362,7 @@ func IsAllAppStatus(ctx context.Context, kubeClient *client.Client, appNamespace
 
 		for _, namespacedName := range appNamespacedNames {
 			app := &applicationv1alpha1.App{}
-			if err = kubeClient.Client.Get(ctx, namespacedName, app); err != nil {
+			if err = kubeClient.Get(ctx, namespacedName, app); err != nil {
 				logger.Log("Failed to get App %s: %s", namespacedName.Name, err)
 				isSuccess = false
 				continue
@@ -390,7 +390,7 @@ func IsAppVersion(ctx context.Context, kubeClient *client.Client, appName string
 				Namespace: appNamespace,
 			},
 		}
-		if err := kubeClient.Client.Get(ctx, cr.ObjectKeyFromObject(app), app); err != nil {
+		if err := kubeClient.Get(ctx, cr.ObjectKeyFromObject(app), app); err != nil {
 			return false, err
 		}
 
@@ -409,7 +409,7 @@ func IsClusterConditionSet(ctx context.Context, kubeClient *client.Client, clust
 				Namespace: clusterNamespace,
 			},
 		}
-		if err := kubeClient.Client.Get(ctx, cr.ObjectKeyFromObject(cluster), cluster); err != nil {
+		if err := kubeClient.Get(ctx, cr.ObjectKeyFromObject(cluster), cluster); err != nil {
 			return false, err
 		}
 
@@ -426,7 +426,7 @@ func IsKubeadmControlPlaneConditionSet(ctx context.Context, kubeClient *client.C
 				Namespace: clusterNamespace,
 			},
 		}
-		if err := kubeClient.Client.Get(ctx, cr.ObjectKeyFromObject(kcp), kcp); err != nil {
+		if err := kubeClient.Get(ctx, cr.ObjectKeyFromObject(kcp), kcp); err != nil {
 			return false, err
 		}
 
@@ -509,7 +509,7 @@ func checkNodesReady(ctx context.Context, kubeClient *client.Client, condition f
 
 		if condition(readyNodes) {
 			for _, node := range nodes.Items {
-				logger.Log("Node status: NodeName='%s', Taints='%v'", node.ObjectMeta.Name, node.Spec.Taints)
+				logger.Log("Node status: NodeName='%s', Taints='%v'", node.Name, node.Spec.Taints)
 			}
 
 			return false, nil
@@ -520,7 +520,7 @@ func checkNodesReady(ctx context.Context, kubeClient *client.Client, condition f
 }
 
 func getResourceKind(kubeClient *client.Client, resource cr.Object) string {
-	gvk, _ := apiutil.GVKForObject(resource, kubeClient.Client.Scheme())
+	gvk, _ := apiutil.GVKForObject(resource, kubeClient.Scheme())
 	kind := "resource"
 	if gvk.Kind != "" {
 		kind = gvk.Kind

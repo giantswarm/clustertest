@@ -40,10 +40,10 @@ func StatefulSetsNotReady(framework *clustertest.Framework, cluster *application
 					// Events
 					events, err := wcClient.GetEventsForResource(ctx, &statefulset)
 					if err != nil {
-						logger.Log("Failed to get events for StatefulSet '%s' - %v", statefulset.ObjectMeta.Name, err)
+						logger.Log("Failed to get events for StatefulSet '%s' - %v", statefulset.Name, err)
 					} else {
 						for _, event := range events.Items {
-							logger.Log("StatefulSet '%s' Event: Reason='%s', Message='%s', Last Occurred='%v'", statefulset.ObjectMeta.Name, event.Reason, event.Message, event.LastTimestamp)
+							logger.Log("StatefulSet '%s' Event: Reason='%s', Message='%s', Last Occurred='%v'", statefulset.Name, event.Reason, event.Message, event.LastTimestamp)
 						}
 					}
 				}
@@ -51,7 +51,7 @@ func StatefulSetsNotReady(framework *clustertest.Framework, cluster *application
 					// Pods
 					pods, err := wcClient.GetPodsForStatefulSet(ctx, &statefulset)
 					if err != nil {
-						logger.Log("Failed to get Pods for StatefulSet '%s' - %v", statefulset.ObjectMeta.Name, err)
+						logger.Log("Failed to get Pods for StatefulSet '%s' - %v", statefulset.Name, err)
 					} else {
 						for i := range pods.Items {
 							debugPod(ctx, wcClient, &pods.Items[i])

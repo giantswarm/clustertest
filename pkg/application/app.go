@@ -256,8 +256,8 @@ func (a *Application) Build() (*applicationv1alpha1.App, *corev1.ConfigMap, erro
 	}
 	app := appDecoded.(*applicationv1alpha1.App)
 	// Make sure app has labels map
-	if app.ObjectMeta.Labels == nil {
-		app.ObjectMeta.Labels = make(map[string]string)
+	if app.Labels == nil {
+		app.Labels = make(map[string]string)
 	}
 	if a.AppLabels != nil {
 		app.SetLabels(a.AppLabels)
@@ -277,8 +277,8 @@ func (a *Application) Build() (*applicationv1alpha1.App, *corev1.ConfigMap, erro
 		return nil, nil, err
 	}
 	// Make sure configmap has labels map
-	if configmap.ObjectMeta.Labels == nil {
-		configmap.ObjectMeta.Labels = make(map[string]string)
+	if configmap.Labels == nil {
+		configmap.Labels = make(map[string]string)
 	}
 	if a.ConfigMapLabels != nil {
 		configmap.SetLabels(a.ConfigMapLabels)

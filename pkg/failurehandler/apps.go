@@ -42,7 +42,7 @@ func AppIssues(framework *clustertest.Framework, cluster *application.Cluster) F
 				logger.Log("Failed to get app-operator Deployment for workload cluster - %v", err)
 				return
 			}
-			logger.Log("Deployment 'app-operator' status - Name='%s', Replicas='%d', ObservedGeneration='%d'", appOperator.ObjectMeta.Name, appOperator.Status.ReadyReplicas, appOperator.Status.ObservedGeneration)
+			logger.Log("Deployment 'app-operator' status - Name='%s', Replicas='%d', ObservedGeneration='%d'", appOperator.Name, appOperator.Status.ReadyReplicas, appOperator.Status.ObservedGeneration)
 
 			events, err := mcClient.GetEventsForResource(ctx, appOperator)
 			if err != nil {
@@ -64,9 +64,9 @@ func AppIssues(framework *clustertest.Framework, cluster *application.Cluster) F
 				pod := pods.Items[i]
 				logs, err := mcClient.GetLogs(ctx, &pod, &maxLines)
 				if err != nil {
-					logger.Log("Failed to get Pod logs for Pod '%s' - %v", pod.ObjectMeta.Name, err)
+					logger.Log("Failed to get Pod logs for Pod '%s' - %v", pod.Name, err)
 				}
-				logger.Log("Last %d lines of logs from '%s' - %s", maxLines, pod.ObjectMeta.Name, logs)
+				logger.Log("Last %d lines of logs from '%s' - %s", maxLines, pod.Name, logs)
 			}
 		}
 
@@ -91,7 +91,7 @@ func AppIssues(framework *clustertest.Framework, cluster *application.Cluster) F
 				logger.Log("Failed to get chart-operator Deployment - %v", err)
 				return
 			}
-			logger.Log("Deployment 'chart-operator' status - Name='%s', Replicas='%d', ObservedGeneration='%d'", chartOperator.ObjectMeta.Name, chartOperator.Status.ReadyReplicas, chartOperator.Status.ObservedGeneration)
+			logger.Log("Deployment 'chart-operator' status - Name='%s', Replicas='%d', ObservedGeneration='%d'", chartOperator.Name, chartOperator.Status.ReadyReplicas, chartOperator.Status.ObservedGeneration)
 
 			events, err := wcClient.GetEventsForResource(ctx, chartOperator)
 			if err != nil {
@@ -113,9 +113,9 @@ func AppIssues(framework *clustertest.Framework, cluster *application.Cluster) F
 				pod := pods.Items[i]
 				logs, err := wcClient.GetLogs(ctx, &pod, &maxLines)
 				if err != nil {
-					logger.Log("Failed to get Pod logs for Pod '%s' - %v", pod.ObjectMeta.Name, err)
+					logger.Log("Failed to get Pod logs for Pod '%s' - %v", pod.Name, err)
 				}
-				logger.Log("Last %d lines of logs from '%s' - %s", maxLines, pod.ObjectMeta.Name, logs)
+				logger.Log("Last %d lines of logs from '%s' - %s", maxLines, pod.Name, logs)
 			}
 		}
 	})

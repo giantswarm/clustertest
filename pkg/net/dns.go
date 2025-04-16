@@ -10,7 +10,9 @@ func NewResolver() *net.Resolver {
 	return &net.Resolver{
 		PreferGo:     true,
 		StrictErrors: true,
-		Dial: func(ctx context.Context, _, address string) (net.Conn, error) {
+		Dial: func(ctx context.Context, network, address string) (net.Conn, error) {
+			_ = network
+			_ = address
 			d := net.Dialer{
 				Timeout: DialerTimeout,
 			}

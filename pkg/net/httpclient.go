@@ -11,9 +11,9 @@ import (
 	"github.com/giantswarm/clustertest/pkg/logger"
 )
 
-// NewHttpClient returns an initialized HTTP Client that uses an external nameserver to help avoid negative caching
+// NewHTTPClient returns an initialized HTTP Client that uses an external nameserver to help avoid negative caching
 // and if detected will make use of any proxy found in the environment
-func NewHttpClient() *http.Client {
+func NewHTTPClient() *http.Client {
 	transport := &http.Transport{
 		DialContext: func(ctx context.Context, network, addr string) (net.Conn, error) {
 			dialer := &net.Dialer{

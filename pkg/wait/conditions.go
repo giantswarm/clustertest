@@ -31,11 +31,11 @@ type Range struct {
 }
 
 // WaitCondition is a function performing a condition check for if we need to keep waiting
-type WaitCondition func() (done bool, err error)
+type WaitCondition func() (done bool, err error) // nolint
 
-// clusterApiObject is an interface that combines controller-runtime Object and Cluster API object with conditions.
+// clusterAPIObject is an interface that combines controller-runtime Object and Cluster API object with conditions.
 // We use this in functions where Kubernetes client fetches Cluster API objects and checks their Status.Conditions.
-type clusterApiObject interface {
+type clusterAPIObject interface {
 	cr.Object
 	capiconditions.Getter
 }
@@ -342,10 +342,9 @@ func IsAppStatus(ctx context.Context, kubeClient *client.Client, appName string,
 		if expectedStatus == actualStatus {
 			logger.Log("App status for '%s' is as expected: expectedStatus='%s' actualStatus='%s'", appName, expectedStatus, actualStatus)
 			return true, nil
-		} else {
-			logger.Log("App status for '%s' is not yet as expected: expectedStatus='%s' actualStatus='%s' (reason: '%s')", appName, expectedStatus, actualStatus, app.Status.Release.Reason)
-			return false, nil
 		}
+		logger.Log("App status for '%s' is not yet as expected: expectedStatus='%s' actualStatus='%s' (reason: '%s')", appName, expectedStatus, actualStatus, app.Status.Release.Reason)
+		return false, nil
 	}
 }
 
@@ -413,7 +412,7 @@ func IsClusterConditionSet(ctx context.Context, kubeClient *client.Client, clust
 			return false, err
 		}
 
-		return IsClusterApiObjectConditionSet(cluster, conditionType, expectedStatus, expectedReason)
+		return IsClusterAPIObjectConditionSet(cluster, conditionType, expectedStatus, expectedReason)
 	}
 }
 
@@ -430,12 +429,12 @@ func IsKubeadmControlPlaneConditionSet(ctx context.Context, kubeClient *client.C
 			return false, err
 		}
 
-		return IsClusterApiObjectConditionSet(kcp, conditionType, expectedStatus, expectedReason)
+		return IsClusterAPIObjectConditionSet(kcp, conditionType, expectedStatus, expectedReason)
 	}
 }
 
-// IsClusterApiObjectConditionSet checks if a cluster has the specified condition with the expected status.
-func IsClusterApiObjectConditionSet(obj clusterApiObject, conditionType capi.ConditionType, expectedStatus corev1.ConditionStatus, expectedReason string) (bool, error) {
+// IsClusterAPIObjectConditionSet checks if a cluster has the specified condition with the expected status.
+func IsClusterAPIObjectConditionSet(obj clusterAPIObject, conditionType capi.ConditionType, expectedStatus corev1.ConditionStatus, expectedReason string) (bool, error) {
 	condition := capiconditions.Get(obj, conditionType)
 
 	// obj.GetObjectKind().GroupVersionKind().Kind should return obj Kind, but that sometimes just returns an empty
@@ -502,7 +501,7 @@ func checkNodesReady(ctx context.Context, kubeClient *client.Client, condition f
 		for _, node := range nodes.Items {
 			for _, condition := range node.Status.Conditions {
 				if condition.Type == corev1.NodeReady && condition.Status == corev1.ConditionTrue {
-					readyNodes += 1
+					readyNodes++
 				}
 			}
 		}

@@ -52,3 +52,11 @@ func NewHTTPClient() *http.Client {
 		Transport: transport,
 	}
 }
+
+// NewHttpClient returns an initialized HTTP Client.
+// Deprecated: Use NewHTTPClient instead.
+// nolint // Keep old name for backward compatibility
+func NewHttpClient() *http.Client {
+	logger.Log("Warning: NewHttpClient is deprecated. Use NewHTTPClient instead.")
+	return NewHTTPClient()
+}

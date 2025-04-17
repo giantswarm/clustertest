@@ -486,6 +486,14 @@ func IsClusterAPIObjectConditionSet(obj clusterAPIObject, conditionType capi.Con
 	return foundExpectedCondition, nil
 }
 
+// IsClusterApiObjectConditionSet checks if a cluster has the specified condition with the expected status.
+// Deprecated: Use IsClusterAPIObjectConditionSet instead.
+// nolint // Keep old name for backward compatibility
+func IsClusterApiObjectConditionSet(obj clusterAPIObject, conditionType capi.ConditionType, expectedStatus corev1.ConditionStatus, expectedReason string) (bool, error) {
+	logger.Log("Warning: IsClusterApiObjectConditionSet is deprecated. Use IsClusterAPIObjectConditionSet instead.")
+	return IsClusterAPIObjectConditionSet(obj, conditionType, expectedStatus, expectedReason)
+}
+
 func checkNodesReady(ctx context.Context, kubeClient *client.Client, condition func(int) bool, labels ...cr.ListOption) WaitCondition {
 	return func() (bool, error) {
 		logger.Log("Checking for ready nodes")

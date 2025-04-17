@@ -40,10 +40,10 @@ func DeploymentsNotReady(framework *clustertest.Framework, cluster *application.
 					// Events
 					events, err := wcClient.GetEventsForResource(ctx, &deployment)
 					if err != nil {
-						logger.Log("Failed to get events for Deployment '%s' - %v", deployment.ObjectMeta.Name, err)
+						logger.Log("Failed to get events for Deployment '%s' - %v", deployment.Name, err)
 					} else {
 						for _, event := range events.Items {
-							logger.Log("Deployment '%s' Event: Reason='%s', Message='%s', Last Occurred='%v'", deployment.ObjectMeta.Name, event.Reason, event.Message, event.LastTimestamp)
+							logger.Log("Deployment '%s' Event: Reason='%s', Message='%s', Last Occurred='%v'", deployment.Name, event.Reason, event.Message, event.LastTimestamp)
 						}
 					}
 				}
@@ -51,7 +51,7 @@ func DeploymentsNotReady(framework *clustertest.Framework, cluster *application.
 					// Pods
 					pods, err := wcClient.GetPodsForDeployment(ctx, &deployment)
 					if err != nil {
-						logger.Log("Failed to get Pods for Deployment '%s' - %v", deployment.ObjectMeta.Name, err)
+						logger.Log("Failed to get Pods for Deployment '%s' - %v", deployment.Name, err)
 					} else {
 						for i := range pods.Items {
 							debugPod(ctx, wcClient, &pods.Items[i])

@@ -45,9 +45,9 @@ func PodsNotReady(framework *clustertest.Framework, cluster *application.Cluster
 func debugPod(ctx context.Context, wcClient *client.Client, pod *corev1.Pod) {
 	{
 		// Status & Conditions
-		logger.Log("Pod '%s' status: Phase='%s'", pod.ObjectMeta.Name, pod.Status.Phase)
+		logger.Log("Pod '%s' status: Phase='%s'", pod.Name, pod.Status.Phase)
 		for _, condition := range pod.Status.Conditions {
-			logger.Log("Pod '%s' condition: Type='%s', Status='%s', Message='%s'", pod.ObjectMeta.Name, condition.Type, condition.Status, condition.Message)
+			logger.Log("Pod '%s' condition: Type='%s', Status='%s', Message='%s'", pod.Name, condition.Type, condition.Status, condition.Message)
 		}
 	}
 
@@ -55,10 +55,10 @@ func debugPod(ctx context.Context, wcClient *client.Client, pod *corev1.Pod) {
 		// Events
 		events, err := wcClient.GetEventsForResource(ctx, pod)
 		if err != nil {
-			logger.Log("Failed to get events for Pod '%s' - %v", pod.ObjectMeta.Name, err)
+			logger.Log("Failed to get events for Pod '%s' - %v", pod.Name, err)
 		} else {
 			for _, event := range events.Items {
-				logger.Log("Pod '%s' Event: Reason='%s', Message='%s', Last Occurred='%v'", pod.ObjectMeta.Name, event.Reason, event.Message, event.LastTimestamp)
+				logger.Log("Pod '%s' Event: Reason='%s', Message='%s', Last Occurred='%v'", pod.Name, event.Reason, event.Message, event.LastTimestamp)
 			}
 		}
 	}
@@ -72,13 +72,13 @@ func debugPod(ctx context.Context, wcClient *client.Client, pod *corev1.Pod) {
 			}
 			logger.Log(
 				"Pod '%s' / Container '%s': StartupProbePassed='%v', ReadinessProbePassed='%t', RestartCount='%d'",
-				pod.ObjectMeta.Name, containerStatus.Name,
+				pod.Name, containerStatus.Name,
 				started, containerStatus.Ready, containerStatus.RestartCount,
 			)
 			if containerStatus.LastTerminationState.Terminated != nil {
 				logger.Log(
 					"Pod '%s' / Container '%s' was last terminated with: ExitCode='%d', Reason='%s', Message='%s'",
-					pod.ObjectMeta.Name, containerStatus.Name,
+					pod.Name, containerStatus.Name,
 					containerStatus.LastTerminationState.Terminated.ExitCode, containerStatus.LastTerminationState.Terminated.Reason, containerStatus.LastTerminationState.Terminated.Message,
 				)
 			}
@@ -90,9 +90,9 @@ func debugPod(ctx context.Context, wcClient *client.Client, pod *corev1.Pod) {
 		maxLines := int64(5)
 		logs, err := wcClient.GetLogs(ctx, pod, &maxLines)
 		if err != nil {
-			logger.Log("Failed to get logs for Pod '%s' - %v", pod.ObjectMeta.Name, err)
+			logger.Log("Failed to get logs for Pod '%s' - %v", pod.Name, err)
 		} else {
-			logger.Log("Last %d lines of logs from '%s' - %s", maxLines, pod.ObjectMeta.Name, logs)
+			logger.Log("Last %d lines of logs from '%s' - %s", maxLines, pod.Name, logs)
 		}
 	}
 }

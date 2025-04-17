@@ -86,14 +86,14 @@ func TestLabels(t *testing.T) {
 		t.Fatalf("Not expecting an error: %v", err)
 	}
 
-	v, ok := app.ObjectMeta.Labels["example"]
+	v, ok := app.Labels["example"]
 	if !ok {
 		t.Errorf("Was expecting a label with the key 'example' on the App resource")
 	} else if v != "test" {
 		t.Errorf("Was expecting the App label value to be 'test', instead was: %s", v)
 	}
 
-	v, ok = cm.ObjectMeta.Labels["example"]
+	v, ok = cm.Labels["example"]
 	if !ok {
 		t.Errorf("Was expecting a label with the key 'example' on the ConfigMap resource")
 	} else if v != "test" {
@@ -309,8 +309,8 @@ func TestBuild_WCAppInstall(t *testing.T) {
 		t.Errorf("Was expecting the App specs namespace to be '%s', but was '%s'", namespace, app.Spec.Namespace)
 	}
 
-	if app.ObjectMeta.Namespace != org.GetNamespace() {
-		t.Errorf("Was expecting the App CR namespace to be '%s', but was '%s'", org.GetNamespace(), app.ObjectMeta.Namespace)
+	if app.Namespace != org.GetNamespace() {
+		t.Errorf("Was expecting the App CR namespace to be '%s', but was '%s'", org.GetNamespace(), app.Namespace)
 	}
 }
 

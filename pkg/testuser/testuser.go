@@ -52,7 +52,7 @@ func Create(ctx context.Context, kubeClient *client.Client) (*client.Client, err
 	err = wait.For(
 		func() (bool, error) {
 			var populatedSecret corev1.Secret
-			err := kubeClient.Get(ctx, types.NamespacedName{Name: secret.ObjectMeta.Name, Namespace: secret.ObjectMeta.Namespace}, &populatedSecret)
+			err := kubeClient.Get(ctx, types.NamespacedName{Name: secret.Name, Namespace: secret.Namespace}, &populatedSecret)
 			if err != nil {
 				return false, err
 			}

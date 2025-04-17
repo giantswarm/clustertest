@@ -213,20 +213,20 @@ func (c *Cluster) GetRelease() (*releases.Release, error) {
 			release.Name = fmt.Sprintf("%s%s%s", release.Name, joiner, strings.TrimPrefix(utils.GenerateRandomName("r"), "r-"))
 
 			// Add the override release version and commit sha as annotations on the created Release CR
-			release.ObjectMeta.Annotations = mergeMaps(release.GetObjectMeta().GetAnnotations(), map[string]string{
+			release.Annotations = mergeMaps(release.GetObjectMeta().GetAnnotations(), map[string]string{
 				"ci.giantswarm.io/release-version": releaseVersion,
 				"ci.giantswarm.io/release-commit":  releaseCommit,
 			})
 		}
 
 		// Set test-specific labels onto the Release CR
-		release.ObjectMeta.Labels = mergeMaps(release.GetObjectMeta().GetLabels(), utils.GetBaseLabels())
-		release.ObjectMeta.Labels = mergeMaps(release.GetObjectMeta().GetLabels(), map[string]string{
+		release.Labels = mergeMaps(release.GetObjectMeta().GetLabels(), utils.GetBaseLabels())
+		release.Labels = mergeMaps(release.GetObjectMeta().GetLabels(), map[string]string{
 			"giantswarm.io/cluster": c.Name,
 		})
 
 		// Mark the Release as being safe to delete from E2E tests
-		release.ObjectMeta.Annotations = mergeMaps(release.GetObjectMeta().GetAnnotations(), map[string]string{
+		release.Annotations = mergeMaps(release.GetObjectMeta().GetAnnotations(), map[string]string{
 			utils.DeleteAnnotation: "true",
 		})
 	}
@@ -348,7 +348,7 @@ func (c *Cluster) Build() (*BuiltCluster, error) {
 		builtCluster.Release = release
 		if builtCluster.Release != nil {
 			logger.Log("Cluster App is supported by Releases")
-			logger.Log("Release name: '%s'", release.ObjectMeta.Name)
+			logger.Log("Release name: '%s'", release.Name)
 			// Override the Cluster values with the release version
 			releaseVersion, err := release.GetVersion()
 			if err != nil {

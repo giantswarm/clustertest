@@ -40,10 +40,10 @@ func DaemonSetsNotReady(framework *clustertest.Framework, cluster *application.C
 					// Events
 					events, err := wcClient.GetEventsForResource(ctx, &daemonset)
 					if err != nil {
-						logger.Log("Failed to get events for DaemonSet '%s' - %v", daemonset.ObjectMeta.Name, err)
+						logger.Log("Failed to get events for DaemonSet '%s' - %v", daemonset.Name, err)
 					} else {
 						for _, event := range events.Items {
-							logger.Log("DaemonSet '%s' Event: Reason='%s', Message='%s', Last Occurred='%v'", daemonset.ObjectMeta.Name, event.Reason, event.Message, event.LastTimestamp)
+							logger.Log("DaemonSet '%s' Event: Reason='%s', Message='%s', Last Occurred='%v'", daemonset.Name, event.Reason, event.Message, event.LastTimestamp)
 						}
 					}
 				}
@@ -51,7 +51,7 @@ func DaemonSetsNotReady(framework *clustertest.Framework, cluster *application.C
 					// Pods
 					pods, err := wcClient.GetPodsForDaemonSet(ctx, &daemonset)
 					if err != nil {
-						logger.Log("Failed to get Pods for DaemonSet '%s' - %v", daemonset.ObjectMeta.Name, err)
+						logger.Log("Failed to get Pods for DaemonSet '%s' - %v", daemonset.Name, err)
 					} else {
 						for i := range pods.Items {
 							debugPod(ctx, wcClient, &pods.Items[i])

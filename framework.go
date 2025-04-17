@@ -296,7 +296,7 @@ func (f *Framework) DeleteCluster(ctx context.Context, cluster *application.Clus
 			Namespace: cluster.GetNamespace(),
 		},
 	}
-	err := f.MC().Client.Delete(ctx, &app)
+	err := f.MC().Delete(ctx, &app)
 	if err != nil {
 		return err
 	}
@@ -313,7 +313,7 @@ func (f *Framework) DeleteCluster(ctx context.Context, cluster *application.Clus
 	}
 
 	// Remove the finalizer from the bastion secret (if it exists) or the namespace delete gets blocked
-	err = f.MC().Client.Patch(ctx,
+	err = f.MC().Patch(ctx,
 		&corev1.Secret{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      fmt.Sprintf("%s-bastion-ignition", cluster.Name),
@@ -328,14 +328,14 @@ func (f *Framework) DeleteCluster(ctx context.Context, cluster *application.Clus
 
 	// Clean up any releases associated with this test Cluster
 	releaseList := releases.ReleaseList{}
-	err = f.MC().Client.List(ctx, &releaseList, &cr.MatchingLabels{"giantswarm.io/cluster": cluster.Name})
+	err = f.MC().List(ctx, &releaseList, &cr.MatchingLabels{"giantswarm.io/cluster": cluster.Name})
 	if cr.IgnoreNotFound(err) != nil {
 		return err
 	}
 	for i := range releaseList.Items {
 		if utils.SafeToDelete(releaseList.Items[i].GetAnnotations()) {
-			logger.Log("Deleting Release '%s'", releaseList.Items[i].ObjectMeta.Name)
-			err = f.MC().Client.Delete(ctx, &releaseList.Items[i])
+			logger.Log("Deleting Release '%s'", releaseList.Items[i].Name)
+			err = f.MC().Delete(ctx, &releaseList.Items[i])
 			if err != nil {
 				return err
 			}
@@ -352,12 +352,12 @@ func (f *Framework) CreateOrg(ctx context.Context, org *organization.Org) error 
 		return err
 	}
 
-	err = f.MC().Client.Get(ctx, cr.ObjectKeyFromObject(orgCR), orgCR)
+	err = f.MC().Get(ctx, cr.ObjectKeyFromObject(orgCR), orgCR)
 	if cr.IgnoreNotFound(err) != nil {
 		return err
 	} else if err != nil {
 		// Not found so lets create
-		err = f.MC().Client.Create(ctx, orgCR, &cr.CreateOptions{})
+		err = f.MC().Create(ctx, orgCR, &cr.CreateOptions{})
 		if err != nil {
 			return err
 		}
@@ -378,7 +378,7 @@ func (f *Framework) DeleteOrg(ctx context.Context, org *organization.Org) error 
 		return err
 	}
 
-	err = f.MC().Client.Get(ctx, cr.ObjectKeyFromObject(orgCR), orgCR)
+	err = f.MC().Get(ctx, cr.ObjectKeyFromObject(orgCR), orgCR)
 	if cr.IgnoreNotFound(err) != nil {
 		return err
 	} else if err != nil {
@@ -387,7 +387,7 @@ func (f *Framework) DeleteOrg(ctx context.Context, org *organization.Org) error 
 	}
 
 	if utils.SafeToDelete(orgCR.GetAnnotations()) {
-		err = f.MC().Client.Delete(ctx, orgCR, &cr.DeleteOptions{})
+		err = f.MC().Delete(ctx, orgCR, &cr.DeleteOptions{})
 		if err != nil {
 			return err
 		}

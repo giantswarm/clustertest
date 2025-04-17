@@ -23,7 +23,7 @@ func (c *Client) GetLogs(ctx context.Context, pod *corev1.Pod, numOfLines *int64
 		return "", fmt.Errorf("failed initializing kubernetes core client - %v", err)
 	}
 
-	pod, err = coreClient.CoreV1().Pods(pod.ObjectMeta.Namespace).Get(ctx, pod.ObjectMeta.Name, v1.GetOptions{})
+	pod, err = coreClient.CoreV1().Pods(pod.Namespace).Get(ctx, pod.Name, v1.GetOptions{})
 	if err != nil {
 		return "", fmt.Errorf("failed to get pod - %v", err)
 	}
@@ -36,7 +36,7 @@ func (c *Client) GetLogs(ctx context.Context, pod *corev1.Pod, numOfLines *int64
 	allContainers = append(allContainers, getEphemeralContainerNames(pod.Spec.EphemeralContainers)...)
 
 	for _, containerName := range allContainers {
-		req := coreClient.CoreV1().Pods(pod.ObjectMeta.Namespace).GetLogs(pod.ObjectMeta.Name, &corev1.PodLogOptions{
+		req := coreClient.CoreV1().Pods(pod.Namespace).GetLogs(pod.Name, &corev1.PodLogOptions{
 			TailLines: numOfLines,
 			Container: containerName,
 		})

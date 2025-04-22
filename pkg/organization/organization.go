@@ -59,12 +59,12 @@ func (o *Org) Build() (*orgv1alpha1.Organization, error) {
 
 	// We want to add an annotation to track if we should be removing the org when done or not
 	// This check will allow us to re-use existing orgs too without accidentally deleting the org when done
-	orgCR.ObjectMeta.Annotations = map[string]string{
+	orgCR.Annotations = map[string]string{
 		utils.DeleteAnnotation: "true",
 	}
 
 	// If found, populate details about Tekton run as labels
-	orgCR.ObjectMeta.Labels = utils.GetBaseLabels()
+	orgCR.Labels = utils.GetBaseLabels()
 
 	orgCR.Status.Namespace = o.GetNamespace()
 

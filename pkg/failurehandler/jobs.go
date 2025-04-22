@@ -33,19 +33,19 @@ func JobsUnsuccessful(framework *clustertest.Framework, cluster *application.Clu
 		for i := range jobList.Items {
 			job := jobList.Items[i]
 			if job.Status.Succeeded == 0 && job.Status.Active == 0 {
-				logger.Log("Job %s/%s has not succeeded. (Number Failed: '%d')", job.ObjectMeta.Namespace, job.ObjectMeta.Name, job.Status.Failed)
+				logger.Log("Job %s/%s has not succeeded. (Number Failed: '%d')", job.Namespace, job.Name, job.Status.Failed)
 				for _, condition := range job.Status.Conditions {
-					logger.Log("Job '%s' condition: Type='%s', Status='%s', Message='%s'", job.ObjectMeta.Name, condition.Type, condition.Status, condition.Message)
+					logger.Log("Job '%s' condition: Type='%s', Status='%s', Message='%s'", job.Name, condition.Type, condition.Status, condition.Message)
 				}
 
 				{
 					// Events
 					events, err := wcClient.GetEventsForResource(ctx, &job)
 					if err != nil {
-						logger.Log("Failed to get events for Job '%s' - %v", job.ObjectMeta.Name, err)
+						logger.Log("Failed to get events for Job '%s' - %v", job.Name, err)
 					} else {
 						for _, event := range events.Items {
-							logger.Log("Job '%s' Event: Reason='%s', Message='%s', Last Occurred='%v'", job.ObjectMeta.Name, event.Reason, event.Message, event.LastTimestamp)
+							logger.Log("Job '%s' Event: Reason='%s', Message='%s', Last Occurred='%v'", job.Name, event.Reason, event.Message, event.LastTimestamp)
 						}
 					}
 				}

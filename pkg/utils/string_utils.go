@@ -15,9 +15,8 @@ func GenerateRandomName(prefix string) string {
 	}
 	if prefix == "" {
 		return string(str)[:20]
-	} else {
-		return fmt.Sprintf("%s-%s", prefix, str)[:20]
 	}
+	return fmt.Sprintf("%s-%s", prefix, str)[:20]
 }
 
 // StringToPointer returns a pointer to the provided string

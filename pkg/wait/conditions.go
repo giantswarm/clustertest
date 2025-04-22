@@ -31,11 +31,11 @@ type Range struct {
 }
 
 // WaitCondition is a function performing a condition check for if we need to keep waiting
-type WaitCondition func() (done bool, err error)
+type WaitCondition func() (done bool, err error) // nolint
 
-// clusterApiObject is an interface that combines controller-runtime Object and Cluster API object with conditions.
+// clusterAPIObject is an interface that combines controller-runtime Object and Cluster API object with conditions.
 // We use this in functions where Kubernetes client fetches Cluster API objects and checks their Status.Conditions.
-type clusterApiObject interface {
+type clusterAPIObject interface {
 	cr.Object
 	capiconditions.Getter
 }
@@ -123,7 +123,7 @@ func IsClusterReadyCondition(ctx context.Context, kubeClient *client.Client, clu
 func IsResourceDeleted(ctx context.Context, kubeClient *client.Client, resource cr.Object) WaitCondition {
 	return func() (bool, error) {
 		logger.Log("Checking if %s '%s' still exists", getResourceKind(kubeClient, resource), resource.GetName())
-		err := kubeClient.Client.Get(ctx, cr.ObjectKeyFromObject(resource), resource, &cr.GetOptions{})
+		err := kubeClient.Get(ctx, cr.ObjectKeyFromObject(resource), resource, &cr.GetOptions{})
 		if err != nil {
 			switch {
 			case apierrors.IsNotFound(err):
@@ -148,7 +148,7 @@ func IsResourceDeleted(ctx context.Context, kubeClient *client.Client, resource 
 // DoesResourceExist returns a WaitCondition that checks if the given resource exists in the cluster
 func DoesResourceExist(ctx context.Context, kubeClient *client.Client, resource cr.Object) WaitCondition {
 	return func() (bool, error) {
-		if err := kubeClient.Client.Get(ctx, cr.ObjectKeyFromObject(resource), resource); err != nil {
+		if err := kubeClient.Get(ctx, cr.ObjectKeyFromObject(resource), resource); err != nil {
 			logger.Log("Waiting for %s '%s' to be created", getResourceKind(kubeClient, resource), resource.GetName())
 			return false, nil
 		}
@@ -238,12 +238,12 @@ func AreAllJobsSucceeded(ctx context.Context, kubeClient *client.Client) WaitCon
 		var loopErr error
 		for _, job := range jobList.Items {
 			if job.Status.Succeeded == 0 && job.Status.Active == 0 {
-				logger.Log("Job %s/%s has not succeeded. (Failed: '%d')", job.ObjectMeta.Namespace, job.ObjectMeta.Name, job.Status.Failed)
+				logger.Log("Job %s/%s has not succeeded. (Failed: '%d')", job.Namespace, job.Name, job.Status.Failed)
 				// We wrap the errors so that we can log out for all failures, not just the first found
 				if loopErr != nil {
-					loopErr = fmt.Errorf("%w, job %s/%s has not succeeded", loopErr, job.ObjectMeta.Namespace, job.ObjectMeta.Name)
+					loopErr = fmt.Errorf("%w, job %s/%s has not succeeded", loopErr, job.Namespace, job.Name)
 				} else {
-					loopErr = fmt.Errorf("job %s/%s has not succeeded", job.ObjectMeta.Namespace, job.ObjectMeta.Name)
+					loopErr = fmt.Errorf("job %s/%s has not succeeded", job.Namespace, job.Name)
 				}
 			}
 		}
@@ -334,7 +334,7 @@ func IsAppStatus(ctx context.Context, kubeClient *client.Client, appName string,
 				Namespace: appNamespace,
 			},
 		}
-		if err := kubeClient.Client.Get(ctx, cr.ObjectKeyFromObject(app), app); err != nil {
+		if err := kubeClient.Get(ctx, cr.ObjectKeyFromObject(app), app); err != nil {
 			return false, err
 		}
 
@@ -342,10 +342,9 @@ func IsAppStatus(ctx context.Context, kubeClient *client.Client, appName string,
 		if expectedStatus == actualStatus {
 			logger.Log("App status for '%s' is as expected: expectedStatus='%s' actualStatus='%s'", appName, expectedStatus, actualStatus)
 			return true, nil
-		} else {
-			logger.Log("App status for '%s' is not yet as expected: expectedStatus='%s' actualStatus='%s' (reason: '%s')", appName, expectedStatus, actualStatus, app.Status.Release.Reason)
-			return false, nil
 		}
+		logger.Log("App status for '%s' is not yet as expected: expectedStatus='%s' actualStatus='%s' (reason: '%s')", appName, expectedStatus, actualStatus, app.Status.Release.Reason)
+		return false, nil
 	}
 }
 
@@ -362,7 +361,7 @@ func IsAllAppStatus(ctx context.Context, kubeClient *client.Client, appNamespace
 
 		for _, namespacedName := range appNamespacedNames {
 			app := &applicationv1alpha1.App{}
-			if err = kubeClient.Client.Get(ctx, namespacedName, app); err != nil {
+			if err = kubeClient.Get(ctx, namespacedName, app); err != nil {
 				logger.Log("Failed to get App %s: %s", namespacedName.Name, err)
 				isSuccess = false
 				continue
@@ -390,7 +389,7 @@ func IsAppVersion(ctx context.Context, kubeClient *client.Client, appName string
 				Namespace: appNamespace,
 			},
 		}
-		if err := kubeClient.Client.Get(ctx, cr.ObjectKeyFromObject(app), app); err != nil {
+		if err := kubeClient.Get(ctx, cr.ObjectKeyFromObject(app), app); err != nil {
 			return false, err
 		}
 
@@ -409,11 +408,11 @@ func IsClusterConditionSet(ctx context.Context, kubeClient *client.Client, clust
 				Namespace: clusterNamespace,
 			},
 		}
-		if err := kubeClient.Client.Get(ctx, cr.ObjectKeyFromObject(cluster), cluster); err != nil {
+		if err := kubeClient.Get(ctx, cr.ObjectKeyFromObject(cluster), cluster); err != nil {
 			return false, err
 		}
 
-		return IsClusterApiObjectConditionSet(cluster, conditionType, expectedStatus, expectedReason)
+		return IsClusterAPIObjectConditionSet(cluster, conditionType, expectedStatus, expectedReason)
 	}
 }
 
@@ -426,16 +425,16 @@ func IsKubeadmControlPlaneConditionSet(ctx context.Context, kubeClient *client.C
 				Namespace: clusterNamespace,
 			},
 		}
-		if err := kubeClient.Client.Get(ctx, cr.ObjectKeyFromObject(kcp), kcp); err != nil {
+		if err := kubeClient.Get(ctx, cr.ObjectKeyFromObject(kcp), kcp); err != nil {
 			return false, err
 		}
 
-		return IsClusterApiObjectConditionSet(kcp, conditionType, expectedStatus, expectedReason)
+		return IsClusterAPIObjectConditionSet(kcp, conditionType, expectedStatus, expectedReason)
 	}
 }
 
-// IsClusterApiObjectConditionSet checks if a cluster has the specified condition with the expected status.
-func IsClusterApiObjectConditionSet(obj clusterApiObject, conditionType capi.ConditionType, expectedStatus corev1.ConditionStatus, expectedReason string) (bool, error) {
+// IsClusterAPIObjectConditionSet checks if a cluster has the specified condition with the expected status.
+func IsClusterAPIObjectConditionSet(obj clusterAPIObject, conditionType capi.ConditionType, expectedStatus corev1.ConditionStatus, expectedReason string) (bool, error) {
 	condition := capiconditions.Get(obj, conditionType)
 
 	// obj.GetObjectKind().GroupVersionKind().Kind should return obj Kind, but that sometimes just returns an empty
@@ -487,6 +486,14 @@ func IsClusterApiObjectConditionSet(obj clusterApiObject, conditionType capi.Con
 	return foundExpectedCondition, nil
 }
 
+// IsClusterApiObjectConditionSet checks if a cluster has the specified condition with the expected status.
+// Deprecated: Use IsClusterAPIObjectConditionSet instead.
+// nolint // Keep old name for backward compatibility
+func IsClusterApiObjectConditionSet(obj clusterAPIObject, conditionType capi.ConditionType, expectedStatus corev1.ConditionStatus, expectedReason string) (bool, error) {
+	logger.Log("Warning: IsClusterApiObjectConditionSet is deprecated. Use IsClusterAPIObjectConditionSet instead.")
+	return IsClusterAPIObjectConditionSet(obj, conditionType, expectedStatus, expectedReason)
+}
+
 func checkNodesReady(ctx context.Context, kubeClient *client.Client, condition func(int) bool, labels ...cr.ListOption) WaitCondition {
 	return func() (bool, error) {
 		logger.Log("Checking for ready nodes")
@@ -502,14 +509,14 @@ func checkNodesReady(ctx context.Context, kubeClient *client.Client, condition f
 		for _, node := range nodes.Items {
 			for _, condition := range node.Status.Conditions {
 				if condition.Type == corev1.NodeReady && condition.Status == corev1.ConditionTrue {
-					readyNodes += 1
+					readyNodes++
 				}
 			}
 		}
 
 		if condition(readyNodes) {
 			for _, node := range nodes.Items {
-				logger.Log("Node status: NodeName='%s', Taints='%v'", node.ObjectMeta.Name, node.Spec.Taints)
+				logger.Log("Node status: NodeName='%s', Taints='%v'", node.Name, node.Spec.Taints)
 			}
 
 			return false, nil
@@ -520,7 +527,7 @@ func checkNodesReady(ctx context.Context, kubeClient *client.Client, condition f
 }
 
 func getResourceKind(kubeClient *client.Client, resource cr.Object) string {
-	gvk, _ := apiutil.GVKForObject(resource, kubeClient.Client.Scheme())
+	gvk, _ := apiutil.GVKForObject(resource, kubeClient.Scheme())
 	kind := "resource"
 	if gvk.Kind != "" {
 		kind = gvk.Kind

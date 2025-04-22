@@ -11,9 +11,9 @@ import (
 	"github.com/giantswarm/clustertest/pkg/logger"
 )
 
-// NewHttpClient returns an initialized HTTP Client that uses an external nameserver to help avoid negative caching
+// NewHTTPClient returns an initialized HTTP Client that uses an external nameserver to help avoid negative caching
 // and if detected will make use of any proxy found in the environment
-func NewHttpClient() *http.Client {
+func NewHTTPClient() *http.Client {
 	transport := &http.Transport{
 		DialContext: func(ctx context.Context, network, addr string) (net.Conn, error) {
 			dialer := &net.Dialer{
@@ -51,4 +51,12 @@ func NewHttpClient() *http.Client {
 	return &http.Client{
 		Transport: transport,
 	}
+}
+
+// NewHttpClient returns an initialized HTTP Client.
+// Deprecated: Use NewHTTPClient instead.
+// nolint // Keep old name for backward compatibility
+func NewHttpClient() *http.Client {
+	logger.Log("Warning: NewHttpClient is deprecated. Use NewHTTPClient instead.")
+	return NewHTTPClient()
 }

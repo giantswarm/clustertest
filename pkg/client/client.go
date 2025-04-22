@@ -21,7 +21,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/types"
-	_ "k8s.io/client-go/plugin/pkg/client/auth/oidc"
+	_ "k8s.io/client-go/plugin/pkg/client/auth/oidc" // nolint
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
 	clientcmdapi "k8s.io/client-go/tools/clientcmd/api/v1"
@@ -171,7 +171,7 @@ func newClient(config *rest.Config, clusterName string) (*Client, error) {
 // If an empty `contextName` is provided it will use the `CurrentContext` from the provided KubeConfig.
 func getClusterNameFromKubeConfig(data []byte, contextName string) (string, error) {
 	if len(data) == 0 {
-		return "", fmt.Errorf("Empty kubeconfig provided")
+		return "", fmt.Errorf("empty kubeconfig provided")
 	}
 
 	kubeconfig := clientcmdapi.Config{}
@@ -199,7 +199,7 @@ func getClusterNameFromKubeConfig(data []byte, contextName string) (string, erro
 // getCurrentContext returns the set current context from the provided kubeconfig
 func getCurrentContext(data []byte) (string, error) {
 	if len(data) == 0 {
-		return "", fmt.Errorf("Empty kubeconfig provided")
+		return "", fmt.Errorf("empty kubeconfig provided")
 	}
 
 	kubeconfig := clientcmdapi.Config{}
@@ -215,7 +215,7 @@ func getCurrentContext(data []byte) (string, error) {
 // TLS server name is used to check server certificate, and is only valid for teleport kubeconfig.
 func getTLSServerNameFromKubeConfig(data []byte) (string, error) {
 	if len(data) == 0 {
-		return "", fmt.Errorf("Empty kubeconfig provided")
+		return "", fmt.Errorf("empty kubeconfig provided")
 	}
 
 	kubeconfig := clientcmdapi.Config{}

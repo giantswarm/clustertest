@@ -19,10 +19,10 @@ require (
 	github.com/mittwald/go-helm-client v0.12.17
 	golang.org/x/oauth2 v0.29.0
 	golang.org/x/text v0.24.0
-	k8s.io/api v0.32.4
-	k8s.io/apimachinery v0.32.4
-	k8s.io/client-go v0.32.4
-	k8s.io/kubectl v0.32.4
+	k8s.io/api v0.33.0
+	k8s.io/apimachinery v0.33.0
+	k8s.io/client-go v0.33.0
+	k8s.io/kubectl v0.33.0
 	sigs.k8s.io/cluster-api v1.10.0
 	sigs.k8s.io/controller-runtime v0.20.4
 	sigs.k8s.io/e2e-framework v0.6.0

@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Introduced new slice-based WaitConditions that can returns a slice of items to be used in comparisons
+
 ### Fixed
 
 - Fix linting issues.

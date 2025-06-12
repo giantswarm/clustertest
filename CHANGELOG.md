@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.34.0] - 2025-06-12
+
 ### Added
 
 - Introduced new slice-based WaitConditions that can returns a slice of items to be used in comparisons
@@ -711,7 +713,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added initial framework layout
 - Added Kubernetes client extended from controller-runtime client
 
-[Unreleased]: https://github.com/giantswarm/clustertest/compare/v1.33.0...HEAD
+[Unreleased]: https://github.com/giantswarm/clustertest/compare/v1.34.0...HEAD
+[1.34.0]: https://github.com/giantswarm/clustertest/compare/v1.33.0...v1.34.0
 [1.33.0]: https://github.com/giantswarm/clustertest/compare/v1.32.1...v1.33.0
 [1.32.1]: https://github.com/giantswarm/clustertest/compare/v1.32.0...v1.32.1
 [1.32.0]: https://github.com/giantswarm/clustertest/compare/v1.31.0...v1.32.0

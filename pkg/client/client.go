@@ -10,7 +10,7 @@ import (
 	"strings"
 
 	certmanager "github.com/cert-manager/cert-manager/pkg/api"
-	helmv2beta1 "github.com/fluxcd/helm-controller/api/v2beta1"
+	helmv2beta2 "github.com/fluxcd/helm-controller/api/v2beta2"
 	applicationv1alpha1 "github.com/giantswarm/apiextensions-application/api/v1alpha1"
 	orgv1alpha1 "github.com/giantswarm/organization-operator/api/v1alpha1"
 	releasev1alpha1 "github.com/giantswarm/releases/sdk/api/v1alpha1"
@@ -157,7 +157,7 @@ func newClient(config *rest.Config, clusterName string) (*Client, error) {
 	_ = kubeadm.AddToScheme(client.Scheme())
 	_ = releasev1alpha1.AddToScheme(client.Scheme())
 	_ = certmanager.AddToScheme(client.Scheme())
-	_ = helmv2beta1.AddToScheme(client.Scheme())
+	_ = helmv2beta2.AddToScheme(client.Scheme())
 
 	return &Client{
 		Client:      client,

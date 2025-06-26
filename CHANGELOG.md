@@ -7,9 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Changed
+### Added
 
-- Update helmrelease api version to `v2beta2`.
+- Add helmrelease api version to `v2beta2`.
 
 ## [1.34.0] - 2025-06-12
 

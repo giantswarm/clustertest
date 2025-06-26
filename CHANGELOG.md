@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Add helmrelease api version `v2beta2`.
+- Introduced a new `AreNoPodsCrashLoopingWithFilter` function that can check for pod restart counts using a filter to select pods based on labels.
 
 ## [1.34.0] - 2025-06-12
 

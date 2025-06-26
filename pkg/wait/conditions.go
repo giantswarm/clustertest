@@ -16,6 +16,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/types"
 	capi "sigs.k8s.io/cluster-api/api/v1beta1"
 	kubeadm "sigs.k8s.io/cluster-api/controlplane/kubeadm/api/v1beta1"
@@ -280,9 +281,25 @@ func AreAllPodsInSuccessfulPhase(ctx context.Context, kubeClient *client.Client)
 
 // AreNoPodsCrashLooping checks that all pods within the cluster have fewer than the provided number of restarts
 func AreNoPodsCrashLooping(ctx context.Context, kubeClient *client.Client, maxRestartCount int32) WaitCondition {
+	return AreNoPodsCrashLoopingWithFilter(ctx, kubeClient, maxRestartCount, []string{})
+}
+
+// AreNoPodsCrashLoopingWithFilter checks that all pods within the cluster have fewer than the provided number of restarts
+// `filterLabels` is a list of label selector string to use to filter the pods to be checked. (e.g. `app.kubernetes.io/name!=cluster-autoscaler-app`)
+func AreNoPodsCrashLoopingWithFilter(ctx context.Context, kubeClient *client.Client, maxRestartCount int32, filterLabels []string) WaitCondition {
 	return func() (bool, error) {
 		podList := &corev1.PodList{}
-		err := kubeClient.List(ctx, podList)
+		podListOptions := []cr.ListOption{}
+		for _, filter := range filterLabels {
+			logger.Log("Excluding pods with label %s", filter)
+			parsedLabel, err := labels.Parse(filter)
+			if err != nil {
+				logger.Log("Failed to parse label '%s', skipping...", filter)
+				continue
+			}
+			podListOptions = append(podListOptions, &cr.ListOptions{LabelSelector: parsedLabel})
+		}
+		err := kubeClient.List(ctx, podList, podListOptions...)
 		if err != nil {
 			return false, err
 		}

@@ -308,11 +308,16 @@ func (a *Application) GetInstallNamespace() string {
 	return installNamespace
 }
 
+func foo() string {
+	return "testing"
+}
+
 // IsUnifiedClusterAppWithDefaultApps returns a flag that indicates if a cluster-$provider app with specified version is
 // a unified cluster-$provider app that deploys all default apps.
 func (a *Application) IsUnifiedClusterAppWithDefaultApps() (bool, error) {
 	isUnifiedClusterApp := false
 
+	foo()
 	// Define a map with the minimum versions for each app
 	minVersions := map[string]*semver.Version{
 		"cluster-aws":            semver.New(0, 76, 0, "", ""),

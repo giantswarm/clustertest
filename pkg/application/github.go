@@ -5,9 +5,11 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
+	"time"
 
 	"golang.org/x/oauth2"
 
+	"github.com/cenkalti/backoff/v4"
 	"github.com/google/go-github/v73/github"
 
 	"github.com/giantswarm/clustertest/pkg/utils"
@@ -31,6 +33,9 @@ func newGitHubClient(ctx context.Context) *github.Client {
 // This function attempts to check for repos both with and without the `-app` suffix of the provided `applicationName`.
 // The provided `applicationName` is used as preference when looking up releases but if fails will fallback to the
 // suffix variation.
+//
+// The function includes retry logic with exponential backoff to handle transient network issues or GitHub API rate limiting.
+// It will give up after a maximum of 1 minute.
 func GetLatestAppVersion(applicationName string) (string, error) {
 	ctx := context.Background()
 	gh := newGitHubClient(ctx)
@@ -42,19 +47,70 @@ func GetLatestAppVersion(applicationName string) (string, error) {
 		appNameVariations = append(appNameVariations, applicationName+"-app")
 	}
 
+	bo := backoff.NewExponentialBackOff()
+	bo.InitialInterval = 1 * time.Second
+	bo.MaxInterval = 15 * time.Second
+	bo.MaxElapsedTime = 1 * time.Minute // Give up after 1 minute total
+	bo.RandomizationFactor = 0.1        // Add some jitter
+
 	var release *github.RepositoryRelease
-	var err error
-	for _, appName := range appNameVariations {
-		release, _, err = gh.Repositories.GetLatestRelease(ctx, "giantswarm", appName)
-		if err == nil {
-			// We've found a matching repo so no need to keep checking
-			break
+	var lastErr error
+
+	operation := func() error {
+		for _, appName := range appNameVariations {
+			var err error
+			release, _, err = gh.Repositories.GetLatestRelease(ctx, "giantswarm", appName)
+			if err == nil {
+				return nil
+			}
+
+			lastErr = err
+
+			// Only retry on specific HTTP status codes that indicate transient issues
+			if isTransientGitHubError(err) {
+				return err
+			}
 		}
+
+		return backoff.Permanent(lastErr)
+	}
+
+	err := backoff.Retry(operation, bo)
+	if err != nil {
+		return "", fmt.Errorf("unable to get latest release of %s: %v", applicationName, err)
 	}
 
 	if release == nil {
-		return "", fmt.Errorf("unable to get latest release of %s", applicationName)
+		return "", fmt.Errorf("unable to get latest release of %s: no release found", applicationName)
 	}
 
 	return *release.TagName, nil
+}
+
+// isTransientGitHubError determines if a GitHub API error is likely transient and should be retried
+// Only checks HTTP status codes - no string matching
+func isTransientGitHubError(err error) bool {
+	if err == nil {
+		return false
+	}
+
+	// Only retry on specific HTTP status codes that indicate transient server-side issues
+	if ghErr, ok := err.(*github.ErrorResponse); ok {
+		switch ghErr.Response.StatusCode {
+		case http.StatusTooManyRequests: // 429
+			return true
+		case http.StatusInternalServerError: // 500
+			return true
+		case http.StatusBadGateway: // 502
+			return true
+		case http.StatusServiceUnavailable: // 503
+			return true
+		case http.StatusGatewayTimeout: // 504
+			return true
+		default:
+			return false
+		}
+	}
+
+	return false
 }

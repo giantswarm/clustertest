@@ -5,8 +5,13 @@ go 1.24.2
 require (
 	dario.cat/mergo v1.0.2
 	github.com/Masterminds/semver/v3 v3.4.0
+<<<<<<< HEAD
 	github.com/cenkalti/backoff/v4 v4.3.0
 	github.com/cert-manager/cert-manager v1.18.2
+=======
+	github.com/cenkalti/backoff/v5 v5.0.2
+	github.com/cert-manager/cert-manager v1.18.1
+>>>>>>> 4c68a31 (Integrating upgrade from latest major to current release)
 	github.com/fluxcd/helm-controller/api v1.3.0
 	github.com/giantswarm/apiextensions-application v0.6.2
 	github.com/giantswarm/kubectl-gs/v2 v2.57.0
@@ -39,6 +44,7 @@ require (
 	github.com/asaskevich/govalidator v0.0.0-20230301143203-a9d515a09cc2 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/blang/semver/v4 v4.0.0 // indirect
+	github.com/cenkalti/backoff/v4 v4.3.0 // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
 	github.com/chai2010/gettext-go v1.0.3 // indirect
 	github.com/containerd/containerd v1.7.27 // indirect

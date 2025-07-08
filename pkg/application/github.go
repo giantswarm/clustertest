@@ -9,9 +9,10 @@ import (
 
 	"golang.org/x/oauth2"
 
-	"github.com/cenkalti/backoff/v4"
+	"github.com/cenkalti/backoff/v5"
 	"github.com/google/go-github/v73/github"
 
+	"github.com/giantswarm/clustertest/pkg/logger"
 	"github.com/giantswarm/clustertest/pkg/utils"
 )
 
@@ -50,32 +51,38 @@ func GetLatestAppVersion(applicationName string) (string, error) {
 	bo := backoff.NewExponentialBackOff()
 	bo.InitialInterval = 1 * time.Second
 	bo.MaxInterval = 15 * time.Second
-	bo.MaxElapsedTime = 1 * time.Minute // Give up after 1 minute total
-	bo.RandomizationFactor = 0.1        // Add some jitter
+	bo.RandomizationFactor = 0.1 // Add some jitter
 
-	var release *github.RepositoryRelease
-	var lastErr error
-
-	operation := func() error {
+	operation := func() (*github.RepositoryRelease, error) {
+		var lastErr error
 		for _, appName := range appNameVariations {
-			var err error
-			release, _, err = gh.Repositories.GetLatestRelease(ctx, "giantswarm", appName)
+			release, _, err := gh.Repositories.GetLatestRelease(ctx, "giantswarm", appName)
 			if err == nil {
-				return nil
+				return release, nil
 			}
 
 			lastErr = err
 
 			// Only retry on specific HTTP status codes that indicate transient issues
 			if isTransientGitHubError(err) {
-				return err
+				return nil, err
 			}
 		}
-
-		return backoff.Permanent(lastErr)
+		return nil, backoff.Permanent(lastErr)
 	}
 
-	err := backoff.Retry(operation, bo)
+	notify := func(err error, d time.Duration) {
+		logger.Log("Failed to get latest app version: %s. Retrying in %s...", err, d.Round(time.Second))
+	}
+
+	release, err := backoff.Retry(
+		context.Background(),
+		operation,
+		backoff.WithBackOff(bo),
+		backoff.WithMaxElapsedTime(1*time.Minute),
+		backoff.WithNotify(notify),
+	)
+
 	if err != nil {
 		return "", fmt.Errorf("unable to get latest release of %s: %v", applicationName, err)
 	}

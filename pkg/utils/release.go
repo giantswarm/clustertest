@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -9,7 +10,7 @@ import (
 	"time"
 
 	"github.com/Masterminds/semver/v3"
-	"github.com/cenkalti/backoff/v4"
+	"github.com/cenkalti/backoff/v5"
 
 	"github.com/giantswarm/clustertest/pkg/env"
 	"github.com/giantswarm/clustertest/pkg/logger"
@@ -52,30 +53,37 @@ func GetUpgradeReleasesToTest(provider string) (from string, to string, err erro
 	// We need to find the latest release from the previous major
 	releasesURL := fmt.Sprintf("https://raw.githubusercontent.com/giantswarm/releases/master/%s/releases.json", provider)
 
-	var body []byte
-	operation := func() error {
+	bo := backoff.NewExponentialBackOff()
+	bo.InitialInterval = 1 * time.Second
+	bo.MaxInterval = 15 * time.Second
+	bo.RandomizationFactor = 0.1 // Add some jitter
+
+	operation := func() ([]byte, error) {
 		resp, err := http.Get(releasesURL)
 		if err != nil {
-			return err
+			return nil, err
 		}
 		defer resp.Body.Close()
 
 		if resp.StatusCode != http.StatusOK {
-			return fmt.Errorf("failed to fetch releases file, status code %d", resp.StatusCode)
+			return nil, fmt.Errorf("failed to fetch releases file, status code %d", resp.StatusCode)
 		}
 
-		body, err = io.ReadAll(resp.Body)
-		return err
+		return io.ReadAll(resp.Body)
 	}
-
-	b := backoff.NewExponentialBackOff()
-	b.MaxElapsedTime = 1 * time.Minute
 
 	notify := func(err error, d time.Duration) {
 		logger.Log("Failed to fetch releases file: %s. Retrying in %s...", err, d.Round(time.Second))
 	}
 
-	err = backoff.RetryNotify(operation, b, notify)
+	body, err := backoff.Retry(
+		context.Background(),
+		operation,
+		backoff.WithBackOff(bo),
+		backoff.WithMaxElapsedTime(1*time.Minute),
+		backoff.WithNotify(notify),
+	)
+
 	if err != nil {
 		return "", "", fmt.Errorf("failed to fetch releases file from '%s' after multiple retries: %w", releasesURL, err)
 	}

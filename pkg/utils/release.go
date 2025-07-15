@@ -26,10 +26,9 @@ type Release struct {
 
 // GetUpgradeReleasesToTest returns the 'from' and 'to' release versions that should be used for upgrade tests.
 //
-// It checks the `E2E_RELEASE_VERSION` and `E2E_RELEASE_PRE_UPGRADE` environment variables and if the major
-// version is the same between them, it'll lookup the latest release for the previous major and return that
+// It checks the `E2E_RELEASE_VERSION` and `E2E_RELEASE_PRE_UPGRADE` environment variables. If `E2E_RELEASE_PRE_UPGRADE` is
+// set to the value of `previous_major` it'll lookup the latest release for the previous major and return that
 // as the 'from' release.
-// If the major versions are different, it returns the `E2E_RELEASE_PRE_UPGRADE` as the from release.
 //
 // A `provider` must be provided so that the correct releases can be looked up from `giantswarm/releases`.
 func GetUpgradeReleasesToTest(provider string) (from string, to string, err error) {
@@ -39,11 +38,11 @@ func GetUpgradeReleasesToTest(provider string) (from string, to string, err erro
 	if to == "" {
 		return from, to, nil
 	}
-	if from != "" {
+	if from != "previous_major" {
 		return from, to, nil
 	}
 
-	logger.Log("Predecessor release not specified. Looking up latest release from previous major...")
+	logger.Log("Predecessor release set to '%s'. Looking up latest release from previous major...", from)
 
 	toVersion, err := semver.NewVersion(to)
 	if err != nil {

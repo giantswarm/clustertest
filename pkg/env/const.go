@@ -30,6 +30,8 @@ const (
 	ReleaseCommit = "E2E_RELEASE_COMMIT"
 
 	// ReleasePreUpgradeVersion is intended to be used in E2E tests to indicate what
-	// Release version to make use of before performing an upgade to a newer Release.
+	// release should be installed before an upgrade test is performed.
+	// When set to "previous_major", it will automatically discover the latest
+	// release from the previous major version to use as the starting point.
 	ReleasePreUpgradeVersion = "E2E_RELEASE_PRE_UPGRADE"
 )

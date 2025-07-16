@@ -492,8 +492,8 @@ k8s.io/utils v0.0.0-20250321185631-1f6e0b77f77e h1:KqK5c/ghOm8xkHYhlodbp6i6+r+Ch
 k8s.io/utils v0.0.0-20250321185631-1f6e0b77f77e/go.mod h1:OLgZIPagt7ERELqWJFomSt595RzquPNLL48iOWgYOg0=
 oras.land/oras-go/v2 v2.6.0 h1:X4ELRsiGkrbeox69+9tzTu492FMUu7zJQW6eJU+I2oc=
 oras.land/oras-go/v2 v2.6.0/go.mod h1:magiQDfG6H1O9APp+rOsvCPcW1GD2MM7vgnKY0Y+u1o=
-sigs.k8s.io/cluster-api v1.10.3 h1:7tE5xgQJutisgDyeLzaZ9JhDaHGuG3GjPltsFM89BoA=
-sigs.k8s.io/cluster-api v1.10.3/go.mod h1:pu1WDn+fdax9aC9ZtDDoXqnO7P3LLjxbKGU/Nzf/DF4=
+sigs.k8s.io/cluster-api v1.10.4 h1:5mdyWLGbbwOowWrjqM/J9N600QnxTohu5J1/1YR6g7c=
+sigs.k8s.io/cluster-api v1.10.4/go.mod h1:68GJs286ZChsncp+TxYNj/vhy2NWokiPtH4+SA0afs0=
 sigs.k8s.io/controller-runtime v0.21.0 h1:CYfjpEuicjUecRk+KAeyYh+ouUBn4llGyDYytIGcJS8=
 sigs.k8s.io/controller-runtime v0.21.0/go.mod h1:OSg14+F65eWqIu4DceX7k/+QRAbTTvxeQSNSOQpukWM=
 sigs.k8s.io/e2e-framework v0.6.0 h1:p7hFzHnLKO7eNsWGI2AbC1Mo2IYxidg49BiT4njxkrM=

@@ -252,12 +252,18 @@ func (f *Framework) ApplyBuiltCluster(ctx context.Context, builtCluster *applica
 //
 //	wcClient, err := framework.WaitForClusterReady(timeoutCtx, "test-cluster", "default")
 func (f *Framework) WaitForClusterReady(ctx context.Context, clusterName string, namespace string) (*client.Client, error) {
-	err := wait.For(wait.IsClusterReadyCondition(ctx, f.MC(), clusterName, namespace), wait.WithContext(ctx), wait.WithInterval(10*time.Second))
+	// Define a client pointer that will reference a working workload cluster client once the condition is met.
+	var wcClient *client.Client
+
+	// Wait for the cluster to be ready and accessible. This will assign a working workload cluster client to the above client pointer.
+	// Sadly, we cannot return the client directly from waiting for the condition to be met and therefore have to pass it as a pointer.
+	condition := wait.IsClusterReadyCondition(ctx, f.MC(), clusterName, namespace, &wcClient)
+	err := wait.For(condition, wait.WithContext(ctx), wait.WithInterval(10*time.Second))
 	if err != nil {
 		return nil, err
 	}
 
-	return client.NewFromSecret(ctx, f.MC(), clusterName, namespace)
+	return wcClient, nil
 }
 
 // WaitForControlPlane polls the provided cluster and waits until the provided number of Control Plane nodes are reporting as ready

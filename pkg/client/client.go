@@ -35,6 +35,7 @@ import (
 	"sigs.k8s.io/yaml"
 
 	"github.com/giantswarm/clustertest/pkg/application"
+	"github.com/giantswarm/clustertest/pkg/logger"
 )
 
 // Client extends the client from controller-runtime
@@ -262,6 +263,7 @@ func (c *Client) GetClusterKubeConfig(ctx context.Context, clusterName string, c
 
 	// Fallback to CAPI kubeconfig if no teleport
 	if kubeconfig == "" {
+		logger.Log("Could not find Teleport kubeconfig for cluster %s, falling back to CAPI kubeconfig", clusterName)
 		kubeconfig, err = c.getCAPIKubeConfig(ctx, clusterName, clusterNamespace)
 	}
 

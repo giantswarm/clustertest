@@ -86,8 +86,11 @@ func ConsistentWaitCondition(wc WaitCondition, attempts int, pollInterval time.D
 	return Consistent(WithoutDone(wc), attempts, pollInterval)
 }
 
-// IsClusterReadyCondition returns a WaitCondition to check when a cluster is considered ready and accessible
-func IsClusterReadyCondition(ctx context.Context, kubeClient *client.Client, clusterName string, namespace string) WaitCondition {
+// IsClusterReadyCondition returns a WaitCondition to check when a cluster is considered ready and accessible.
+// Additionally IsClusterReadyCondition accepts a pointer to a `client.Client` which will be set
+// to a working workload cluster client once the condition is met. This allows the caller to use
+// the client directly after the condition is met without needing to re-create the client.
+func IsClusterReadyCondition(ctx context.Context, kubeClient *client.Client, clusterName string, namespace string, clientPtr **client.Client) WaitCondition {
 	return func() (bool, error) {
 		select {
 		case <-ctx.Done():
@@ -115,6 +118,8 @@ func IsClusterReadyCondition(ctx context.Context, kubeClient *client.Client, clu
 
 			logger.Log("Got valid kubeconfig!")
 
+			// Assign the working workload cluster client to the client pointer.
+			*clientPtr = wcClient
 			return true, nil
 		}
 	}

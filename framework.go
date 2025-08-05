@@ -178,7 +178,7 @@ func (f *Framework) LoadCluster() (*application.Cluster, error) {
 func (f *Framework) ApplyCluster(ctx context.Context, cluster *application.Cluster) (*client.Client, error) {
 	builtCluster, err := cluster.Build()
 	if err != nil {
-		return nil, fmt.Errorf("failed to build cluster app: %v", err)
+		return nil, fmt.Errorf("failed to build cluster app: %w", err)
 	}
 
 	return f.ApplyBuiltCluster(ctx, builtCluster)
@@ -199,29 +199,29 @@ func (f *Framework) ApplyCluster(ctx context.Context, cluster *application.Clust
 func (f *Framework) ApplyBuiltCluster(ctx context.Context, builtCluster *application.BuiltCluster) (*client.Client, error) {
 	if builtCluster.Release != nil {
 		if err := f.MC().CreateOrUpdate(ctx, builtCluster.Release); err != nil {
-			return nil, fmt.Errorf("failed to apply release resources: %v", err)
+			return nil, fmt.Errorf("failed to apply release resources: %w", err)
 		}
 	}
 
 	err := f.CreateOrg(ctx, builtCluster.SourceCluster.Organization)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to create organization: %w", err)
 	}
 
 	// Apply Cluster resources
 	if err := f.MC().DeployAppManifests(ctx, builtCluster.Cluster.App, builtCluster.Cluster.ConfigMap); err != nil {
-		return nil, fmt.Errorf("failed to apply cluster resources: %v", err)
+		return nil, fmt.Errorf("failed to apply cluster resources: %w", err)
 	}
 
 	if builtCluster.DefaultApps != nil {
 		if err = f.MC().DeployAppManifests(ctx, builtCluster.DefaultApps.App, builtCluster.DefaultApps.ConfigMap); err != nil {
-			return nil, fmt.Errorf("failed to apply cluster resources: %v", err)
+			return nil, fmt.Errorf("failed to apply default apps resources: %w", err)
 		}
 	}
 
 	kubeClient, err := f.WaitForClusterReady(ctx, builtCluster.SourceCluster.Name, builtCluster.SourceCluster.GetNamespace())
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to wait until cluster is ready: %w", err)
 	}
 
 	testClient := kubeClient
@@ -231,7 +231,7 @@ func (f *Framework) ApplyBuiltCluster(ctx context.Context, builtCluster *applica
 		logger.Log("KubeConfig isn't managed by Teleport, generating ServiceAccount in WC to assume")
 		testClient, err = testuser.Create(ctx, kubeClient)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("failed to create test user: %w", err)
 		}
 	}
 

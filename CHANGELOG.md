@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.38.2] - 2025-08-06
+
+### Changed
+
+- Improve cluster creation error logging.
+
 ## [1.38.1] - 2025-07-30
 
 ### Changed
@@ -745,7 +751,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added initial framework layout
 - Added Kubernetes client extended from controller-runtime client
 
-[Unreleased]: https://github.com/giantswarm/clustertest/compare/v1.38.1...HEAD
+[Unreleased]: https://github.com/giantswarm/clustertest/compare/v1.38.2...HEAD
+[1.38.2]: https://github.com/giantswarm/clustertest/compare/v1.38.1...v1.38.2
 [1.38.1]: https://github.com/giantswarm/clustertest/compare/v1.38.0...v1.38.1
 [1.38.0]: https://github.com/giantswarm/clustertest/compare/v1.37.0...v1.38.0
 [1.37.0]: https://github.com/giantswarm/clustertest/compare/v1.36.0...v1.37.0

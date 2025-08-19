@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Skip previous major upgrade testing when releasing the first version of a new major (e.g., skip v29→v30 testing when v30.0.0 is the first v30.x release).
+
 ### Changed
 
 - Go: Update dependencies.

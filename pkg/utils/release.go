@@ -92,6 +92,28 @@ func GetUpgradeReleasesToTest(provider string) (from string, to string, err erro
 		return "", "", fmt.Errorf("failed to unmarshal releases.json from '%s': %w", releasesURL, err)
 	}
 
+	// Check if there are any existing releases for the same major version as the "to" version
+	// If this is the first release of a new major, we don't want to test against previous major
+	currentMajor := toVersion.Major()
+	hasCurrentMajorReleases := false
+	for _, release := range releasesFile.Releases {
+		versionStr, err := semver.NewVersion(release.Version)
+		if err != nil {
+			// We'll ignore releases we can't parse
+			continue
+		}
+
+		if versionStr.Major() == currentMajor {
+			hasCurrentMajorReleases = true
+			break
+		}
+	}
+
+	if !hasCurrentMajorReleases {
+		logger.Log("No existing releases found for major version %d. Skipping previous major testing for first major release.", currentMajor)
+		return "", to, nil
+	}
+
 	previousMajor := toVersion.Major() - 1
 	var latestPreviousMajorRelease *semver.Version
 	for _, release := range releasesFile.Releases {

@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.39.0] - 2025-08-19
+
 ### Added
 
 - Skip previous major upgrade testing when releasing the first version of a new major (e.g., skip v29→v30 testing when v30.0.0 is the first v30.x release).
@@ -759,7 +761,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added initial framework layout
 - Added Kubernetes client extended from controller-runtime client
 
-[Unreleased]: https://github.com/giantswarm/clustertest/compare/v1.38.2...HEAD
+[Unreleased]: https://github.com/giantswarm/clustertest/compare/v1.39.0...HEAD
+[1.39.0]: https://github.com/giantswarm/clustertest/compare/v1.38.2...v1.39.0
 [1.38.2]: https://github.com/giantswarm/clustertest/compare/v1.38.1...v1.38.2
 [1.38.1]: https://github.com/giantswarm/clustertest/compare/v1.38.0...v1.38.1
 [1.38.0]: https://github.com/giantswarm/clustertest/compare/v1.37.0...v1.38.0

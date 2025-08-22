@@ -457,7 +457,7 @@ func IsKubeadmControlPlaneConditionSet(ctx context.Context, kubeClient *client.C
 
 // IsClusterAPIObjectConditionSet checks if a cluster has the specified condition with the expected status.
 func IsClusterAPIObjectConditionSet(obj clusterAPIObject, conditionType capi.ConditionType, expectedStatus corev1.ConditionStatus, expectedReason string) (bool, error) {
-	condition := capiconditions.Get(obj, (string)(conditionType))
+	condition := capiconditions.Get(obj, string(conditionType))
 
 	// obj.GetObjectKind().GroupVersionKind().Kind should return obj Kind, but that sometimes just returns an empty
 	// string, so here we just get the name of the struct.
@@ -504,7 +504,7 @@ func IsClusterAPIObjectConditionSet(obj clusterAPIObject, conditionType capi.Con
 		expectedStatus,
 		expectedReason)
 
-	foundExpectedCondition := (string)(condition.Status) == (string)(expectedStatus) && condition.Reason == expectedReason
+	foundExpectedCondition := condition.Status == v1.ConditionStatus(expectedStatus) && condition.Reason == expectedReason
 	return foundExpectedCondition, nil
 }
 

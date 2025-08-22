@@ -18,8 +18,8 @@ import (
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/types"
-	capi "sigs.k8s.io/cluster-api/api/v1beta1"
-	kubeadm "sigs.k8s.io/cluster-api/controlplane/kubeadm/api/v1beta1"
+	kubeadm "sigs.k8s.io/cluster-api/api/controlplane/kubeadm/v1beta2"
+	capi "sigs.k8s.io/cluster-api/api/core/v1beta2"
 	capiconditions "sigs.k8s.io/cluster-api/util/conditions"
 	cr "sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/client/apiutil"
@@ -457,7 +457,7 @@ func IsKubeadmControlPlaneConditionSet(ctx context.Context, kubeClient *client.C
 
 // IsClusterAPIObjectConditionSet checks if a cluster has the specified condition with the expected status.
 func IsClusterAPIObjectConditionSet(obj clusterAPIObject, conditionType capi.ConditionType, expectedStatus corev1.ConditionStatus, expectedReason string) (bool, error) {
-	condition := capiconditions.Get(obj, conditionType)
+	condition := capiconditions.Get(obj, (string)(conditionType))
 
 	// obj.GetObjectKind().GroupVersionKind().Kind should return obj Kind, but that sometimes just returns an empty
 	// string, so here we just get the name of the struct.
@@ -504,7 +504,7 @@ func IsClusterAPIObjectConditionSet(obj clusterAPIObject, conditionType capi.Con
 		expectedStatus,
 		expectedReason)
 
-	foundExpectedCondition := condition.Status == expectedStatus && condition.Reason == expectedReason
+	foundExpectedCondition := (string)(condition.Status) == (string)(expectedStatus) && condition.Reason == expectedReason
 	return foundExpectedCondition, nil
 }
 

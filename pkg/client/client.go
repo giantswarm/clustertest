@@ -27,8 +27,9 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 	clientcmdapi "k8s.io/client-go/tools/clientcmd/api/v1"
 	"k8s.io/kubectl/pkg/scheme"
-	kubeadm "sigs.k8s.io/cluster-api/api/controlplane/kubeadm/v1beta2"
-	capi "sigs.k8s.io/cluster-api/api/core/v1beta2"
+	capi "sigs.k8s.io/cluster-api/api/v1beta1"
+	kubeadm "sigs.k8s.io/cluster-api/controlplane/kubeadm/api/v1beta1"
+	capiexp "sigs.k8s.io/cluster-api/exp/api/v1beta1"
 	cr "sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/client/apiutil"
 	"sigs.k8s.io/yaml"
@@ -154,6 +155,7 @@ func newClient(config *rest.Config, clusterName string) (*Client, error) {
 	_ = applicationv1alpha1.AddToScheme(client.Scheme())
 	_ = orgv1alpha1.AddToScheme(client.Scheme())
 	_ = capi.AddToScheme(client.Scheme())
+	_ = capiexp.AddToScheme(client.Scheme())
 	_ = kubeadm.AddToScheme(client.Scheme())
 	_ = releasev1alpha1.AddToScheme(client.Scheme())
 	_ = certmanager.AddToScheme(client.Scheme())

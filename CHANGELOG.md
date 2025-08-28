@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.39.3] - 2025-08-28
+
 ### Changed
 
 - Go: Update dependencies.
@@ -775,7 +777,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added initial framework layout
 - Added Kubernetes client extended from controller-runtime client
 
-[Unreleased]: https://github.com/giantswarm/clustertest/compare/v1.39.2...HEAD
+[Unreleased]: https://github.com/giantswarm/clustertest/compare/v1.39.3...HEAD
+[1.39.3]: https://github.com/giantswarm/clustertest/compare/v1.39.2...v1.39.3
 [1.39.2]: https://github.com/giantswarm/clustertest/compare/v1.39.1...v1.39.2
 [1.39.1]: https://github.com/giantswarm/clustertest/compare/v1.39.0...v1.39.1
 [1.39.0]: https://github.com/giantswarm/clustertest/compare/v1.38.2...v1.39.0

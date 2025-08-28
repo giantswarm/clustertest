@@ -21,7 +21,7 @@ require (
 	k8s.io/client-go v0.34.0
 	k8s.io/kubectl v0.34.0
 	sigs.k8s.io/cluster-api v1.10.5
-	sigs.k8s.io/controller-runtime v0.21.0
+	sigs.k8s.io/controller-runtime v0.22.0
 	sigs.k8s.io/e2e-framework v0.6.0
 	sigs.k8s.io/kind v0.30.0
 	sigs.k8s.io/yaml v1.6.0
@@ -152,8 +152,8 @@ require (
 	gopkg.in/inf.v0 v0.9.1 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 	helm.sh/helm/v3 v3.18.6 // indirect
-	k8s.io/apiextensions-apiserver v0.33.4 // indirect
-	k8s.io/apiserver v0.33.4 // indirect
+	k8s.io/apiextensions-apiserver v0.34.0 // indirect
+	k8s.io/apiserver v0.34.0 // indirect
 	k8s.io/cli-runtime v0.34.0 // indirect
 	k8s.io/cluster-bootstrap v0.33.4 // indirect
 	k8s.io/component-base v0.34.0 // indirect

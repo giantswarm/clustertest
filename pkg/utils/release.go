@@ -38,11 +38,11 @@ func GetUpgradeReleasesToTest(provider string) (from string, to string, err erro
 	if to == "" {
 		return from, to, nil
 	}
-	if from != "previous_major" {
+
+	// If 'from' is explicitly provided, use it.
+	if from != "" && from != "previous_major" {
 		return from, to, nil
 	}
-
-	logger.Log("Predecessor release set to '%s'. Looking up latest release from previous major...", from)
 
 	toVersion, err := semver.NewVersion(to)
 	if err != nil {
@@ -92,49 +92,56 @@ func GetUpgradeReleasesToTest(provider string) (from string, to string, err erro
 		return "", "", fmt.Errorf("failed to unmarshal releases.json from '%s': %w", releasesURL, err)
 	}
 
-	// Check if there are any existing releases for the same major version as the "to" version
-	// If this is the first release of a new major, we don't want to test against previous major
-	currentMajor := toVersion.Major()
-	hasCurrentMajorReleases := false
-	for _, release := range releasesFile.Releases {
-		versionStr, err := semver.NewVersion(release.Version)
-		if err != nil {
-			// We'll ignore releases we can't parse
-			continue
-		}
+	if from == "previous_major" {
+		logger.Log("Predecessor release set to '%s'. Looking up latest release from previous major...", from)
 
-		if versionStr.Major() == currentMajor {
-			hasCurrentMajorReleases = true
-			break
-		}
-	}
+		previousMajor := toVersion.Major() - 1
+		var latestPreviousMajorRelease *semver.Version
+		for _, release := range releasesFile.Releases {
+			versionStr, err := semver.NewVersion(release.Version)
+			if err != nil {
+				// We'll ignore releases we can't parse
+				continue
+			}
 
-	if !hasCurrentMajorReleases {
-		logger.Log("No existing releases found for major version %d. Skipping previous major testing for first major release.", currentMajor)
-		return "", to, nil
-	}
-
-	previousMajor := toVersion.Major() - 1
-	var latestPreviousMajorRelease *semver.Version
-	for _, release := range releasesFile.Releases {
-		versionStr, err := semver.NewVersion(release.Version)
-		if err != nil {
-			// We'll ignore releases we can't parse
-			continue
-		}
-
-		if versionStr.Major() == previousMajor {
-			if latestPreviousMajorRelease == nil || versionStr.GreaterThan(latestPreviousMajorRelease) {
-				latestPreviousMajorRelease = versionStr
+			if versionStr.Major() == previousMajor {
+				if latestPreviousMajorRelease == nil || versionStr.GreaterThan(latestPreviousMajorRelease) {
+					latestPreviousMajorRelease = versionStr
+				}
 			}
 		}
-	}
 
-	if latestPreviousMajorRelease != nil {
-		from = latestPreviousMajorRelease.Original()
-		logger.Log("Found latest release from previous major: '%s'", from)
+		if latestPreviousMajorRelease != nil {
+			from = latestPreviousMajorRelease.Original()
+			logger.Log("Found latest release from previous major: '%s'", from)
+		} else {
+			logger.Log("Failed to find a release for major version %d for provider %s. Continuing with no 'from' version", previousMajor, provider)
+		}
 	} else {
-		logger.Log("Failed to find a release for major version %d for provider %s. Continuing with no 'from' version", previousMajor, provider)
+		// If 'from' is not specified, we'll try to find the latest patch release from the same minor
+		logger.Log("Predecessor release not set. Auto-detecting latest release...")
+
+		var latestPreviousRelease *semver.Version
+		for _, release := range releasesFile.Releases {
+			version, err := semver.NewVersion(release.Version)
+			if err != nil {
+				continue
+			}
+
+			// We're looking for a release that's on the same major version and is less than the target version
+			if version.Major() == toVersion.Major() && version.LessThan(toVersion) {
+				if latestPreviousRelease == nil || version.GreaterThan(latestPreviousRelease) {
+					latestPreviousRelease = version
+				}
+			}
+		}
+
+		if latestPreviousRelease != nil {
+			from = latestPreviousRelease.Original()
+			logger.Log("Found latest release to upgrade from: '%s'", from)
+		} else {
+			logger.Log("Could not find a suitable release to upgrade from for version %s. This might be the first release in a series.", to)
+		}
 	}
 
 	return from, to, nil

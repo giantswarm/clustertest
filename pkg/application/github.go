@@ -12,8 +12,8 @@ import (
 	"github.com/cenkalti/backoff/v5"
 	"github.com/google/go-github/v75/github"
 
-	"github.com/giantswarm/clustertest/pkg/logger"
-	"github.com/giantswarm/clustertest/pkg/utils"
+	"github.com/giantswarm/clustertest/v2/pkg/logger"
+	"github.com/giantswarm/clustertest/v2/pkg/utils"
 )
 
 // newGitHubClient returns a new initialized GitHub client using the GitHub token specified in the environment

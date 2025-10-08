@@ -12,8 +12,8 @@ import (
 	"github.com/Masterminds/semver/v3"
 	"github.com/cenkalti/backoff/v5"
 
-	"github.com/giantswarm/clustertest/pkg/env"
-	"github.com/giantswarm/clustertest/pkg/logger"
+	"github.com/giantswarm/clustertest/v2/pkg/env"
+	"github.com/giantswarm/clustertest/v2/pkg/logger"
 )
 
 type ReleasesFile struct {

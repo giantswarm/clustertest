@@ -10,7 +10,7 @@ import (
 	"k8s.io/client-go/tools/remotecommand"
 	"k8s.io/kubectl/pkg/scheme"
 
-	"github.com/giantswarm/clustertest/pkg/logger"
+	"github.com/giantswarm/clustertest/v2/pkg/logger"
 )
 
 // ExecInPod runs a given command within a pod running within the cluster and returns back the stdout and stderr

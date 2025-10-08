@@ -11,10 +11,10 @@ import (
 	releases "github.com/giantswarm/releases/sdk/api/v1alpha1"
 	corev1 "k8s.io/api/core/v1"
 
-	"github.com/giantswarm/clustertest/pkg/env"
-	"github.com/giantswarm/clustertest/pkg/logger"
-	"github.com/giantswarm/clustertest/pkg/organization"
-	"github.com/giantswarm/clustertest/pkg/utils"
+	"github.com/giantswarm/clustertest/v2/pkg/env"
+	"github.com/giantswarm/clustertest/v2/pkg/logger"
+	"github.com/giantswarm/clustertest/v2/pkg/organization"
+	"github.com/giantswarm/clustertest/v2/pkg/utils"
 )
 
 // Cluster is a wrapper around Cluster and Default-apps Apps that makes creating them together easier

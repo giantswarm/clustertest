@@ -5,10 +5,10 @@ import (
 
 	corev1 "k8s.io/api/core/v1"
 
-	"github.com/giantswarm/clustertest"
-	"github.com/giantswarm/clustertest/pkg/application"
-	"github.com/giantswarm/clustertest/pkg/client"
-	"github.com/giantswarm/clustertest/pkg/logger"
+	"github.com/giantswarm/clustertest/v2"
+	"github.com/giantswarm/clustertest/v2/pkg/application"
+	"github.com/giantswarm/clustertest/v2/pkg/client"
+	"github.com/giantswarm/clustertest/v2/pkg/logger"
 )
 
 // PodsNotReady collects debug information for all pods in the workload cluster that currently aren't reporting

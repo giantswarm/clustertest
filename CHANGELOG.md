@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Use api version `v2` when querying Helm custom resources.
+
 ## [1.41.0] - 2025-09-25
 
 ### Added

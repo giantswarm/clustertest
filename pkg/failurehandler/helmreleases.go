@@ -1,7 +1,7 @@
 package failurehandler
 
 import (
-	helmv2beta2 "github.com/fluxcd/helm-controller/api/v2beta2"
+	helmv2 "github.com/fluxcd/helm-controller/api/v2"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	ctrl "sigs.k8s.io/controller-runtime/pkg/client"
@@ -20,7 +20,7 @@ func HelmReleasesNotReady(framework *clustertest.Framework, cluster *application
 
 		logger.Log("Gathering HelmRelease status information for debugging")
 
-		helmReleaseList := &helmv2beta2.HelmReleaseList{}
+		helmReleaseList := &helmv2.HelmReleaseList{}
 		err := framework.MC().List(ctx, helmReleaseList, ctrl.InNamespace(cluster.Organization.GetNamespace()))
 		if err != nil {
 			logger.Log("Failed to get HelmReleases - %v", err)

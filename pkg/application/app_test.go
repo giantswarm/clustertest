@@ -570,6 +570,18 @@ func TestIsUnifiedClusterAppWithDefaultApps(t *testing.T) {
 			appVersion:     "v0.62.0",
 			expectedResult: true,
 		},
+		{
+			description:    "cluster-eks is not a unified cluster app",
+			appName:        "cluster-eks",
+			appVersion:     "v0.19.0",
+			expectedResult: false,
+		},
+		{
+			description:    "cluster-eks is a unified cluster app",
+			appName:        "cluster-eks",
+			appVersion:     "v1.0.0",
+			expectedResult: true,
+		},
 	} {
 		t.Run(scenario.description, func(t *testing.T) {
 			app := &Application{

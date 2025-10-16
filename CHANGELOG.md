@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Add support for EKS provider.
+
 ## [2.0.3] - 2025-10-09
 
 ### Changed

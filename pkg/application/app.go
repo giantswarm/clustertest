@@ -318,6 +318,7 @@ func (a *Application) IsUnifiedClusterAppWithDefaultApps() (bool, error) {
 		"cluster-aws":            semver.New(0, 76, 0, "", ""),
 		"cluster-azure":          semver.New(0, 14, 0, "", ""),
 		"cluster-cloud-director": semver.New(0, 62, 0, "", ""),
+		"cluster-eks":            semver.New(1, 0, 0, "", ""),
 		"cluster-vsphere":        semver.New(0, 61, 0, "", ""),
 	}
 

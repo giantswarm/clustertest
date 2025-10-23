@@ -22,7 +22,7 @@ const (
 	// llmJobTimeout is the maximum time to wait for the LLM job to complete
 	llmJobTimeout = 15 * time.Minute
 	// llmJobImage is the container image to use for the LLM job
-	llmJobImage = "gsoci.azurecr.io/giantswarm/shoot:1.0.0"
+	llmJobImage = "gsoci.azurecr.io/giantswarm/shoot:1.1.0"
 	// llmOtelEndpoint is the OpenTelemetry endpoint for the LLM job
 	llmOtelEndpoint = "http://otlp-gateway.kube-system.svc.cluster.local:4318"
 )

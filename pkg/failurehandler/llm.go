@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"math/rand"
+	"strings"
 	"time"
 
 	batchv1 "k8s.io/api/batch/v1"
@@ -92,7 +93,20 @@ func LLMPrompt(framework *clustertest.Framework, cluster *application.Cluster, q
 			return
 		}
 
-		logger.Log("LLM investigation Job output from pod '%s':\n%s", pod.Name, logs)
+		// Log the output with clear markers for readability
+		logger.Log("==================== LLM INVESTIGATION RESULTS START ====================")
+		logger.Log("Query: %s", query)
+		logger.Log("=========================================================================")
+
+		// Split logs into lines and log each separately for better readability
+		logLines := strings.Split(logs, "\n")
+		for _, line := range logLines {
+			if line != "" {
+				logger.Log("%s", line)
+			}
+		}
+
+		logger.Log("==================== LLM INVESTIGATION RESULTS END ========================")
 	})
 }
 

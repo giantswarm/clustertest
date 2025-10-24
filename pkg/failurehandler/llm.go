@@ -22,7 +22,7 @@ const (
 	// llmJobTimeout is the maximum time to wait for the LLM job to complete
 	llmJobTimeout = 15 * time.Minute
 	// llmJobImage is the container image to use for the LLM job
-	llmJobImage = "gsoci.azurecr.io/giantswarm/shoot:1.1.0"
+	llmJobImage = "gsoci.azurecr.io/giantswarm/shoot:latest"
 	// llmOtelEndpoint is the OpenTelemetry endpoint for the LLM job
 	llmOtelEndpoint = "http://otlp-gateway.kube-system.svc.cluster.local:4318"
 )
@@ -201,7 +201,7 @@ func createLLMJob(jobName, namespace, clusterName, query string) *batchv1.Job {
 						{
 							Name:            "shoot",
 							Image:           llmJobImage,
-							ImagePullPolicy: corev1.PullIfNotPresent,
+							ImagePullPolicy: corev1.PullAlways,
 							SecurityContext: &corev1.SecurityContext{
 								AllowPrivilegeEscalation: &allowPrivilegeEscalation,
 								Capabilities: &corev1.Capabilities{
@@ -212,10 +212,6 @@ func createLLMJob(jobName, namespace, clusterName, query string) *batchv1.Job {
 								},
 							},
 							Env: []corev1.EnvVar{
-								{
-									Name:  "DEBUG",
-									Value: "true",
-								},
 								{
 									Name:  "QUERY",
 									Value: query,

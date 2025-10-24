@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Add new failureHandler to prompt an LLM about the test failures.
+
 ## [2.1.2] - 2025-10-22
 
 ### Changed

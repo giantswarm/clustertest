@@ -1,2 +1,2 @@
-# pkg:golang/github.com/containerd/containerd@v1.7.28
-CVE-2025-47291
+CVE-2025-47290 until=2025-11-26 # github.com/containerd/containerd@v1.7.28
+CVE-2025-47291 until=2025-11-26 # github.com/containerd/containerd@v1.7.28

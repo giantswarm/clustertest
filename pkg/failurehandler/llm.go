@@ -22,9 +22,11 @@ const (
 	// llmJobTimeout is the maximum time to wait for the LLM job to complete
 	llmJobTimeout = 15 * time.Minute
 	// llmJobImage is the container image to use for the LLM job
-	llmJobImage = "gsoci.azurecr.io/giantswarm/shoot:latest"
-	// llmOtelEndpoint is the OpenTelemetry endpoint for the LLM job
-	llmOtelEndpoint = "http://otlp-gateway.kube-system.svc.cluster.local:4318"
+	llmJobImage = "gsoci.azurecr.io/giantswarm/curl:8.16.0"
+	// llmRequestTimeout is the curl timeout for the HTTP request
+	llmRequestTimeout = 10 * time.Minute
+	// llmServicePort is the port that the LLM service listens on
+	llmServicePort = "8000"
 )
 
 // LLMPrompt creates a Kubernetes Job that uses an LLM to investigate issues in the cluster.
@@ -169,6 +171,13 @@ func createLLMJob(jobName, namespace, clusterName, query string) *batchv1.Job {
 	runAsNonRoot := true
 	allowPrivilegeEscalation := false
 
+	// Prepare the JSON payload for the HTTP request - only contains the query field
+	jsonPayload := fmt.Sprintf(`{"query":"%s"}`,
+		strings.ReplaceAll(query, `"`, `\"`))
+
+	// Build the service endpoint URL using the cluster-specific service name
+	serviceEndpoint := fmt.Sprintf("http://%s-shoot:%s", clusterName, llmServicePort)
+
 	return &batchv1.Job{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      jobName,
@@ -199,9 +208,21 @@ func createLLMJob(jobName, namespace, clusterName, query string) *batchv1.Job {
 					RestartPolicy: corev1.RestartPolicyNever,
 					Containers: []corev1.Container{
 						{
-							Name:            "shoot",
+							Name:            "curl-shoot",
 							Image:           llmJobImage,
 							ImagePullPolicy: corev1.PullAlways,
+							Command: []string{
+								"curl",
+							},
+							Args: []string{
+								"-f",                                                           // Fail on HTTP errors (non-200 status codes)
+								"-v",                                                           // Verbose output for debugging
+								"--max-time", fmt.Sprintf("%.0f", llmRequestTimeout.Seconds()), // Maximum time for the request to complete
+								"-X", "POST", // HTTP POST method
+								"-H", "Content-Type: application/json", // JSON content type
+								"-d", jsonPayload, // JSON payload with query
+								serviceEndpoint, // The service endpoint URL
+							},
 							SecurityContext: &corev1.SecurityContext{
 								AllowPrivilegeEscalation: &allowPrivilegeEscalation,
 								Capabilities: &corev1.Capabilities{
@@ -209,57 +230,6 @@ func createLLMJob(jobName, namespace, clusterName, query string) *batchv1.Job {
 								},
 								SeccompProfile: &corev1.SeccompProfile{
 									Type: corev1.SeccompProfileTypeRuntimeDefault,
-								},
-							},
-							Env: []corev1.EnvVar{
-								{
-									Name:  "QUERY",
-									Value: query,
-								},
-								{
-									Name: "OPENAI_API_KEY",
-									ValueFrom: &corev1.EnvVarSource{
-										SecretKeyRef: &corev1.SecretKeySelector{
-											LocalObjectReference: corev1.LocalObjectReference{
-												Name: "openai-api-key",
-											},
-											Key: "OPENAI_API_KEY",
-										},
-									},
-								},
-								{
-									Name:  "OTEL_EXPORTER_OTLP_ENDPOINT",
-									Value: llmOtelEndpoint,
-								},
-								{
-									Name:  "OTEL_RESOURCE_ATTRIBUTES",
-									Value: "service.name=shoot",
-								},
-								{
-									Name:  "KUBECONFIG",
-									Value: "/home/app/k8s/kubeconfig.yaml",
-								},
-							},
-							VolumeMounts: []corev1.VolumeMount{
-								{
-									Name:      "kubeconfig",
-									MountPath: "/home/app/k8s",
-								},
-							},
-						},
-					},
-					Volumes: []corev1.Volume{
-						{
-							Name: "kubeconfig",
-							VolumeSource: corev1.VolumeSource{
-								Secret: &corev1.SecretVolumeSource{
-									SecretName: fmt.Sprintf("%s-kubeconfig", clusterName),
-									Items: []corev1.KeyToPath{
-										{
-											Key:  "value",
-											Path: "kubeconfig.yaml",
-										},
-									},
 								},
 							},
 						},

@@ -13,7 +13,7 @@ require (
 	github.com/giantswarm/organization-operator v1.6.4
 	github.com/giantswarm/releases/sdk v0.11.0
 	github.com/google/go-github/v79 v79.0.0
-	github.com/mittwald/go-helm-client v0.12.18
+	github.com/mittwald/go-helm-client v0.12.19
 	golang.org/x/oauth2 v0.33.0
 	golang.org/x/text v0.31.0
 	k8s.io/api v0.34.2

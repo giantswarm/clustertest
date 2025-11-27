@@ -7,7 +7,7 @@ require (
 	github.com/Masterminds/semver/v3 v3.4.0
 	github.com/cenkalti/backoff/v5 v5.0.3
 	github.com/cert-manager/cert-manager v1.19.1
-	github.com/fluxcd/helm-controller/api v1.4.4
+	github.com/fluxcd/helm-controller/api v1.4.5
 	github.com/giantswarm/apiextensions-application v0.6.2
 	github.com/giantswarm/kubectl-gs/v2 v2.57.0
 	github.com/giantswarm/organization-operator v1.6.4

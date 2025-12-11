@@ -1,6 +1,6 @@
 version: 2.1
 orbs:
-  architect: giantswarm/architect@6.10.0
+  architect: giantswarm/architect@6.11.0
 
 jobs:
   tests:
@@ -23,7 +23,7 @@ jobs:
       - run:
           name: "Install golang-lint"
           command: |
-            curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v2.1.2
+            curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v2.7.2
             sudo cp $(go env GOPATH)/bin/golangci-lint /usr/local/bin/golangci-lint
       - run:
           name: "Install nancy"

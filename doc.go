@@ -14,7 +14,7 @@
 //	cluster := application.NewClusterApp(utils.GenerateRandomName("t"), application.ProviderAWS).
 //		WithOrg(organization.NewRandomOrg()).
 //		WithAppVersions("", ""). // If not set, the latest is fetched
-//		WithAppValuesFile(path.Clean("./test_data/cluster_values.yaml"), path.Clean("./test_data/default-apps_values.yaml"))
+//		WithAppValuesFile(path.Clean("./test_data/cluster_values.yaml"), "", nil)
 //
 //	client, err := framework.ApplyCluster(ctx, cluster)
 //
@@ -58,7 +58,7 @@
 //		cluster = application.NewClusterApp(utils.GenerateRandomName("t"), application.ProviderAWS).
 //			WithOrg(organization.NewRandomOrg()).
 //			WithAppVersions("", ""). // If not set, the latest is fetched
-//			WithAppValuesFile(path.Clean("./test_data/cluster_values.yaml"), path.Clean("./test_data/default-apps_values.yaml"))
+//			WithAppValuesFile(path.Clean("./test_data/cluster_values.yaml"), "", nil)
 //
 //		BeforeSuite(func() {
 //			client, err := framework.ApplyCluster(ctx, cluster)

@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- **BREAKING**: All providers now always use Releases. Removed `IsProviderSupported` check from `GetRelease()`.
+- **BREAKING**: Removed `DefaultAppsApp` field from `Cluster` struct. All providers use unified cluster apps.
+- **BREAKING**: Removed `DefaultApps` field from `BuiltCluster` struct.
+- **BREAKING**: Removed `ProviderGCP` and `ProviderOpenStack` providers (unused, not supported by Releases).
+- Simplified `IsUnifiedClusterAppWithDefaultApps()` to always return `true` (deprecated).
+- Simplified `UsesUnifiedClusterApp()` to always return `true` (deprecated).
+- Updated `WithAppVersions()`, `WithAppValues()`, `WithAppValuesFile()` - second parameter (defaultApps) is now ignored and deprecated.
+- Simplified `Build()` function to only build cluster app and release.
+- Simplified `LoadCluster()` to not attempt loading default-apps.
+- Simplified `ApplyBuiltCluster()` to not deploy default-apps.
+
 ## [2.2.2] - 2025-12-15
 
 ### Changed

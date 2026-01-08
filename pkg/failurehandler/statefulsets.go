@@ -3,9 +3,9 @@ package failurehandler
 import (
 	appsv1 "k8s.io/api/apps/v1"
 
-	"github.com/giantswarm/clustertest/v2"
-	"github.com/giantswarm/clustertest/v2/pkg/application"
-	"github.com/giantswarm/clustertest/v2/pkg/logger"
+	"github.com/giantswarm/clustertest/v3"
+	"github.com/giantswarm/clustertest/v3/pkg/application"
+	"github.com/giantswarm/clustertest/v3/pkg/logger"
 )
 
 // StatefulSetsNotReady collects debug information for all StatefulSets in the workload cluster that currently don't

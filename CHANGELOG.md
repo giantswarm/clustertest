@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.0.0] - 2026-01-08
+
 ### Changed
 
 - **BREAKING**: All providers now always use Releases. Removed `IsProviderSupported` check from `GetRelease()`.
@@ -862,7 +864,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added initial framework layout
 - Added Kubernetes client extended from controller-runtime client
 
-[Unreleased]: https://github.com/giantswarm/clustertest/compare/v2.2.2...HEAD
+[Unreleased]: https://github.com/giantswarm/clustertest/compare/v3.0.0...HEAD
+[3.0.0]: https://github.com/giantswarm/clustertest/compare/v2.2.2...v3.0.0
 [2.2.2]: https://github.com/giantswarm/clustertest/compare/v2.2.1...v2.2.2
 [2.2.1]: https://github.com/giantswarm/clustertest/compare/v2.2.0...v2.2.1
 [2.2.0]: https://github.com/giantswarm/clustertest/compare/v2.1.2...v2.2.0

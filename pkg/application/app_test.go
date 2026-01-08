@@ -7,8 +7,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/giantswarm/clustertest/v2/pkg/env"
-	"github.com/giantswarm/clustertest/v2/pkg/organization"
+	"github.com/giantswarm/clustertest/v3/pkg/env"
+	"github.com/giantswarm/clustertest/v3/pkg/organization"
 )
 
 func TestWithFunctions(t *testing.T) {

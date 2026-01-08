@@ -4,7 +4,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/giantswarm/clustertest/v2/pkg/env"
+	"github.com/giantswarm/clustertest/v3/pkg/env"
 )
 
 // ShouldSkipUpgrade checks for the required environment variables needed to run the upgrade test suite

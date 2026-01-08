@@ -12,10 +12,10 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	ctrl "sigs.k8s.io/controller-runtime/pkg/client"
 
-	"github.com/giantswarm/clustertest/v2"
-	"github.com/giantswarm/clustertest/v2/pkg/application"
-	"github.com/giantswarm/clustertest/v2/pkg/logger"
-	"github.com/giantswarm/clustertest/v2/pkg/wait"
+	"github.com/giantswarm/clustertest/v3"
+	"github.com/giantswarm/clustertest/v3/pkg/application"
+	"github.com/giantswarm/clustertest/v3/pkg/logger"
+	"github.com/giantswarm/clustertest/v3/pkg/wait"
 )
 
 const (

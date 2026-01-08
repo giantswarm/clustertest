@@ -11,10 +11,10 @@ import (
 	releases "github.com/giantswarm/releases/sdk/api/v1alpha1"
 	corev1 "k8s.io/api/core/v1"
 
-	"github.com/giantswarm/clustertest/v2/pkg/env"
-	"github.com/giantswarm/clustertest/v2/pkg/logger"
-	"github.com/giantswarm/clustertest/v2/pkg/organization"
-	"github.com/giantswarm/clustertest/v2/pkg/utils"
+	"github.com/giantswarm/clustertest/v3/pkg/env"
+	"github.com/giantswarm/clustertest/v3/pkg/logger"
+	"github.com/giantswarm/clustertest/v3/pkg/organization"
+	"github.com/giantswarm/clustertest/v3/pkg/utils"
 )
 
 // Cluster is a wrapper around the Cluster App that makes creating clusters easier

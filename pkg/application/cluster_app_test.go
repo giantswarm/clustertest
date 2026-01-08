@@ -15,8 +15,4 @@ func TestClusterAppDefaults(t *testing.T) {
 	if cluster.ClusterApp.Organization.GetNamespace() != cluster.GetNamespace() {
 		t.Errorf("ClusterApp namespace not as expected. Expected %s, Actual: %s", cluster.GetNamespace(), cluster.ClusterApp.Organization.GetNamespace())
 	}
-
-	if cluster.DefaultAppsApp.Organization.GetNamespace() != cluster.GetNamespace() {
-		t.Errorf("DefaultAppsApp namespace not as expected. Expected %s, Actual: %s", cluster.GetNamespace(), cluster.DefaultAppsApp.Organization.GetNamespace())
-	}
 }

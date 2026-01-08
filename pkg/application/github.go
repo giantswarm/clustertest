@@ -10,7 +10,7 @@ import (
 	"golang.org/x/oauth2"
 
 	"github.com/cenkalti/backoff/v5"
-	"github.com/google/go-github/v80/github"
+	"github.com/google/go-github/v81/github"
 
 	"github.com/giantswarm/clustertest/v2/pkg/logger"
 	"github.com/giantswarm/clustertest/v2/pkg/utils"

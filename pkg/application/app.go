@@ -306,11 +306,3 @@ func (a *Application) GetInstallNamespace() string {
 	}
 	return installNamespace
 }
-
-// IsUnifiedClusterAppWithDefaultApps returns a flag that indicates if a cluster-$provider app with specified version is
-// a unified cluster-$provider app that deploys all default apps.
-// All supported providers now use unified cluster apps that deploy default apps directly,
-// so this function always returns true.
-func (a *Application) IsUnifiedClusterAppWithDefaultApps() (bool, error) {
-	return true, nil
-}

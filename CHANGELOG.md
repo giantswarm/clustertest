@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- **BREAKING**: Removed deprecated second parameter from `WithAppVersions()`. New signature: `WithAppVersions(clusterVersion string)`.
+- **BREAKING**: Removed deprecated second parameter from `WithAppValues()`. New signature: `WithAppValues(clusterValues string, templateValues *TemplateValues)`.
+- **BREAKING**: Removed deprecated second parameter from `WithAppValuesFile()`. New signature: `WithAppValuesFile(clusterValuesFile string, templateValues *TemplateValues)`.
+
+### Removed
+
+- Removed deprecated `UsesUnifiedClusterApp()` function (always returned true).
+- Removed deprecated `IsUnifiedClusterAppWithDefaultApps()` function (always returned true).
+
 ## [3.0.0] - 2026-01-08
 
 ### Changed

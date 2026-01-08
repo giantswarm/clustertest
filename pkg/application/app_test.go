@@ -482,21 +482,3 @@ func TestWithVersion_Catalog(t *testing.T) {
 		t.Errorf("Was expecting catalog to be the provided with the test suffix. Expected: %s, Actual: %s", "override", app.Spec.Catalog)
 	}
 }
-
-func TestIsUnifiedClusterAppWithDefaultApps(t *testing.T) {
-	// All providers now use unified cluster apps that deploy default apps directly.
-	// This function always returns true.
-	app := &Application{
-		AppName: "cluster-aws",
-		Version: "0.76.0",
-	}
-
-	result, err := app.IsUnifiedClusterAppWithDefaultApps()
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	if !result {
-		t.Errorf("Expected IsUnifiedClusterAppWithDefaultApps to always return true")
-	}
-}

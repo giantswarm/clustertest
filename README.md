@@ -53,7 +53,7 @@ if err != nil {
 
 cluster := application.NewClusterApp(utils.GenerateRandomName("t"), application.ProviderAWS).
   WithOrg(organization.NewRandomOrg()).
-  WithAppValuesFile(path.Clean("./test_data/cluster_values.yaml"), "", nil)
+  WithAppValuesFile(path.Clean("./test_data/cluster_values.yaml"), nil)
 
 client, err := framework.ApplyCluster(ctx, cluster)
 

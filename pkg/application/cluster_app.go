@@ -84,10 +84,7 @@ func (c *Cluster) WithOrg(org *organization.Org) *Cluster {
 //
 // If the version provided is suffixed with a commit sha then the `Catalog` use for the Apps
 // will be updated to `cluster-test`.
-//
-// Deprecated: The second parameter (defaultAppsVersion) is no longer used and will be ignored.
-// All providers now use unified cluster apps that deploy default apps directly.
-func (c *Cluster) WithAppVersions(clusterVersion string, _ string) *Cluster {
+func (c *Cluster) WithAppVersions(clusterVersion string) *Cluster {
 	c.ClusterApp = c.ClusterApp.WithVersion(clusterVersion)
 	return c
 }
@@ -95,10 +92,7 @@ func (c *Cluster) WithAppVersions(clusterVersion string, _ string) *Cluster {
 // WithAppValues sets the cluster app values.
 //
 // The values supports templating using Go template strings to replace things like the cluster name and namespace.
-//
-// Deprecated: The second parameter (defaultAppsValues) is no longer used and will be ignored.
-// All providers now use unified cluster apps that deploy default apps directly.
-func (c *Cluster) WithAppValues(clusterValues string, _ string, templateValues *TemplateValues) *Cluster {
+func (c *Cluster) WithAppValues(clusterValues string, templateValues *TemplateValues) *Cluster {
 	c.setDefaultTemplateValues(templateValues)
 
 	c.ClusterApp = c.ClusterApp.MustWithValues(clusterValues, templateValues)
@@ -108,10 +102,7 @@ func (c *Cluster) WithAppValues(clusterValues string, _ string, templateValues *
 // WithAppValuesFile sets the cluster app values from the provided file path.
 //
 // The values supports templating using Go template strings to replace things like the cluster name and namespace.
-//
-// Deprecated: The second parameter (defaultAppsValuesFile) is no longer used and will be ignored.
-// All providers now use unified cluster apps that deploy default apps directly.
-func (c *Cluster) WithAppValuesFile(clusterValuesFile string, _ string, templateValues *TemplateValues) *Cluster {
+func (c *Cluster) WithAppValuesFile(clusterValuesFile string, templateValues *TemplateValues) *Cluster {
 	c.setDefaultTemplateValues(templateValues)
 
 	c.ClusterApp = c.ClusterApp.MustWithValuesFile(clusterValuesFile, templateValues)
@@ -234,14 +225,6 @@ func (c *Cluster) GetRelease() (*releases.Release, error) {
 // GetNamespace returns the cluster organization namespace.
 func (c *Cluster) GetNamespace() string {
 	return c.Organization.GetNamespace()
-}
-
-// UsesUnifiedClusterApp returns a flag that indicates if the cluster is deployed with the unified cluster-$provider app
-// that deploys all default apps.
-//
-// Deprecated: All providers now use unified cluster apps. This function always returns true.
-func (c *Cluster) UsesUnifiedClusterApp() (bool, error) {
-	return true, nil
 }
 
 // IsDefaultApp checks if the provided Application is defined as a default app in the Release

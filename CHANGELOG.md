@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Fix `GetLatestAppVersion` to return the semantically highest version instead of the most recently created GitHub release.
+  This prevents backport releases (e.g., `v5.4.0`) from being incorrectly selected over newer versions (e.g., `v6.4.x`).
+
 ## [3.1.0] - 2026-01-08
 
 ### Changed

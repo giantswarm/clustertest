@@ -4,13 +4,14 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"slices"
 	"strings"
 	"time"
 
-	"golang.org/x/oauth2"
-
+	"github.com/Masterminds/semver/v3"
 	"github.com/cenkalti/backoff/v5"
 	"github.com/google/go-github/v81/github"
+	"golang.org/x/oauth2"
 
 	"github.com/giantswarm/clustertest/v3/pkg/logger"
 	"github.com/giantswarm/clustertest/v3/pkg/utils"
@@ -30,6 +31,9 @@ func newGitHubClient(ctx context.Context) *github.Client {
 }
 
 // GetLatestAppVersion returns the latest version (tag) name for a given repos release.
+//
+// The latest version is determined by semantic versioning, not by the most recently created release.
+// This ensures that patch releases on older major versions (e.g., v5.4.0) don't override newer versions (e.g., v6.4.x).
 //
 // This function attempts to check for repos both with and without the `-app` suffix of the provided `applicationName`.
 // The provided `applicationName` is used as preference when looking up releases but if fails will fallback to the
@@ -53,29 +57,29 @@ func GetLatestAppVersion(applicationName string) (string, error) {
 	bo.MaxInterval = 15 * time.Second
 	bo.RandomizationFactor = 0.1 // Add some jitter
 
-	operation := func() (*github.RepositoryRelease, error) {
+	operation := func() (string, error) {
 		var lastErr error
 		for _, appName := range appNameVariations {
-			release, _, err := gh.Repositories.GetLatestRelease(ctx, "giantswarm", appName)
+			version, err := getLatestSemverRelease(ctx, gh, appName)
 			if err == nil {
-				return release, nil
+				return version, nil
 			}
 
 			lastErr = err
 
 			// Only retry on specific HTTP status codes that indicate transient issues
 			if isTransientGitHubError(err) {
-				return nil, err
+				return "", err
 			}
 		}
-		return nil, backoff.Permanent(lastErr)
+		return "", backoff.Permanent(lastErr)
 	}
 
 	notify := func(err error, d time.Duration) {
 		logger.Log("Failed to get latest app version: %s. Retrying in %s...", err, d.Round(time.Second))
 	}
 
-	release, err := backoff.Retry(
+	version, err := backoff.Retry(
 		context.Background(),
 		operation,
 		backoff.WithBackOff(bo),
@@ -87,11 +91,74 @@ func GetLatestAppVersion(applicationName string) (string, error) {
 		return "", fmt.Errorf("unable to get latest release of %s: %v", applicationName, err)
 	}
 
-	if release == nil {
+	if version == "" {
 		return "", fmt.Errorf("unable to get latest release of %s: no release found", applicationName)
 	}
 
-	return *release.TagName, nil
+	return version, nil
+}
+
+// getLatestSemverRelease fetches all releases for a repository and returns the tag name
+// of the release with the highest semantic version (excluding pre-releases and drafts).
+func getLatestSemverRelease(ctx context.Context, gh *github.Client, repoName string) (string, error) {
+	opts := &github.ListOptions{
+		PerPage: 100,
+	}
+
+	var allReleases []*github.RepositoryRelease
+	for {
+		releases, resp, err := gh.Repositories.ListReleases(ctx, "giantswarm", repoName, opts)
+		if err != nil {
+			return "", err
+		}
+		allReleases = append(allReleases, releases...)
+		if resp.NextPage == 0 {
+			break
+		}
+		opts.Page = resp.NextPage
+	}
+
+	if len(allReleases) == 0 {
+		return "", fmt.Errorf("no releases found")
+	}
+
+	// Filter to only stable releases (non-draft, non-prerelease) and parse their versions
+	type releaseVersion struct {
+		tagName string
+		version *semver.Version
+	}
+	var stableReleases []releaseVersion
+
+	for _, release := range allReleases {
+		if release.GetDraft() || release.GetPrerelease() {
+			continue
+		}
+		tagName := release.GetTagName()
+		if tagName == "" {
+			continue
+		}
+		v, err := semver.NewVersion(tagName)
+		if err != nil {
+			// Skip releases with non-semver tags
+			continue
+		}
+		// Also skip pre-release versions (e.g., v1.0.0-alpha) even if not marked as prerelease
+		if v.Prerelease() != "" {
+			continue
+		}
+		stableReleases = append(stableReleases, releaseVersion{tagName: tagName, version: v})
+	}
+
+	if len(stableReleases) == 0 {
+		return "", fmt.Errorf("no stable releases found")
+	}
+
+	// Sort by version descending to get the highest version first
+	slices.SortFunc(stableReleases, func(a, b releaseVersion) int {
+		return b.version.Compare(a.version) // Descending order
+	})
+
+	return stableReleases[0].tagName, nil
 }
 
 // isTransientGitHubError determines if a GitHub API error is likely transient and should be retried

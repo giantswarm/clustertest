@@ -10,7 +10,7 @@ import (
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 
-	"github.com/giantswarm/clustertest/v2/pkg/logger"
+	"github.com/giantswarm/clustertest/v3/pkg/logger"
 )
 
 // GetLogs fetches the logs from the provided Pod. If `numOfLines` is provided (instead of `nil`) then that

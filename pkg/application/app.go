@@ -7,7 +7,6 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/Masterminds/semver/v3"
 	applicationv1alpha1 "github.com/giantswarm/apiextensions-application/api/v1alpha1"
 	templateapp "github.com/giantswarm/kubectl-gs/v2/pkg/template/app"
 	corev1 "k8s.io/api/core/v1"
@@ -15,7 +14,7 @@ import (
 	"k8s.io/client-go/kubernetes/scheme"
 	"sigs.k8s.io/e2e-framework/klient/decoder"
 
-	"github.com/giantswarm/clustertest/v2/pkg/organization"
+	"github.com/giantswarm/clustertest/v3/pkg/organization"
 )
 
 const (
@@ -306,57 +305,4 @@ func (a *Application) GetInstallNamespace() string {
 		installNamespace = a.Organization.GetNamespace()
 	}
 	return installNamespace
-}
-
-// IsUnifiedClusterAppWithDefaultApps returns a flag that indicates if a cluster-$provider app with specified version is
-// a unified cluster-$provider app that deploys all default apps.
-func (a *Application) IsUnifiedClusterAppWithDefaultApps() (bool, error) {
-	isUnifiedClusterApp := false
-
-	// Define a map with the minimum versions for each app
-	minVersions := map[string]*semver.Version{
-		"cluster-aws":            semver.New(0, 76, 0, "", ""),
-		"cluster-azure":          semver.New(0, 14, 0, "", ""),
-		"cluster-cloud-director": semver.New(0, 62, 0, "", ""),
-		"cluster-eks":            semver.New(1, 0, 0, "", ""),
-		"cluster-vsphere":        semver.New(0, 61, 0, "", ""),
-	}
-
-	// Check if the app is in the map
-	minVersion, ok := minVersions[a.AppName]
-	if !ok {
-		return false, nil
-	}
-
-	appVersionString := a.Version
-	if appVersionString == "" {
-		var ok bool
-		appVersionString, ok = getOverrideVersion(a.AppName)
-		if !ok {
-			var err error
-			appVersionString, err = GetLatestAppVersion(a.AppName)
-			if err != nil {
-				return false, err
-			}
-		}
-	}
-	appVersionString = strings.TrimPrefix(appVersionString, "v")
-	appVersion, err := semver.StrictNewVersion(appVersionString)
-	if err != nil {
-		return false, err
-	}
-
-	// desired app version is greater than or equal to the unified cluster app version
-	desiredAppVersionGTEUnified := !minVersion.GreaterThan(appVersion)
-
-	// desired app version is the dev build on top of unified cluster app version, e.g. unified app version is v0.76.0
-	// and desired version is v0.76.0-37ec0271eb72504378133ae1276c287a6d702e78
-	desiredAppVersionIsUnifiedWithDevChanges := appVersion.Prerelease() != "" &&
-		appVersion.Major() == minVersion.Major() &&
-		appVersion.Minor() == minVersion.Minor() &&
-		appVersion.Patch() == minVersion.Patch()
-
-	isUnifiedClusterApp = desiredAppVersionGTEUnified || desiredAppVersionIsUnifiedWithDevChanges
-
-	return isUnifiedClusterApp, nil
 }

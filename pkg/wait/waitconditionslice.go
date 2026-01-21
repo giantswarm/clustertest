@@ -11,8 +11,8 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/types"
 
-	"github.com/giantswarm/clustertest/v2/pkg/client"
-	"github.com/giantswarm/clustertest/v2/pkg/logger"
+	"github.com/giantswarm/clustertest/v3/pkg/client"
+	"github.com/giantswarm/clustertest/v3/pkg/logger"
 )
 
 // WaitConditionSlice is a function performing a condition check for if we need to keep waiting

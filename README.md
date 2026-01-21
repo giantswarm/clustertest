@@ -15,7 +15,7 @@ go get github.com/giantswarm/clustertest
 - Kubernetes client for interacting with the Management Cluster
 - Kubernetes client for interacting with the Workload Clusters
 - Wrapper types around Apps and their respective values ConfigMaps
-- Wrapper types around Cluster apps (and their default-apps)
+- Wrapper types around Cluster apps and Releases
 - Management (creation and deletion) or Organization resources
 - Wait and polling helpers
 - Override App versions using environment variables. (See [`application` documentation](https://pkg.go.dev/github.com/giantswarm/clustertest/pkg/application) for details)
@@ -53,10 +53,7 @@ if err != nil {
 
 cluster := application.NewClusterApp(utils.GenerateRandomName("t"), application.ProviderAWS).
   WithOrg(organization.NewRandomOrg()).
-  WithAppValuesFile(
-    path.Clean("./test_data/cluster_values.yaml"),
-    path.Clean("./test_data/default-apps_values.yaml"),
-  )
+  WithAppValuesFile(path.Clean("./test_data/cluster_values.yaml"), nil)
 
 client, err := framework.ApplyCluster(ctx, cluster)
 

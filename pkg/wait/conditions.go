@@ -7,8 +7,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/giantswarm/clustertest/v2/pkg/client"
-	"github.com/giantswarm/clustertest/v2/pkg/logger"
+	"github.com/giantswarm/clustertest/v3/pkg/client"
+	"github.com/giantswarm/clustertest/v3/pkg/logger"
 
 	applicationv1alpha1 "github.com/giantswarm/apiextensions-application/api/v1alpha1"
 	appsv1 "k8s.io/api/apps/v1"

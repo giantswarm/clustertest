@@ -7,14 +7,14 @@ import (
 	"strings"
 	"time"
 
-	"github.com/giantswarm/clustertest/v2/pkg/application"
-	"github.com/giantswarm/clustertest/v2/pkg/client"
-	"github.com/giantswarm/clustertest/v2/pkg/env"
-	"github.com/giantswarm/clustertest/v2/pkg/logger"
-	"github.com/giantswarm/clustertest/v2/pkg/organization"
-	"github.com/giantswarm/clustertest/v2/pkg/testuser"
-	"github.com/giantswarm/clustertest/v2/pkg/utils"
-	"github.com/giantswarm/clustertest/v2/pkg/wait"
+	"github.com/giantswarm/clustertest/v3/pkg/application"
+	"github.com/giantswarm/clustertest/v3/pkg/client"
+	"github.com/giantswarm/clustertest/v3/pkg/env"
+	"github.com/giantswarm/clustertest/v3/pkg/logger"
+	"github.com/giantswarm/clustertest/v3/pkg/organization"
+	"github.com/giantswarm/clustertest/v3/pkg/testuser"
+	"github.com/giantswarm/clustertest/v3/pkg/utils"
+	"github.com/giantswarm/clustertest/v3/pkg/wait"
 
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/types"
@@ -76,9 +76,9 @@ func (f *Framework) WC(clusterName string) (*client.Client, error) {
 }
 
 // LoadCluster will construct a Cluster struct using a Workload Cluster's
-// cluster and default-apps App CRs on the targeted Management Cluster. The
-// name and namespace where the cluster are installed need to be provided with
-// the E2E_WC_NAME and E2E_WC_NAMESPACE env vars.
+// cluster App CR on the targeted Management Cluster. The name and namespace
+// where the cluster is installed need to be provided with the E2E_WC_NAME
+// and E2E_WC_NAMESPACE env vars.
 //
 // If one of the env vars are not set, a nil Cluster and nil error will be
 // returned.
@@ -136,30 +136,6 @@ func (f *Framework) LoadCluster() (*application.Cluster, error) {
 		Provider:     application.ProviderFromClusterApplication(clusterApp),
 	}
 
-	skipDefaultAppsApp, err := cluster.UsesUnifiedClusterApp()
-	if err != nil {
-		return nil, err
-	}
-	if !skipDefaultAppsApp {
-		defaultAppsName := fmt.Sprintf("%s-default-apps", name)
-		defaultApps, defaultAppsValues, err := f.GetAppAndValues(ctx, defaultAppsName, namespace)
-		if err != nil {
-			return nil, err
-		}
-
-		cluster.DefaultAppsApp = &application.Application{
-			InstallName:     defaultApps.Name,
-			AppName:         defaultApps.Spec.Name,
-			Version:         defaultApps.Spec.Version,
-			Catalog:         defaultApps.Spec.Catalog,
-			Values:          defaultAppsValues.Data["values"],
-			InCluster:       defaultApps.Spec.KubeConfig.InCluster,
-			Organization:    *org,
-			AppLabels:       defaultApps.Labels,
-			ConfigMapLabels: defaultApps.Labels,
-		}
-	}
-
 	return cluster, nil
 }
 
@@ -211,12 +187,6 @@ func (f *Framework) ApplyBuiltCluster(ctx context.Context, builtCluster *applica
 	// Apply Cluster resources
 	if err := f.MC().DeployAppManifests(ctx, builtCluster.Cluster.App, builtCluster.Cluster.ConfigMap); err != nil {
 		return nil, fmt.Errorf("failed to apply cluster resources: %w", err)
-	}
-
-	if builtCluster.DefaultApps != nil {
-		if err = f.MC().DeployAppManifests(ctx, builtCluster.DefaultApps.App, builtCluster.DefaultApps.ConfigMap); err != nil {
-			return nil, fmt.Errorf("failed to apply default apps resources: %w", err)
-		}
 	}
 
 	kubeClient, err := f.WaitForClusterReady(ctx, builtCluster.SourceCluster.Name, builtCluster.SourceCluster.GetNamespace())

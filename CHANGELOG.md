@@ -7,6 +7,41 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.1.1] - 2026-01-16
+
+### Fixed
+
+- Fix `GetLatestAppVersion` to return the semantically highest version instead of the most recently created GitHub release.
+  This prevents backport releases (e.g., `v5.4.0`) from being incorrectly selected over newer versions (e.g., `v6.4.x`).
+
+## [3.1.0] - 2026-01-08
+
+### Changed
+
+- **BREAKING**: Removed deprecated second parameter from `WithAppVersions()`. New signature: `WithAppVersions(clusterVersion string)`.
+- **BREAKING**: Removed deprecated second parameter from `WithAppValues()`. New signature: `WithAppValues(clusterValues string, templateValues *TemplateValues)`.
+- **BREAKING**: Removed deprecated second parameter from `WithAppValuesFile()`. New signature: `WithAppValuesFile(clusterValuesFile string, templateValues *TemplateValues)`.
+
+### Removed
+
+- Removed deprecated `UsesUnifiedClusterApp()` function (always returned true).
+- Removed deprecated `IsUnifiedClusterAppWithDefaultApps()` function (always returned true).
+
+## [3.0.0] - 2026-01-08
+
+### Changed
+
+- **BREAKING**: All providers now always use Releases. Removed `IsProviderSupported` check from `GetRelease()`.
+- **BREAKING**: Removed `DefaultAppsApp` field from `Cluster` struct. All providers use unified cluster apps.
+- **BREAKING**: Removed `DefaultApps` field from `BuiltCluster` struct.
+- **BREAKING**: Removed `ProviderGCP` and `ProviderOpenStack` providers (unused, not supported by Releases).
+- Simplified `IsUnifiedClusterAppWithDefaultApps()` to always return `true` (deprecated).
+- Simplified `UsesUnifiedClusterApp()` to always return `true` (deprecated).
+- Updated `WithAppVersions()`, `WithAppValues()`, `WithAppValuesFile()` - second parameter (defaultApps) is now ignored and deprecated.
+- Simplified `Build()` function to only build cluster app and release.
+- Simplified `LoadCluster()` to not attempt loading default-apps.
+- Simplified `ApplyBuiltCluster()` to not deploy default-apps.
+
 ## [2.2.2] - 2025-12-15
 
 ### Changed
@@ -849,7 +884,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added initial framework layout
 - Added Kubernetes client extended from controller-runtime client
 
-[Unreleased]: https://github.com/giantswarm/clustertest/compare/v2.2.2...HEAD
+[Unreleased]: https://github.com/giantswarm/clustertest/compare/v3.1.1...HEAD
+[3.1.1]: https://github.com/giantswarm/clustertest/compare/v3.1.0...v3.1.1
+[3.1.0]: https://github.com/giantswarm/clustertest/compare/v3.0.0...v3.1.0
+[3.0.0]: https://github.com/giantswarm/clustertest/compare/v2.2.2...v3.0.0
 [2.2.2]: https://github.com/giantswarm/clustertest/compare/v2.2.1...v2.2.2
 [2.2.1]: https://github.com/giantswarm/clustertest/compare/v2.2.0...v2.2.1
 [2.2.0]: https://github.com/giantswarm/clustertest/compare/v2.1.2...v2.2.0

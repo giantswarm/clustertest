@@ -172,7 +172,7 @@ func createLLMJob(jobName, namespace, clusterName, query string) *batchv1.Job {
 	allowPrivilegeEscalation := false
 
 	// Prepare the JSON payload for the HTTP request - only contains the query field
-	jsonPayload := fmt.Sprintf(`{"query":"%s"}`,
+	jsonPayload := fmt.Sprintf(`{"query":"%s", "agent": "e2e-debugger"}`,
 		strings.ReplaceAll(query, `"`, `\"`))
 
 	// Build the service endpoint URL using the cluster-specific service name

@@ -11,6 +11,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - New parameter specifying agent for the E2E failure investigation.
 
+### Fixed
+
+- Fix LLM investigation service endpoint URL to include namespace for cross-namespace DNS resolution.
+
 ## [3.1.1] - 2026-01-16
 
 ### Fixed

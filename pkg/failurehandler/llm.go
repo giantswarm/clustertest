@@ -176,7 +176,7 @@ func createLLMJob(jobName, namespace, clusterName, query string) *batchv1.Job {
 		strings.ReplaceAll(query, `"`, `\"`))
 
 	// Build the service endpoint URL using the cluster-specific service name
-	serviceEndpoint := fmt.Sprintf("http://%s-shoot:%s", clusterName, llmServicePort)
+	serviceEndpoint := fmt.Sprintf("http://%s-shoot.%s:%s", clusterName, namespace, llmServicePort)
 
 	return &batchv1.Job{
 		ObjectMeta: metav1.ObjectMeta{

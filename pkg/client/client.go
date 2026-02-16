@@ -34,7 +34,6 @@ import (
 	"sigs.k8s.io/yaml"
 
 	"github.com/giantswarm/clustertest/v3/pkg/application"
-	"github.com/giantswarm/clustertest/v3/pkg/logger"
 )
 
 // Client extends the client from controller-runtime
@@ -254,30 +253,35 @@ func (c *Client) CheckConnection() error {
 
 // GetClusterKubeConfig retrieves the Kubeconfig from the secret associated with the provided cluster name.
 func (c *Client) GetClusterKubeConfig(ctx context.Context, clusterName string, clusterNamespace string) (string, error) {
-	kubeconfig, err := c.getTeleportKubeConfig(ctx, clusterName, "giantswarm")
-	if err != nil {
-		return kubeconfig, err
-	}
+	// In the past we were using the kubeconfig provided by Teleport, but since this requires the Teleport Kube Agent to be installed
+	// and this component might depend on other components to be installed, the Teleport kubeconfig might come into play quite late
+	// and therefore unnecessarily block us from being able to run tests.
+	//
+	// For this reason we decided to no longer use the Teleport kubeconfig and instead always use the kubeconfig provided by CAPI.
+	//
+	// kubeconfig, err := c.getTeleportKubeConfig(ctx, clusterName, "giantswarm")
+	// if err != nil {
+	// 	return kubeconfig, err
+	// }
 
-	// Fallback to CAPI kubeconfig if no teleport
-	if kubeconfig == "" {
-		logger.Log("Could not find Teleport kubeconfig for cluster %s, falling back to CAPI kubeconfig", clusterName)
-		kubeconfig, err = c.getCAPIKubeConfig(ctx, clusterName, clusterNamespace)
-	}
+	// // Fallback to CAPI kubeconfig if no teleport
+	// if kubeconfig == "" {
+	// 	logger.Log("Could not find Teleport kubeconfig for cluster %s, falling back to CAPI kubeconfig", clusterName)
+	// 	kubeconfig, err = c.getCAPIKubeConfig(ctx, clusterName, clusterNamespace)
+	// }
 
-	return kubeconfig, err
+	// return kubeconfig, err
+
+	// Retrieve and return CAPI provided kubeconfig.
+	return c.getCAPIKubeConfig(ctx, clusterName, clusterNamespace)
 }
 
-// getTeleportKubeConfig retrieves the Kubeconfig from the secret that is created by Teleport tbot on the MC.
-func (c *Client) getTeleportKubeConfig(ctx context.Context, clusterName string, clusterNamespace string) (string, error) {
+// GetTeleportKubeConfig retrieves the Kubeconfig from the secret that is created by Teleport tbot on the MC.
+func (c *Client) GetTeleportKubeConfig(ctx context.Context, clusterName string, clusterNamespace string) (string, error) {
 	var kubeconfigSecret corev1.Secret
 	secretName := fmt.Sprintf("teleport-%s-kubeconfig", clusterName)
 	err := c.Get(ctx, types.NamespacedName{Name: secretName, Namespace: clusterNamespace}, &kubeconfigSecret)
 	if err != nil {
-		if errors.IsNotFound(err) {
-			// If not found we will return nothing
-			return "", nil
-		}
 		return "", err
 	}
 	if len(kubeconfigSecret.Data["kubeconfig.yaml"]) == 0 {

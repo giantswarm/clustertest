@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Go: Update dependencies.
+- Client: No longer use Teleport kubeconfig.
 
 ## [3.1.2] - 2026-02-03
 

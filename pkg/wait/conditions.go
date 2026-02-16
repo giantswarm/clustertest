@@ -94,29 +94,27 @@ func IsClusterReadyCondition(ctx context.Context, kubeClient *client.Client, clu
 	return func() (bool, error) {
 		select {
 		case <-ctx.Done():
-			// Context timed out so we exit early
+			// Context timed out so we exit early.
 			return false, ctx.Err()
 		default:
-			logger.Log("Checking for valid Kubeconfig for cluster %s", clusterName)
-
+			// Create a workload cluster client.
 			wcClient, err := client.NewFromSecret(ctx, kubeClient, clusterName, namespace)
+
 			if err != nil && cr.IgnoreNotFound(err) == nil {
-				// Kubeconfig not yet available
+				// Kubeconfig not yet available.
 				logger.Log("kubeconfig secret not yet available")
 				return false, nil
 			} else if err != nil {
-				logger.Log("Error occurred while trying to get kubeconfig secret - %v", err)
-				// Note: We're not going to return the error here so that we can try again in case of transient issue
+				// Do not return the error here so that we can try again in case of transient issue.
+				logger.Log("Failed to create client from secret: %v", err)
 				return false, nil
 			}
 
 			if err := wcClient.CheckConnection(); err != nil {
-				// Cluster not yet ready
-				logger.Log("connection to api-server not yet available - %v", err)
+				// Cluster not yet ready.
+				logger.Log("API server not yet available: %v", err)
 				return false, nil
 			}
-
-			logger.Log("Got valid kubeconfig!")
 
 			// Assign the working workload cluster client to the client pointer.
 			*clientPtr = wcClient
@@ -319,6 +317,33 @@ func AreNoPodsCrashLoopingWithFilter(ctx context.Context, kubeClient *client.Cli
 		}
 
 		logger.Log("All (%d) pods have containers with less restarts than the max allowed (%d)", len(podList.Items), maxRestartCount)
+		return true, nil
+	}
+}
+
+// IsTeleportReady returns a WaitCondition to check when a cluster is considered ready and accessible via Teleport.
+func IsTeleportReady(ctx context.Context, kubeClient *client.Client, clusterName string, namespace string) WaitCondition {
+	return func() (bool, error) {
+		// Retrieve Teleport kubeconfig.
+		kubeconfig, err := kubeClient.GetTeleportKubeConfig(ctx, clusterName, namespace)
+		if err != nil {
+			logger.Log("Failed to retrieve Teleport kubeconfig: %v", err)
+			return false, nil
+		}
+
+		// Create workload cluster client.
+		wcClient, err := client.NewFromRawKubeconfig(string(kubeconfig))
+		if err != nil {
+			logger.Log("Failed to create workload cluster client: %v", err)
+			return false, nil
+		}
+
+		// Check API server connectivity.
+		if err := wcClient.CheckConnection(); err != nil {
+			logger.Log("Failed to check API server connectivity: %v", err)
+			return false, nil
+		}
+
 		return true, nil
 	}
 }

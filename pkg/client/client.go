@@ -271,34 +271,38 @@ func (c *Client) GetClusterKubeConfig(ctx context.Context, clusterName string, c
 	return kubeconfig, nil
 }
 
-// getTeleportKubeConfig retrieves the Kubeconfig from the secret that is created by Teleport tbot on the MC.
+// getTeleportKubeConfig retrieves the kubeconfig from the secret that is created by Teleport tbot on the MC.
 func (c *Client) getTeleportKubeConfig(ctx context.Context, clusterName string, clusterNamespace string) (string, error) {
+	// Concatenate kubeconfig Secret name.
+	kubeconfigSecretName := fmt.Sprintf("teleport-%s-kubeconfig", clusterName)
+
+	// Get kubeconfig Secret.
 	var kubeconfigSecret corev1.Secret
-	secretName := fmt.Sprintf("teleport-%s-kubeconfig", clusterName)
-	err := c.Get(ctx, types.NamespacedName{Name: secretName, Namespace: clusterNamespace}, &kubeconfigSecret)
+	err := c.Get(ctx, types.NamespacedName{Name: kubeconfigSecretName, Namespace: clusterNamespace}, &kubeconfigSecret)
 	if err != nil {
-		if errors.IsNotFound(err) {
-			// If not found we will return nothing
-			return "", nil
-		}
-		return "", err
-	}
-	if len(kubeconfigSecret.Data["kubeconfig.yaml"]) == 0 {
-		return "", fmt.Errorf("kubeconfig secret '%s' found in namespace '%s' but data[kubeconfig.yaml] not populated", secretName, clusterNamespace)
+		return "", fmt.Errorf("failed to get Secret %s/%s: %w", clusterNamespace, kubeconfigSecretName, err)
 	}
 
+	// Check kubeconfig.
+	if len(kubeconfigSecret.Data["kubeconfig.yaml"]) == 0 {
+		return "", fmt.Errorf("kubeconfig in Secret %s/%s not populated", clusterNamespace, kubeconfigSecretName)
+	}
+
+	// Unmarshal kubeconfig.
 	kubeconfig := clientcmdapi.Config{}
 	err = yaml.Unmarshal(kubeconfigSecret.Data["kubeconfig.yaml"], &kubeconfig)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("failed to unmarshal kubeconfig from Secret %s/%s: %w", clusterNamespace, kubeconfigSecretName, err)
 	}
 
-	kc, err := yaml.Marshal(kubeconfig)
+	// Marshal kubeconfig.
+	kubeconfigBytes, err := yaml.Marshal(kubeconfig)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("failed to marshal kubeconfig from Secret %s/%s: %w", clusterNamespace, kubeconfigSecretName, err)
 	}
 
-	return string(kc), nil
+	// Return kubeconfig.
+	return string(kubeconfigBytes), nil
 }
 
 // IsTeleportKubeconfig checks if the kubeconfig being used is one provided by Teleport or not

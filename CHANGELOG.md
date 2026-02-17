@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Conditions: Rework `IsClusterReadyCondition`.
   - Client: Rework `NewFromSecret`.
   - Client: Rework `GetClusterKubeConfig`.
+  - Client: Rework `getTeleportKubeConfig`.
 
 ## [3.1.2] - 2026-02-03
 

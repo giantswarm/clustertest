@@ -314,54 +314,73 @@ func (c *Client) IsTeleportKubeconfig() bool {
 //
 // The server hostname used in the kubeconfig is modified to use the DNS name if it is found to be using an IP address.
 func (c *Client) getCAPIKubeConfig(ctx context.Context, clusterName string, clusterNamespace string) (string, error) {
+	// Concatenate kubeconfig Secret name.
+	kubeconfigSecretName := fmt.Sprintf("%s-kubeconfig", clusterName)
+
+	// Get kubeconfig Secret.
 	var kubeconfigSecret corev1.Secret
-	err := c.Get(ctx, types.NamespacedName{Name: fmt.Sprintf("%s-kubeconfig", clusterName), Namespace: clusterNamespace}, &kubeconfigSecret)
+	err := c.Get(ctx, types.NamespacedName{Name: kubeconfigSecretName, Namespace: clusterNamespace}, &kubeconfigSecret)
 	if err != nil {
-		return "", err
-	}
-	if len(kubeconfigSecret.Data["value"]) == 0 {
-		return "", fmt.Errorf("kubeconfig secret found for data not populated")
+		return "", fmt.Errorf("failed to get kubeconfig Secret %s/%s: %w", clusterNamespace, kubeconfigSecretName, err)
 	}
 
+	// Check kubeconfig.
+	if len(kubeconfigSecret.Data["value"]) == 0 {
+		return "", fmt.Errorf("kubeconfig in Secret %s/%s not populated", clusterNamespace, kubeconfigSecretName)
+	}
+
+	// Unmarshal kubeconfig.
 	kubeconfig := clientcmdapi.Config{}
 	err = yaml.Unmarshal(kubeconfigSecret.Data["value"], &kubeconfig)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("failed to unmarshal kubeconfig from Secret %s/%s: %w", clusterNamespace, kubeconfigSecretName, err)
 	}
 
+	// Iterate clusters.
 	for i := range kubeconfig.Clusters {
-		kubecluster := &kubeconfig.Clusters[i]
-		u, err := url.Parse(kubecluster.Cluster.Server)
+		// Get cluster.
+		cluster := &kubeconfig.Clusters[i]
+
+		// Parse cluster server to URL.
+		clusterServerURL, err := url.Parse(cluster.Cluster.Server)
 		if err != nil {
-			return "", err
+			return "", fmt.Errorf("failed to parse cluster server %q to URL: %w", cluster.Cluster.Server, err)
 		}
 
-		if c.needsToUpdateServerHostname(u.Hostname()) {
-			// We need to build up the hostname from the base domain and cluster name
-			var clusterValuesCM corev1.ConfigMap
-			err := c.Get(ctx, types.NamespacedName{Name: fmt.Sprintf("%s-cluster-values", clusterName), Namespace: clusterNamespace}, &clusterValuesCM)
+		// Check if cluster server hostname needs to be updated.
+		if c.needsToUpdateServerHostname(clusterServerURL.Hostname()) {
+			// Concatenate cluster values ConfigMap name.
+			configMapName := fmt.Sprintf("%s-cluster-values", clusterName)
+
+			// Get cluster values ConfigMap.
+			var clusterValuesConfigMap corev1.ConfigMap
+			err := c.Get(ctx, types.NamespacedName{Name: configMapName, Namespace: clusterNamespace}, &clusterValuesConfigMap)
 			if err != nil {
-				return "", err
+				return "", fmt.Errorf("failed to get cluster values ConfigMap %s/%s: %w", clusterNamespace, configMapName, err)
 			}
 
+			// Unmarshal cluster values.
 			var clusterValues struct {
 				BaseDomain string `yaml:"baseDomain"`
 			}
-			err = yaml.Unmarshal([]byte(clusterValuesCM.Data["values"]), &clusterValues)
+			err = yaml.Unmarshal([]byte(clusterValuesConfigMap.Data["values"]), &clusterValues)
 			if err != nil {
-				return "", err
+				return "", fmt.Errorf("failed to unmarshal cluster values from ConfigMap %s/%s: %w", clusterNamespace, configMapName, err)
 			}
 
-			kubecluster.Cluster.Server = fmt.Sprintf("https://api.%s:%s", clusterValues.BaseDomain, u.Port())
+			// Update cluster server.
+			cluster.Cluster.Server = fmt.Sprintf("https://api.%s:%s", clusterValues.BaseDomain, clusterServerURL.Port())
 		}
 	}
 
-	kc, err := yaml.Marshal(kubeconfig)
+	// Marshal kubeconfig.
+	kubeconfigBytes, err := yaml.Marshal(kubeconfig)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("failed to marshal kubeconfig from Secret %s/%s: %w", clusterNamespace, kubeconfigSecretName, err)
 	}
 
-	return string(kc), nil
+	// Return kubeconfig.
+	return string(kubeconfigBytes), nil
 }
 
 // needsToUpdateServerHostname returns true when the server address needs to be updated so that we can reach the server through our VPN.

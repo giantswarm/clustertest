@@ -94,31 +94,23 @@ func IsClusterReadyCondition(ctx context.Context, kubeClient *client.Client, clu
 	return func() (bool, error) {
 		select {
 		case <-ctx.Done():
-			// Context timed out so we exit early
+			// Context timed out so we exit early.
 			return false, ctx.Err()
 		default:
-			logger.Log("Checking for valid Kubeconfig for cluster %s", clusterName)
-
+			// Create workload cluster client.
 			wcClient, err := client.NewFromSecret(ctx, kubeClient, clusterName, namespace)
-			if err != nil && cr.IgnoreNotFound(err) == nil {
-				// Kubeconfig not yet available
-				logger.Log("kubeconfig secret not yet available")
-				return false, nil
-			} else if err != nil {
-				logger.Log("Error occurred while trying to get kubeconfig secret - %v", err)
-				// Note: We're not going to return the error here so that we can try again in case of transient issue
+			if err != nil {
+				logger.Log("Failed to create workload cluster client: %v", err)
 				return false, nil
 			}
 
+			// Check workload cluster connection.
 			if err := wcClient.CheckConnection(); err != nil {
-				// Cluster not yet ready
-				logger.Log("connection to api-server not yet available - %v", err)
+				logger.Log("Failed to check workload cluster connection: %v", err)
 				return false, nil
 			}
 
-			logger.Log("Got valid kubeconfig!")
-
-			// Assign the working workload cluster client to the client pointer.
+			// "Return" workload cluster client.
 			*clientPtr = wcClient
 			return true, nil
 		}

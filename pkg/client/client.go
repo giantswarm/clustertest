@@ -80,19 +80,20 @@ func NewFromRawKubeconfig(kubeconfig string) (*Client, error) {
 	return newClient(restConfig, clusterName)
 }
 
-// NewFromSecret create a new Kubernetes client from a cluster kubeconfig found in a secret on the MC.
-// This function may return a Not Found error if the kubeconfig secret is not found on the cluster.
+// NewFromSecret creates a new Kubernetes client from a cluster kubeconfig found in a secret on the MC.
 //
 // The client is an extension of the client from controller-runtime and provides some additional helper functions.
 // The creation of the client doesn't confirm connectivity to the cluster and REST discovery is set to lazy discovery
 // so the client can be created while the cluster is still being set up.
 func NewFromSecret(ctx context.Context, kubeClient *Client, clusterName string, namespace string) (*Client, error) {
+	// Get kubeconfig.
 	kubeconfig, err := kubeClient.GetClusterKubeConfig(ctx, clusterName, namespace)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to get kubeconfig: %w", err)
 	}
 
-	return NewFromRawKubeconfig(string(kubeconfig))
+	// Return new client from kubeconfig.
+	return NewFromRawKubeconfig(kubeconfig)
 }
 
 // NewWithContext creates a new Kubernetes client for the provided kubeconfig file and changes the current context to the provided value
@@ -252,50 +253,56 @@ func (c *Client) CheckConnection() error {
 	return err
 }
 
-// GetClusterKubeConfig retrieves the Kubeconfig from the secret associated with the provided cluster name.
+// GetClusterKubeConfig retrieves the kubeconfig from the secret associated with the provided cluster name.
 func (c *Client) GetClusterKubeConfig(ctx context.Context, clusterName string, clusterNamespace string) (string, error) {
+	// Get Teleport kubeconfig.
 	kubeconfig, err := c.getTeleportKubeConfig(ctx, clusterName, "giantswarm")
 	if err != nil {
-		return kubeconfig, err
-	}
+		logger.Log("Failed to get Teleport kubeconfig, falling back to CAPI kubeconfig: %v", err)
 
-	// Fallback to CAPI kubeconfig if no teleport
-	if kubeconfig == "" {
-		logger.Log("Could not find Teleport kubeconfig for cluster %s, falling back to CAPI kubeconfig", clusterName)
+		// Get CAPI kubeconfig.
 		kubeconfig, err = c.getCAPIKubeConfig(ctx, clusterName, clusterNamespace)
+		if err != nil {
+			return "", fmt.Errorf("failed to get CAPI kubeconfig: %w", err)
+		}
 	}
 
-	return kubeconfig, err
+	// Return kubeconfig.
+	return kubeconfig, nil
 }
 
-// getTeleportKubeConfig retrieves the Kubeconfig from the secret that is created by Teleport tbot on the MC.
+// getTeleportKubeConfig retrieves the kubeconfig from the secret that is created by Teleport tbot on the MC.
 func (c *Client) getTeleportKubeConfig(ctx context.Context, clusterName string, clusterNamespace string) (string, error) {
+	// Concatenate kubeconfig Secret name.
+	kubeconfigSecretName := fmt.Sprintf("teleport-%s-kubeconfig", clusterName)
+
+	// Get kubeconfig Secret.
 	var kubeconfigSecret corev1.Secret
-	secretName := fmt.Sprintf("teleport-%s-kubeconfig", clusterName)
-	err := c.Get(ctx, types.NamespacedName{Name: secretName, Namespace: clusterNamespace}, &kubeconfigSecret)
+	err := c.Get(ctx, types.NamespacedName{Name: kubeconfigSecretName, Namespace: clusterNamespace}, &kubeconfigSecret)
 	if err != nil {
-		if errors.IsNotFound(err) {
-			// If not found we will return nothing
-			return "", nil
-		}
-		return "", err
-	}
-	if len(kubeconfigSecret.Data["kubeconfig.yaml"]) == 0 {
-		return "", fmt.Errorf("kubeconfig secret '%s' found in namespace '%s' but data[kubeconfig.yaml] not populated", secretName, clusterNamespace)
+		return "", fmt.Errorf("failed to get Secret %s/%s: %w", clusterNamespace, kubeconfigSecretName, err)
 	}
 
+	// Check kubeconfig.
+	if len(kubeconfigSecret.Data["kubeconfig.yaml"]) == 0 {
+		return "", fmt.Errorf("kubeconfig in Secret %s/%s not populated", clusterNamespace, kubeconfigSecretName)
+	}
+
+	// Unmarshal kubeconfig.
 	kubeconfig := clientcmdapi.Config{}
 	err = yaml.Unmarshal(kubeconfigSecret.Data["kubeconfig.yaml"], &kubeconfig)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("failed to unmarshal kubeconfig from Secret %s/%s: %w", clusterNamespace, kubeconfigSecretName, err)
 	}
 
-	kc, err := yaml.Marshal(kubeconfig)
+	// Marshal kubeconfig.
+	kubeconfigBytes, err := yaml.Marshal(kubeconfig)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("failed to marshal kubeconfig from Secret %s/%s: %w", clusterNamespace, kubeconfigSecretName, err)
 	}
 
-	return string(kc), nil
+	// Return kubeconfig.
+	return string(kubeconfigBytes), nil
 }
 
 // IsTeleportKubeconfig checks if the kubeconfig being used is one provided by Teleport or not
@@ -307,54 +314,73 @@ func (c *Client) IsTeleportKubeconfig() bool {
 //
 // The server hostname used in the kubeconfig is modified to use the DNS name if it is found to be using an IP address.
 func (c *Client) getCAPIKubeConfig(ctx context.Context, clusterName string, clusterNamespace string) (string, error) {
+	// Concatenate kubeconfig Secret name.
+	kubeconfigSecretName := fmt.Sprintf("%s-kubeconfig", clusterName)
+
+	// Get kubeconfig Secret.
 	var kubeconfigSecret corev1.Secret
-	err := c.Get(ctx, types.NamespacedName{Name: fmt.Sprintf("%s-kubeconfig", clusterName), Namespace: clusterNamespace}, &kubeconfigSecret)
+	err := c.Get(ctx, types.NamespacedName{Name: kubeconfigSecretName, Namespace: clusterNamespace}, &kubeconfigSecret)
 	if err != nil {
-		return "", err
-	}
-	if len(kubeconfigSecret.Data["value"]) == 0 {
-		return "", fmt.Errorf("kubeconfig secret found for data not populated")
+		return "", fmt.Errorf("failed to get kubeconfig Secret %s/%s: %w", clusterNamespace, kubeconfigSecretName, err)
 	}
 
+	// Check kubeconfig.
+	if len(kubeconfigSecret.Data["value"]) == 0 {
+		return "", fmt.Errorf("kubeconfig in Secret %s/%s not populated", clusterNamespace, kubeconfigSecretName)
+	}
+
+	// Unmarshal kubeconfig.
 	kubeconfig := clientcmdapi.Config{}
 	err = yaml.Unmarshal(kubeconfigSecret.Data["value"], &kubeconfig)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("failed to unmarshal kubeconfig from Secret %s/%s: %w", clusterNamespace, kubeconfigSecretName, err)
 	}
 
+	// Iterate clusters.
 	for i := range kubeconfig.Clusters {
-		kubecluster := &kubeconfig.Clusters[i]
-		u, err := url.Parse(kubecluster.Cluster.Server)
+		// Get cluster.
+		cluster := &kubeconfig.Clusters[i]
+
+		// Parse cluster server to URL.
+		clusterServerURL, err := url.Parse(cluster.Cluster.Server)
 		if err != nil {
-			return "", err
+			return "", fmt.Errorf("failed to parse cluster server %q to URL: %w", cluster.Cluster.Server, err)
 		}
 
-		if c.needsToUpdateServerHostname(u.Hostname()) {
-			// We need to build up the hostname from the base domain and cluster name
-			var clusterValuesCM corev1.ConfigMap
-			err := c.Get(ctx, types.NamespacedName{Name: fmt.Sprintf("%s-cluster-values", clusterName), Namespace: clusterNamespace}, &clusterValuesCM)
+		// Check if cluster server hostname needs to be updated.
+		if c.needsToUpdateServerHostname(clusterServerURL.Hostname()) {
+			// Concatenate cluster values ConfigMap name.
+			configMapName := fmt.Sprintf("%s-cluster-values", clusterName)
+
+			// Get cluster values ConfigMap.
+			var clusterValuesConfigMap corev1.ConfigMap
+			err := c.Get(ctx, types.NamespacedName{Name: configMapName, Namespace: clusterNamespace}, &clusterValuesConfigMap)
 			if err != nil {
-				return "", err
+				return "", fmt.Errorf("failed to get cluster values ConfigMap %s/%s: %w", clusterNamespace, configMapName, err)
 			}
 
+			// Unmarshal cluster values.
 			var clusterValues struct {
 				BaseDomain string `yaml:"baseDomain"`
 			}
-			err = yaml.Unmarshal([]byte(clusterValuesCM.Data["values"]), &clusterValues)
+			err = yaml.Unmarshal([]byte(clusterValuesConfigMap.Data["values"]), &clusterValues)
 			if err != nil {
-				return "", err
+				return "", fmt.Errorf("failed to unmarshal cluster values from ConfigMap %s/%s: %w", clusterNamespace, configMapName, err)
 			}
 
-			kubecluster.Cluster.Server = fmt.Sprintf("https://api.%s:%s", clusterValues.BaseDomain, u.Port())
+			// Update cluster server.
+			cluster.Cluster.Server = fmt.Sprintf("https://api.%s:%s", clusterValues.BaseDomain, clusterServerURL.Port())
 		}
 	}
 
-	kc, err := yaml.Marshal(kubeconfig)
+	// Marshal kubeconfig.
+	kubeconfigBytes, err := yaml.Marshal(kubeconfig)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("failed to marshal kubeconfig from Secret %s/%s: %w", clusterNamespace, kubeconfigSecretName, err)
 	}
 
-	return string(kc), nil
+	// Return kubeconfig.
+	return string(kubeconfigBytes), nil
 }
 
 // needsToUpdateServerHostname returns true when the server address needs to be updated so that we can reach the server through our VPN.

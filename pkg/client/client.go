@@ -80,19 +80,20 @@ func NewFromRawKubeconfig(kubeconfig string) (*Client, error) {
 	return newClient(restConfig, clusterName)
 }
 
-// NewFromSecret create a new Kubernetes client from a cluster kubeconfig found in a secret on the MC.
-// This function may return a Not Found error if the kubeconfig secret is not found on the cluster.
+// NewFromSecret creates a new Kubernetes client from a cluster kubeconfig found in a secret on the MC.
 //
 // The client is an extension of the client from controller-runtime and provides some additional helper functions.
 // The creation of the client doesn't confirm connectivity to the cluster and REST discovery is set to lazy discovery
 // so the client can be created while the cluster is still being set up.
 func NewFromSecret(ctx context.Context, kubeClient *Client, clusterName string, namespace string) (*Client, error) {
+	// Get kubeconfig.
 	kubeconfig, err := kubeClient.GetClusterKubeConfig(ctx, clusterName, namespace)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to get kubeconfig: %w", err)
 	}
 
-	return NewFromRawKubeconfig(string(kubeconfig))
+	// Return new client from kubeconfig.
+	return NewFromRawKubeconfig(kubeconfig)
 }
 
 // NewWithContext creates a new Kubernetes client for the provided kubeconfig file and changes the current context to the provided value

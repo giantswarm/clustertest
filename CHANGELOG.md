@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Client: Some improvements. ([#619](https://github.com/giantswarm/clustertest/pull/619))
   - Conditions: Rework `IsClusterReadyCondition`.
   - Client: Rework `NewFromSecret`.
+  - Client: Rework `GetClusterKubeConfig`.
 
 ## [3.1.2] - 2026-02-03
 

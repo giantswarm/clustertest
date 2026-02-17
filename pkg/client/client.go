@@ -253,20 +253,22 @@ func (c *Client) CheckConnection() error {
 	return err
 }
 
-// GetClusterKubeConfig retrieves the Kubeconfig from the secret associated with the provided cluster name.
+// GetClusterKubeConfig retrieves the kubeconfig from the secret associated with the provided cluster name.
 func (c *Client) GetClusterKubeConfig(ctx context.Context, clusterName string, clusterNamespace string) (string, error) {
+	// Get Teleport kubeconfig.
 	kubeconfig, err := c.getTeleportKubeConfig(ctx, clusterName, "giantswarm")
 	if err != nil {
-		return kubeconfig, err
-	}
+		logger.Log("Failed to get Teleport kubeconfig, falling back to CAPI kubeconfig: %v", err)
 
-	// Fallback to CAPI kubeconfig if no teleport
-	if kubeconfig == "" {
-		logger.Log("Could not find Teleport kubeconfig for cluster %s, falling back to CAPI kubeconfig", clusterName)
+		// Get CAPI kubeconfig.
 		kubeconfig, err = c.getCAPIKubeConfig(ctx, clusterName, clusterNamespace)
+		if err != nil {
+			return "", fmt.Errorf("failed to get CAPI kubeconfig: %w", err)
+		}
 	}
 
-	return kubeconfig, err
+	// Return kubeconfig.
+	return kubeconfig, nil
 }
 
 // getTeleportKubeConfig retrieves the Kubeconfig from the secret that is created by Teleport tbot on the MC.

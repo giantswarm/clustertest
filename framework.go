@@ -23,9 +23,9 @@ import (
 	releases "github.com/giantswarm/releases/sdk/api/v1alpha1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	capi "sigs.k8s.io/cluster-api/api/v1beta1"
-	kubeadm "sigs.k8s.io/cluster-api/controlplane/kubeadm/api/v1beta1"
-	capiexp "sigs.k8s.io/cluster-api/exp/api/v1beta1"
+	eks "sigs.k8s.io/cluster-api-provider-aws/v2/controlplane/eks/api/v1beta1"
+	kubeadm "sigs.k8s.io/cluster-api/api/controlplane/kubeadm/v1beta2"
+	capi "sigs.k8s.io/cluster-api/api/core/v1beta2"
 	cr "sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -429,10 +429,32 @@ func (f *Framework) GetKubeadmControlPlane(ctx context.Context, clusterName stri
 	return controlPlane, nil
 }
 
+// GetAWSManagedControlPlane returns the AWSManagedControlPlane resource. If we don't find the `AWSManagedControlPlane` we assume
+// it's a kubeadm control plane cluster and expect nil pointer to be returned without error.
+func (f *Framework) GetAWSManagedControlPlane(ctx context.Context, clusterName string, clusterNamespace string) (*eks.AWSManagedControlPlane, error) {
+	controlPlane := &eks.AWSManagedControlPlane{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      clusterName,
+			Namespace: clusterNamespace,
+		},
+	}
+
+	err := f.MC().Get(ctx, cr.ObjectKeyFromObject(controlPlane), controlPlane)
+	if errors.IsNotFound(err) {
+		// If we don't find the `AWSManagedControlPlane` we assume it's a managed control plane cluster and return a nil
+		// pointer without error.
+		return nil, nil
+	} else if err != nil {
+		return nil, err
+	}
+
+	return controlPlane, nil
+}
+
 // GetMachinePools returns the MachinePool resources. If we don't find the `MachinePools` we assume that the provider is
 // not using MachinePools, so nil pointer is returned without error.
-func (f *Framework) GetMachinePools(ctx context.Context, clusterName string, clusterNamespace string) ([]capiexp.MachinePool, error) {
-	machinePools := &capiexp.MachinePoolList{}
+func (f *Framework) GetMachinePools(ctx context.Context, clusterName string, clusterNamespace string) ([]capi.MachinePool, error) {
+	machinePools := &capi.MachinePoolList{}
 	machinePoolListOptions := []cr.ListOption{
 		cr.InNamespace(clusterNamespace),
 		cr.MatchingLabels{

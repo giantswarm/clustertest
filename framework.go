@@ -24,8 +24,9 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
-	kubeadm "sigs.k8s.io/cluster-api/api/controlplane/kubeadm/v1beta2"
-	capi "sigs.k8s.io/cluster-api/api/core/v1beta2"
+	capi "sigs.k8s.io/cluster-api/api/v1beta1"
+	kubeadm "sigs.k8s.io/cluster-api/controlplane/kubeadm/api/v1beta1"
+	capiexp "sigs.k8s.io/cluster-api/exp/api/v1beta1"
 	cr "sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -452,8 +453,8 @@ func (f *Framework) GetAWSManagedControlPlane(ctx context.Context, clusterName s
 
 // GetMachinePools returns the MachinePool resources. If we don't find the `MachinePools` we assume that the provider is
 // not using MachinePools, so nil pointer is returned without error.
-func (f *Framework) GetMachinePools(ctx context.Context, clusterName string, clusterNamespace string) ([]capi.MachinePool, error) {
-	machinePools := &capi.MachinePoolList{}
+func (f *Framework) GetMachinePools(ctx context.Context, clusterName string, clusterNamespace string) ([]capiexp.MachinePool, error) {
+	machinePools := &capiexp.MachinePoolList{}
 	machinePoolListOptions := []cr.ListOption{
 		cr.InNamespace(clusterNamespace),
 		cr.MatchingLabels{

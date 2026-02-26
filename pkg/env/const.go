@@ -33,5 +33,7 @@ const (
 	// release should be installed before an upgrade test is performed.
 	// When set to "previous_major", it will automatically discover the latest
 	// release from the previous major version to use as the starting point.
+	// When set to "first_previous_major", it will discover the earliest
+	// non-deprecated release from the previous major version.
 	ReleasePreUpgradeVersion = "E2E_RELEASE_PRE_UPGRADE"
 )

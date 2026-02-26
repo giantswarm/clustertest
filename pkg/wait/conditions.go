@@ -18,7 +18,7 @@ import (
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/types"
-	eks "sigs.k8s.io/cluster-api-provider-aws/v2/controlplane/eks/api/v1beta1"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	kubeadm "sigs.k8s.io/cluster-api/api/controlplane/kubeadm/v1beta2"
 	capi "sigs.k8s.io/cluster-api/api/core/v1beta2"
 	capiconditions "sigs.k8s.io/cluster-api/util/conditions"
@@ -451,29 +451,45 @@ func IsKubeadmControlPlaneConditionSet(ctx context.Context, kubeClient *client.C
 // IsAWSManagedControlPlaneConditionSet returns a WaitCondition that checks if an AWSManagedControlPlane resource has the specified condition with the expected status.
 func IsAWSManagedControlPlaneConditionSet(ctx context.Context, kubeClient *client.Client, clusterName string, clusterNamespace string, conditionType string, expectedStatus v1.ConditionStatus, expectedReason string) WaitCondition {
 	return func() (bool, error) {
-		awsMCP := &eks.AWSManagedControlPlane{
-			ObjectMeta: v1.ObjectMeta{
-				Name:      clusterName,
-				Namespace: clusterNamespace,
-			},
-		}
+		awsMCP := &unstructured.Unstructured{}
+		awsMCP.SetAPIVersion("controlplane.cluster.x-k8s.io/v1beta1")
+		awsMCP.SetKind("AWSManagedControlPlane")
+		awsMCP.SetName(clusterName)
+		awsMCP.SetNamespace(clusterNamespace)
 		if err := kubeClient.Get(ctx, cr.ObjectKeyFromObject(awsMCP), awsMCP); err != nil {
 			return false, err
 		}
 
+		// Convert from CAPI condition to metav1 condition
+		// This is required until the AWSManagedControlPlane conditions are converted to use the same format as CAPI conditions. See https://github.com/kubernetes-sigs/cluster-api-provider-aws/pull/5854
 		var condition *v1.Condition
-		for i := range awsMCP.Status.Conditions {
-			if string(awsMCP.Status.Conditions[i].Type) == conditionType {
-				// Convert from CAPI condition to metav1 condition
-				// This is required until the AWSManagedControlPlane conditions are converted to use the same format as CAPI conditions. See https://github.com/kubernetes-sigs/cluster-api-provider-aws/pull/5854
-				capiCondition := awsMCP.Status.Conditions[i]
-				condition = &v1.Condition{
-					Type:               string(capiCondition.Type),
-					Status:             v1.ConditionStatus(capiCondition.Status),
-					LastTransitionTime: capiCondition.LastTransitionTime,
-					Reason:             capiCondition.Reason,
-					Message:            capiCondition.Message,
+		conditions, found, err := unstructured.NestedSlice(awsMCP.Object, "status", "conditions")
+		if err == nil && found {
+			for _, c := range conditions {
+				condMap, ok := c.(map[string]interface{})
+				if !ok {
+					continue
 				}
+				condType, _ := condMap["type"].(string)
+				if condType != conditionType {
+					continue
+				}
+				cond := &v1.Condition{Type: condType}
+				if status, ok := condMap["status"].(string); ok {
+					cond.Status = v1.ConditionStatus(status)
+				}
+				if reason, ok := condMap["reason"].(string); ok {
+					cond.Reason = reason
+				}
+				if message, ok := condMap["message"].(string); ok {
+					cond.Message = message
+				}
+				if ltt, ok := condMap["lastTransitionTime"].(string); ok {
+					if t, parseErr := time.Parse(time.RFC3339, ltt); parseErr == nil {
+						cond.LastTransitionTime = v1.Time{Time: t}
+					}
+				}
+				condition = cond
 				break
 			}
 		}

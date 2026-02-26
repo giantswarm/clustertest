@@ -23,7 +23,7 @@ import (
 	releases "github.com/giantswarm/releases/sdk/api/v1alpha1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	eks "sigs.k8s.io/cluster-api-provider-aws/v2/controlplane/eks/api/v1beta1"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	kubeadm "sigs.k8s.io/cluster-api/api/controlplane/kubeadm/v1beta2"
 	capi "sigs.k8s.io/cluster-api/api/core/v1beta2"
 	cr "sigs.k8s.io/controller-runtime/pkg/client"
@@ -431,13 +431,12 @@ func (f *Framework) GetKubeadmControlPlane(ctx context.Context, clusterName stri
 
 // GetAWSManagedControlPlane returns the AWSManagedControlPlane resource. If we don't find the `AWSManagedControlPlane` we assume
 // it's a kubeadm control plane cluster and expect nil pointer to be returned without error.
-func (f *Framework) GetAWSManagedControlPlane(ctx context.Context, clusterName string, clusterNamespace string) (*eks.AWSManagedControlPlane, error) {
-	controlPlane := &eks.AWSManagedControlPlane{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      clusterName,
-			Namespace: clusterNamespace,
-		},
-	}
+func (f *Framework) GetAWSManagedControlPlane(ctx context.Context, clusterName string, clusterNamespace string) (*unstructured.Unstructured, error) {
+	controlPlane := &unstructured.Unstructured{}
+	controlPlane.SetAPIVersion("controlplane.cluster.x-k8s.io/v1beta1")
+	controlPlane.SetKind("AWSManagedControlPlane")
+	controlPlane.SetName(clusterName)
+	controlPlane.SetNamespace(clusterNamespace)
 
 	err := f.MC().Get(ctx, cr.ObjectKeyFromObject(controlPlane), controlPlane)
 	if errors.IsNotFound(err) {

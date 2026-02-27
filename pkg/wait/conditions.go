@@ -448,19 +448,31 @@ func IsKubeadmControlPlaneConditionSet(ctx context.Context, kubeClient *client.C
 	}
 }
 
-// IsAWSManagedControlPlaneConditionSet returns a WaitCondition that checks if an AWSManagedControlPlane resource has the specified condition with the expected status.
-func IsAWSManagedControlPlaneConditionSet(ctx context.Context, kubeClient *client.Client, clusterName string, clusterNamespace string, conditionType capi.ConditionType, expectedStatus corev1.ConditionStatus, expectedReason string) WaitCondition {
+// IsControlPlaneConditionSet returns a WaitCondition that checks if a control plane resource has the specified condition with the expected status.
+func IsControlPlaneConditionSet(ctx context.Context, kubeClient *client.Client, clusterName string, clusterNamespace string, conditionType capi.ConditionType, expectedStatus corev1.ConditionStatus, expectedReason string) WaitCondition {
 	return func() (bool, error) {
-		awsMCP := &unstructured.Unstructured{}
-		awsMCP.SetAPIVersion("controlplane.cluster.x-k8s.io/v1beta1")
-		awsMCP.SetKind("AWSManagedControlPlane")
-		awsMCP.SetName(clusterName)
-		awsMCP.SetNamespace(clusterNamespace)
-		if err := kubeClient.Get(ctx, cr.ObjectKeyFromObject(awsMCP), awsMCP); err != nil {
+		cluster := &capi.Cluster{}
+		cluster.Name = clusterName
+		cluster.Namespace = clusterNamespace
+		if err := kubeClient.Get(ctx, cr.ObjectKeyFromObject(cluster), cluster); err != nil {
 			return false, err
 		}
 
-		return IsClusterAPIObjectConditionSet(capiconditions.UnstructuredGetter(awsMCP), conditionType, expectedStatus, expectedReason)
+		ref := cluster.Spec.ControlPlaneRef
+		if ref == nil {
+			return false, fmt.Errorf("Cluster %s/%s does not have a ControlPlaneRef", clusterNamespace, clusterName)
+		}
+
+		cp := &unstructured.Unstructured{}
+		cp.SetAPIVersion(ref.APIVersion)
+		cp.SetKind(ref.Kind)
+		cp.SetName(ref.Name)
+		cp.SetNamespace(ref.Namespace)
+		if err := kubeClient.Get(ctx, cr.ObjectKeyFromObject(cp), cp); err != nil {
+			return false, err
+		}
+
+		return IsClusterAPIObjectConditionSet(capiconditions.UnstructuredGetter(cp), conditionType, expectedStatus, expectedReason)
 	}
 }
 

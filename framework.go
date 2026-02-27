@@ -430,25 +430,29 @@ func (f *Framework) GetKubeadmControlPlane(ctx context.Context, clusterName stri
 	return controlPlane, nil
 }
 
-// GetAWSManagedControlPlane returns the AWSManagedControlPlane resource. If we don't find the `AWSManagedControlPlane` we assume
-// it's a kubeadm control plane cluster and expect nil pointer to be returned without error.
-func (f *Framework) GetAWSManagedControlPlane(ctx context.Context, clusterName string, clusterNamespace string) (*unstructured.Unstructured, error) {
-	controlPlane := &unstructured.Unstructured{}
-	controlPlane.SetAPIVersion("controlplane.cluster.x-k8s.io/v1beta2")
-	controlPlane.SetKind("AWSManagedControlPlane")
-	controlPlane.SetName(clusterName)
-	controlPlane.SetNamespace(clusterNamespace)
-
-	err := f.MC().Get(ctx, cr.ObjectKeyFromObject(controlPlane), controlPlane)
-	if errors.IsNotFound(err) {
-		// If we don't find the `AWSManagedControlPlane` we assume it's a managed control plane cluster and return a nil
-		// pointer without error.
-		return nil, nil
-	} else if err != nil {
+// GetControlPlaneResource returns the Control Plane resource as an unstructured.Unstructured.
+func (f *Framework) GetControlPlaneResource(ctx context.Context, clusterName string, clusterNamespace string) (*unstructured.Unstructured, error) {
+	cluster := &capi.Cluster{}
+	cluster.Name = clusterName
+	cluster.Namespace = clusterNamespace
+	if err := f.MC().Get(ctx, cr.ObjectKeyFromObject(cluster), cluster); err != nil {
 		return nil, err
 	}
 
-	return controlPlane, nil
+	ref := cluster.Spec.ControlPlaneRef
+	if ref == nil {
+		return nil, fmt.Errorf("Cluster %s/%s does not have a ControlPlaneRef", clusterNamespace, clusterName)
+	}
+
+	cp := &unstructured.Unstructured{}
+	cp.SetAPIVersion(ref.APIVersion)
+	cp.SetKind(ref.Kind)
+	cp.SetName(ref.Name)
+	cp.SetNamespace(ref.Namespace)
+	if err := f.MC().Get(ctx, cr.ObjectKeyFromObject(cp), cp); err != nil {
+		return nil, err
+	}
+	return cp, nil
 }
 
 // GetMachinePools returns the MachinePool resources. If we don't find the `MachinePools` we assume that the provider is

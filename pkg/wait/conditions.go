@@ -18,6 +18,7 @@ import (
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/labels"
+	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 	capi "sigs.k8s.io/cluster-api/api/v1beta1"
 	kubeadm "sigs.k8s.io/cluster-api/controlplane/kubeadm/api/v1beta1"
@@ -463,34 +464,21 @@ func IsAWSManagedControlPlaneConditionSet(ctx context.Context, kubeClient *clien
 		// Convert from CAPI condition to metav1 condition
 		// This is required until the AWSManagedControlPlane conditions are converted to use the same format as CAPI conditions. See https://github.com/kubernetes-sigs/cluster-api-provider-aws/pull/5854
 		var condition *capi.Condition
-		conditions, found, err := unstructured.NestedSlice(awsMCP.Object, "status", "conditions")
+		conditionsRaw, found, err := unstructured.NestedSlice(awsMCP.Object, "status", "conditions")
 		if err == nil && found {
-			for _, c := range conditions {
+			for _, c := range conditionsRaw {
 				condMap, ok := c.(map[string]interface{})
 				if !ok {
 					continue
 				}
-				condType, _ := condMap["type"].(string)
-				if condType != string(conditionType) {
+				var capiCond capi.Condition
+				if err := runtime.DefaultUnstructuredConverter.FromUnstructured(condMap, &capiCond); err != nil {
 					continue
 				}
-				cond := &capi.Condition{Type: capi.ConditionType(condType)}
-				if status, ok := condMap["status"].(string); ok {
-					cond.Status = corev1.ConditionStatus(status)
+				if capiCond.Type == conditionType {
+					condition = &capiCond
+					break
 				}
-				if reason, ok := condMap["reason"].(string); ok {
-					cond.Reason = reason
-				}
-				if message, ok := condMap["message"].(string); ok {
-					cond.Message = message
-				}
-				if ltt, ok := condMap["lastTransitionTime"].(string); ok {
-					if t, parseErr := time.Parse(time.RFC3339, ltt); parseErr == nil {
-						cond.LastTransitionTime = v1.Time{Time: t}
-					}
-				}
-				condition = cond
-				break
 			}
 		}
 		objTypeName := "AWSManagedControlPlane"

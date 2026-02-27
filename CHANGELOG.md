@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Add `first_previous_major` magic value for `E2E_RELEASE_PRE_UPGRADE` to resolve the earliest non-deprecated release from the previous major version.
+
 ## [3.1.3] - 2026-02-17
 
 ### Changed

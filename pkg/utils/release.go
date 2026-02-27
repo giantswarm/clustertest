@@ -21,14 +21,16 @@ type ReleasesFile struct {
 }
 
 type Release struct {
-	Version string `json:"version"`
+	Version      string `json:"version"`
+	IsDeprecated bool   `json:"isDeprecated"`
 }
 
 // GetUpgradeReleasesToTest returns the 'from' and 'to' release versions that should be used for upgrade tests.
 //
 // It checks the `E2E_RELEASE_VERSION` and `E2E_RELEASE_PRE_UPGRADE` environment variables. If `E2E_RELEASE_PRE_UPGRADE` is
 // set to the value of `previous_major` it'll lookup the latest release for the previous major and return that
-// as the 'from' release.
+// as the 'from' release. If set to `first_previous_major` it'll lookup the earliest non-deprecated release for
+// the previous major version.
 //
 // A `provider` must be provided so that the correct releases can be looked up from `giantswarm/releases`.
 func GetUpgradeReleasesToTest(provider string) (from string, to string, err error) {
@@ -40,7 +42,7 @@ func GetUpgradeReleasesToTest(provider string) (from string, to string, err erro
 	}
 
 	// If 'from' is explicitly provided, use it.
-	if from != "" && from != "previous_major" {
+	if from != "" && from != "previous_major" && from != "first_previous_major" {
 		return from, to, nil
 	}
 
@@ -116,6 +118,34 @@ func GetUpgradeReleasesToTest(provider string) (from string, to string, err erro
 			logger.Log("Found latest release from previous major: '%s'", from)
 		} else {
 			logger.Log("Failed to find a release for major version %d for provider %s. Continuing with no 'from' version", previousMajor, provider)
+		}
+	} else if from == "first_previous_major" {
+		logger.Log("Predecessor release set to '%s'. Looking up earliest non-deprecated release from previous major...", from)
+
+		previousMajor := toVersion.Major() - 1
+		var earliestPreviousMajorRelease *semver.Version
+		for _, release := range releasesFile.Releases {
+			if release.IsDeprecated {
+				continue
+			}
+
+			versionStr, err := semver.NewVersion(release.Version)
+			if err != nil {
+				continue
+			}
+
+			if versionStr.Major() == previousMajor {
+				if earliestPreviousMajorRelease == nil || versionStr.LessThan(earliestPreviousMajorRelease) {
+					earliestPreviousMajorRelease = versionStr
+				}
+			}
+		}
+
+		if earliestPreviousMajorRelease != nil {
+			from = earliestPreviousMajorRelease.Original()
+			logger.Log("Found earliest non-deprecated release from previous major: '%s'", from)
+		} else {
+			logger.Log("Failed to find a non-deprecated release for major version %d for provider %s. Continuing with no 'from' version", previousMajor, provider)
 		}
 	} else {
 		// If 'from' is not specified, we'll try to find the latest patch release from the same minor

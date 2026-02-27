@@ -33,7 +33,7 @@ The following environment variables can be set to control or override different 
 | `E2E_OVERRIDE_VERSIONS` | Sets the version of Apps to use instead of installing the latest released.<br/>Example format: `E2E_OVERRIDE_VERSIONS="cluster-aws=0.38.0-5f4372ac697fce58d524830a985ede2082d7f461"` |
 | `E2E_RELEASE_VERSION` | The base Release version to use when creating the Workload Cluster.<br/>Must be used with `E2E_RELEASE_COMMIT` |
 | `E2E_RELEASE_COMMIT` | The git commit from the `releases` repo that contains the Release version to use when creating the Workload Cluster.<br/>Must be used with `E2E_RELEASE_VERSION` |
-| `E2E_RELEASE_PRE_UPGRADE` | When performing upgrade tests, this sets the initial version to install. If set to `previous_major`, it automatically finds the latest release of the previous major version to test cross-major upgrades. |
+| `E2E_RELEASE_PRE_UPGRADE` | When performing upgrade tests, this sets the initial version to install. If set to `previous_major`, it automatically finds the latest release of the previous major version to test cross-major upgrades. If set to `first_previous_major`, it finds the earliest non-deprecated release of the previous major version. |
 
 All of these can be found in [`./pkg/env/const.go`](./pkg/env/const.go).
 

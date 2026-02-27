@@ -7,10 +7,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Changed
-
-- Update Cluster API and Kubeadm imports to v1beta2 and refactor code accordingly.
-
 ### Added
 
 - Add new functions `GetAWSManagedControlPlane` and `IsAWSManagedControlPlaneConditionSet` to check conditions for `AWSManagedControlPlane` resources.

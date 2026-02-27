@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.2.0] - 2026-02-27
+
 ### Added
 
 - Add `first_previous_major` magic value for `E2E_RELEASE_PRE_UPGRADE` to resolve the earliest non-deprecated release from the previous major version.
@@ -910,7 +912,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added initial framework layout
 - Added Kubernetes client extended from controller-runtime client
 
-[Unreleased]: https://github.com/giantswarm/clustertest/compare/v3.1.3...HEAD
+[Unreleased]: https://github.com/giantswarm/clustertest/compare/v3.2.0...HEAD
+[3.2.0]: https://github.com/giantswarm/clustertest/compare/v3.1.3...v3.2.0
 [3.1.3]: https://github.com/giantswarm/clustertest/compare/v3.1.2...v3.1.3
 [3.1.2]: https://github.com/giantswarm/clustertest/compare/v3.1.1...v3.1.2
 [3.1.1]: https://github.com/giantswarm/clustertest/compare/v3.1.0...v3.1.1

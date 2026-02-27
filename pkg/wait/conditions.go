@@ -18,7 +18,6 @@ import (
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/labels"
-	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 	capi "sigs.k8s.io/cluster-api/api/v1beta1"
 	kubeadm "sigs.k8s.io/cluster-api/controlplane/kubeadm/api/v1beta1"
@@ -461,29 +460,7 @@ func IsAWSManagedControlPlaneConditionSet(ctx context.Context, kubeClient *clien
 			return false, err
 		}
 
-		// Convert from CAPI condition to metav1 condition
-		// This is required until the AWSManagedControlPlane conditions are converted to use the same format as CAPI conditions. See https://github.com/kubernetes-sigs/cluster-api-provider-aws/pull/5854
-		var condition *capi.Condition
-		conditionsRaw, found, err := unstructured.NestedSlice(awsMCP.Object, "status", "conditions")
-		if err == nil && found {
-			for _, c := range conditionsRaw {
-				condMap, ok := c.(map[string]interface{})
-				if !ok {
-					continue
-				}
-				var capiCond capi.Condition
-				if err := runtime.DefaultUnstructuredConverter.FromUnstructured(condMap, &capiCond); err != nil {
-					continue
-				}
-				if capiCond.Type == conditionType {
-					condition = &capiCond
-					break
-				}
-			}
-		}
-		objTypeName := "AWSManagedControlPlane"
-		objNamespacedName := fmt.Sprintf("%s/%s", awsMCP.GetNamespace(), awsMCP.GetName())
-		return IsConditionSet(condition, conditionType, expectedStatus, expectedReason, objTypeName, objNamespacedName)
+		return IsClusterAPIObjectConditionSet(capiconditions.UnstructuredGetter(awsMCP), conditionType, expectedStatus, expectedReason)
 	}
 }
 
@@ -505,11 +482,6 @@ func IsClusterAPIObjectConditionSet(obj clusterAPIObject, conditionType capi.Con
 	}
 	objNamespacedName := fmt.Sprintf("%s/%s", obj.GetNamespace(), obj.GetName())
 
-	return IsConditionSet(condition, conditionType, expectedStatus, expectedReason, objTypeName, objNamespacedName)
-}
-
-// IsClusterAPIObjectConditionSet checks if a cluster has the specified condition with the expected status.
-func IsConditionSet(condition *capi.Condition, conditionType capi.ConditionType, expectedStatus corev1.ConditionStatus, expectedReason string, objTypeName string, objNamespacedName string) (bool, error) {
 	if condition == nil {
 		// Condition not being set is equivalent to a condition with Status="Unknown"
 		expectedNotSet := expectedStatus == corev1.ConditionUnknown

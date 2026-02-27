@@ -434,7 +434,7 @@ func (f *Framework) GetKubeadmControlPlane(ctx context.Context, clusterName stri
 // it's a kubeadm control plane cluster and expect nil pointer to be returned without error.
 func (f *Framework) GetAWSManagedControlPlane(ctx context.Context, clusterName string, clusterNamespace string) (*unstructured.Unstructured, error) {
 	controlPlane := &unstructured.Unstructured{}
-	controlPlane.SetAPIVersion("controlplane.cluster.x-k8s.io/v1beta1")
+	controlPlane.SetAPIVersion("controlplane.cluster.x-k8s.io/v1beta2")
 	controlPlane.SetKind("AWSManagedControlPlane")
 	controlPlane.SetName(clusterName)
 	controlPlane.SetNamespace(clusterNamespace)

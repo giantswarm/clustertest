@@ -16,6 +16,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/types"
 	capi "sigs.k8s.io/cluster-api/api/v1beta1"
@@ -444,6 +445,34 @@ func IsKubeadmControlPlaneConditionSet(ctx context.Context, kubeClient *client.C
 		}
 
 		return IsClusterAPIObjectConditionSet(kcp, conditionType, expectedStatus, expectedReason)
+	}
+}
+
+// IsControlPlaneConditionSet returns a WaitCondition that checks if a control plane resource has the specified condition with the expected status.
+func IsControlPlaneConditionSet(ctx context.Context, kubeClient *client.Client, clusterName string, clusterNamespace string, conditionType capi.ConditionType, expectedStatus corev1.ConditionStatus, expectedReason string) WaitCondition {
+	return func() (bool, error) {
+		cluster := &capi.Cluster{}
+		cluster.Name = clusterName
+		cluster.Namespace = clusterNamespace
+		if err := kubeClient.Get(ctx, cr.ObjectKeyFromObject(cluster), cluster); err != nil {
+			return false, err
+		}
+
+		ref := cluster.Spec.ControlPlaneRef
+		if ref == nil {
+			return false, fmt.Errorf("Cluster %s/%s does not have a ControlPlaneRef", clusterNamespace, clusterName)
+		}
+
+		cp := &unstructured.Unstructured{}
+		cp.SetAPIVersion(ref.APIVersion)
+		cp.SetKind(ref.Kind)
+		cp.SetName(ref.Name)
+		cp.SetNamespace(ref.Namespace)
+		if err := kubeClient.Get(ctx, cr.ObjectKeyFromObject(cp), cp); err != nil {
+			return false, err
+		}
+
+		return IsClusterAPIObjectConditionSet(capiconditions.UnstructuredGetter(cp), conditionType, expectedStatus, expectedReason)
 	}
 }
 

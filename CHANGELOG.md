@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Add new functions `IsControlPlaneConditionSet` and `GetControlPlaneResource` to check conditions for control plane resources (besides KubeadmControlPlane).
+
 ## [3.2.0] - 2026-02-27
 
 ### Added

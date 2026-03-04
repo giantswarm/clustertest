@@ -23,6 +23,7 @@ import (
 	releases "github.com/giantswarm/releases/sdk/api/v1alpha1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	capi "sigs.k8s.io/cluster-api/api/v1beta1"
 	kubeadm "sigs.k8s.io/cluster-api/controlplane/kubeadm/api/v1beta1"
 	capiexp "sigs.k8s.io/cluster-api/exp/api/v1beta1"
@@ -427,6 +428,31 @@ func (f *Framework) GetKubeadmControlPlane(ctx context.Context, clusterName stri
 	}
 
 	return controlPlane, nil
+}
+
+// GetControlPlaneResource returns the Control Plane resource as an unstructured.Unstructured.
+func (f *Framework) GetControlPlaneResource(ctx context.Context, clusterName string, clusterNamespace string) (*unstructured.Unstructured, error) {
+	cluster := &capi.Cluster{}
+	cluster.Name = clusterName
+	cluster.Namespace = clusterNamespace
+	if err := f.MC().Get(ctx, cr.ObjectKeyFromObject(cluster), cluster); err != nil {
+		return nil, err
+	}
+
+	ref := cluster.Spec.ControlPlaneRef
+	if ref == nil {
+		return nil, fmt.Errorf("Cluster %s/%s does not have a ControlPlaneRef", clusterNamespace, clusterName)
+	}
+
+	cp := &unstructured.Unstructured{}
+	cp.SetAPIVersion(ref.APIVersion)
+	cp.SetKind(ref.Kind)
+	cp.SetName(ref.Name)
+	cp.SetNamespace(ref.Namespace)
+	if err := f.MC().Get(ctx, cr.ObjectKeyFromObject(cp), cp); err != nil {
+		return nil, err
+	}
+	return cp, nil
 }
 
 // GetMachinePools returns the MachinePool resources. If we don't find the `MachinePools` we assume that the provider is

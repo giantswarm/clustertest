@@ -13,8 +13,8 @@ import (
 	"github.com/google/go-github/v84/github"
 	"golang.org/x/oauth2"
 
-	"github.com/giantswarm/clustertest/v3/pkg/logger"
-	"github.com/giantswarm/clustertest/v3/pkg/utils"
+	"github.com/giantswarm/clustertest/v4/pkg/logger"
+	"github.com/giantswarm/clustertest/v4/pkg/utils"
 )
 
 // newGitHubClient returns a new initialized GitHub client using the GitHub token specified in the environment

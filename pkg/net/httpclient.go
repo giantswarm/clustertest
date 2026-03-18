@@ -8,7 +8,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/giantswarm/clustertest/v3/pkg/logger"
+	"github.com/giantswarm/clustertest/v4/pkg/logger"
 )
 
 // NewHTTPClient returns an initialized HTTP Client that uses an external nameserver to help avoid negative caching

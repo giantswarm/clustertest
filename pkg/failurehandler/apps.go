@@ -3,9 +3,9 @@ package failurehandler
 import (
 	"fmt"
 
-	"github.com/giantswarm/clustertest/v3"
-	"github.com/giantswarm/clustertest/v3/pkg/application"
-	"github.com/giantswarm/clustertest/v3/pkg/logger"
+	"github.com/giantswarm/clustertest/v4"
+	"github.com/giantswarm/clustertest/v4/pkg/application"
+	"github.com/giantswarm/clustertest/v4/pkg/logger"
 
 	appsv1 "k8s.io/api/apps/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"

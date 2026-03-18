@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Bump `sigs.k8s.io/cluster-api` from v1.10.10 to v1.12.3 and migrate from `v1beta1` to `v1beta2` API types.
+- `MachinePool` is now part of core API (`api/core/v1beta2`) instead of experimental (`exp/api/v1beta1`).
+- Condition check functions now use `metav1.ConditionStatus` (instead of `corev1.ConditionStatus`) and `string` (instead of `capi.ConditionType`).
+
 ## [3.3.0] - 2026-03-04
 
 ### Added

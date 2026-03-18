@@ -15,12 +15,13 @@ import (
 	batchv1 "k8s.io/api/batch/v1"
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
-	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/types"
-	capi "sigs.k8s.io/cluster-api/api/v1beta1"
-	kubeadm "sigs.k8s.io/cluster-api/controlplane/kubeadm/api/v1beta1"
+	kubeadm "sigs.k8s.io/cluster-api/api/controlplane/kubeadm/v1beta2"
+	capi "sigs.k8s.io/cluster-api/api/core/v1beta2"
+	"sigs.k8s.io/cluster-api/controllers/external"
 	capiconditions "sigs.k8s.io/cluster-api/util/conditions"
 	cr "sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/client/apiutil"
@@ -344,7 +345,7 @@ func IsAppDeployed(ctx context.Context, kubeClient *client.Client, appName strin
 func IsAppStatus(ctx context.Context, kubeClient *client.Client, appName string, appNamespace string, expectedStatus string) WaitCondition {
 	return func() (bool, error) {
 		app := &applicationv1alpha1.App{
-			ObjectMeta: v1.ObjectMeta{
+			ObjectMeta: metav1.ObjectMeta{
 				Name:      appName,
 				Namespace: appNamespace,
 			},
@@ -399,7 +400,7 @@ func IsAllAppStatus(ctx context.Context, kubeClient *client.Client, appNamespace
 func IsAppVersion(ctx context.Context, kubeClient *client.Client, appName string, appNamespace string, expectedVersion string) WaitCondition {
 	return func() (bool, error) {
 		app := &applicationv1alpha1.App{
-			ObjectMeta: v1.ObjectMeta{
+			ObjectMeta: metav1.ObjectMeta{
 				Name:      appName,
 				Namespace: appNamespace,
 			},
@@ -415,10 +416,10 @@ func IsAppVersion(ctx context.Context, kubeClient *client.Client, appName string
 }
 
 // IsClusterConditionSet returns a WaitCondition that checks if a Cluster resource has the specified condition with the expected status.
-func IsClusterConditionSet(ctx context.Context, kubeClient *client.Client, clusterName string, clusterNamespace string, conditionType capi.ConditionType, expectedStatus corev1.ConditionStatus, expectedReason string) WaitCondition {
+func IsClusterConditionSet(ctx context.Context, kubeClient *client.Client, clusterName string, clusterNamespace string, conditionType string, expectedStatus metav1.ConditionStatus, expectedReason string) WaitCondition {
 	return func() (bool, error) {
 		cluster := &capi.Cluster{
-			ObjectMeta: v1.ObjectMeta{
+			ObjectMeta: metav1.ObjectMeta{
 				Name:      clusterName,
 				Namespace: clusterNamespace,
 			},
@@ -432,10 +433,10 @@ func IsClusterConditionSet(ctx context.Context, kubeClient *client.Client, clust
 }
 
 // IsKubeadmControlPlaneConditionSet returns a WaitCondition that checks if a KubeadmControlPlane resource has the specified condition with the expected status.
-func IsKubeadmControlPlaneConditionSet(ctx context.Context, kubeClient *client.Client, clusterName string, clusterNamespace string, conditionType capi.ConditionType, expectedStatus corev1.ConditionStatus, expectedReason string) WaitCondition {
+func IsKubeadmControlPlaneConditionSet(ctx context.Context, kubeClient *client.Client, clusterName string, clusterNamespace string, conditionType string, expectedStatus metav1.ConditionStatus, expectedReason string) WaitCondition {
 	return func() (bool, error) {
 		kcp := &kubeadm.KubeadmControlPlane{
-			ObjectMeta: v1.ObjectMeta{
+			ObjectMeta: metav1.ObjectMeta{
 				Name:      clusterName,
 				Namespace: clusterNamespace,
 			},
@@ -449,7 +450,7 @@ func IsKubeadmControlPlaneConditionSet(ctx context.Context, kubeClient *client.C
 }
 
 // IsControlPlaneConditionSet returns a WaitCondition that checks if a control plane resource has the specified condition with the expected status.
-func IsControlPlaneConditionSet(ctx context.Context, kubeClient *client.Client, clusterName string, clusterNamespace string, conditionType capi.ConditionType, expectedStatus corev1.ConditionStatus, expectedReason string) WaitCondition {
+func IsControlPlaneConditionSet(ctx context.Context, kubeClient *client.Client, clusterName string, clusterNamespace string, conditionType string, expectedStatus metav1.ConditionStatus, expectedReason string) WaitCondition {
 	return func() (bool, error) {
 		cluster := &capi.Cluster{}
 		cluster.Name = clusterName
@@ -459,25 +460,21 @@ func IsControlPlaneConditionSet(ctx context.Context, kubeClient *client.Client, 
 		}
 
 		ref := cluster.Spec.ControlPlaneRef
-		if ref == nil {
+		if !ref.IsDefined() {
 			return false, fmt.Errorf("Cluster %s/%s does not have a ControlPlaneRef", clusterNamespace, clusterName)
 		}
 
-		cp := &unstructured.Unstructured{}
-		cp.SetAPIVersion(ref.APIVersion)
-		cp.SetKind(ref.Kind)
-		cp.SetName(ref.Name)
-		cp.SetNamespace(ref.Namespace)
-		if err := kubeClient.Get(ctx, cr.ObjectKeyFromObject(cp), cp); err != nil {
+		cp, err := external.GetObjectFromContractVersionedRef(ctx, kubeClient, ref, clusterNamespace)
+		if err != nil {
 			return false, err
 		}
 
-		return IsClusterAPIObjectConditionSet(capiconditions.UnstructuredGetter(cp), conditionType, expectedStatus, expectedReason)
+		return IsUnstructuredConditionSet(cp, conditionType, expectedStatus, expectedReason)
 	}
 }
 
-// IsClusterAPIObjectConditionSet checks if a cluster has the specified condition with the expected status.
-func IsClusterAPIObjectConditionSet(obj clusterAPIObject, conditionType capi.ConditionType, expectedStatus corev1.ConditionStatus, expectedReason string) (bool, error) {
+// IsClusterAPIObjectConditionSet checks if a cluster API object has the specified condition with the expected status.
+func IsClusterAPIObjectConditionSet(obj clusterAPIObject, conditionType string, expectedStatus metav1.ConditionStatus, expectedReason string) (bool, error) {
 	condition := capiconditions.Get(obj, conditionType)
 
 	// obj.GetObjectKind().GroupVersionKind().Kind should return obj Kind, but that sometimes just returns an empty
@@ -494,9 +491,26 @@ func IsClusterAPIObjectConditionSet(obj clusterAPIObject, conditionType capi.Con
 	}
 	objNamespacedName := fmt.Sprintf("%s/%s", obj.GetNamespace(), obj.GetName())
 
+	return checkCondition(condition, objTypeName, objNamespacedName, conditionType, expectedStatus, expectedReason), nil
+}
+
+// IsUnstructuredConditionSet checks if an unstructured object has the specified condition with the expected status.
+func IsUnstructuredConditionSet(obj *unstructured.Unstructured, conditionType string, expectedStatus metav1.ConditionStatus, expectedReason string) (bool, error) {
+	condition, err := capiconditions.UnstructuredGet(obj, conditionType)
+	if err != nil {
+		return false, err
+	}
+
+	objTypeName := obj.GetKind()
+	objNamespacedName := fmt.Sprintf("%s/%s", obj.GetNamespace(), obj.GetName())
+
+	return checkCondition(condition, objTypeName, objNamespacedName, conditionType, expectedStatus, expectedReason), nil
+}
+
+func checkCondition(condition *metav1.Condition, objTypeName, objNamespacedName, conditionType string, expectedStatus metav1.ConditionStatus, expectedReason string) bool {
 	if condition == nil {
 		// Condition not being set is equivalent to a condition with Status="Unknown"
-		expectedNotSet := expectedStatus == corev1.ConditionUnknown
+		expectedNotSet := expectedStatus == metav1.ConditionUnknown
 		if expectedNotSet {
 			logger.Log(
 				"%s %s does not have condition %s set, expected condition with unknown status (or condition not set)",
@@ -512,7 +526,7 @@ func IsClusterAPIObjectConditionSet(obj clusterAPIObject, conditionType capi.Con
 				expectedStatus,
 				expectedReason)
 		}
-		return expectedNotSet, nil
+		return expectedNotSet
 	}
 
 	logger.Log(
@@ -525,14 +539,13 @@ func IsClusterAPIObjectConditionSet(obj clusterAPIObject, conditionType capi.Con
 		expectedStatus,
 		expectedReason)
 
-	foundExpectedCondition := condition.Status == expectedStatus && condition.Reason == expectedReason
-	return foundExpectedCondition, nil
+	return condition.Status == expectedStatus && condition.Reason == expectedReason
 }
 
 // IsClusterApiObjectConditionSet checks if a cluster has the specified condition with the expected status.
 // Deprecated: Use IsClusterAPIObjectConditionSet instead.
 // nolint // Keep old name for backward compatibility
-func IsClusterApiObjectConditionSet(obj clusterAPIObject, conditionType capi.ConditionType, expectedStatus corev1.ConditionStatus, expectedReason string) (bool, error) {
+func IsClusterApiObjectConditionSet(obj clusterAPIObject, conditionType string, expectedStatus metav1.ConditionStatus, expectedReason string) (bool, error) {
 	logger.Log("Warning: IsClusterApiObjectConditionSet is deprecated. Use IsClusterAPIObjectConditionSet instead.")
 	return IsClusterAPIObjectConditionSet(obj, conditionType, expectedStatus, expectedReason)
 }

@@ -24,9 +24,9 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
-	capi "sigs.k8s.io/cluster-api/api/v1beta1"
-	kubeadm "sigs.k8s.io/cluster-api/controlplane/kubeadm/api/v1beta1"
-	capiexp "sigs.k8s.io/cluster-api/exp/api/v1beta1"
+	kubeadm "sigs.k8s.io/cluster-api/api/controlplane/kubeadm/v1beta2"
+	capi "sigs.k8s.io/cluster-api/api/core/v1beta2"
+	"sigs.k8s.io/cluster-api/controllers/external"
 	cr "sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -440,16 +440,12 @@ func (f *Framework) GetControlPlaneResource(ctx context.Context, clusterName str
 	}
 
 	ref := cluster.Spec.ControlPlaneRef
-	if ref == nil {
+	if !ref.IsDefined() {
 		return nil, fmt.Errorf("Cluster %s/%s does not have a ControlPlaneRef", clusterNamespace, clusterName)
 	}
 
-	cp := &unstructured.Unstructured{}
-	cp.SetAPIVersion(ref.APIVersion)
-	cp.SetKind(ref.Kind)
-	cp.SetName(ref.Name)
-	cp.SetNamespace(ref.Namespace)
-	if err := f.MC().Get(ctx, cr.ObjectKeyFromObject(cp), cp); err != nil {
+	cp, err := external.GetObjectFromContractVersionedRef(ctx, f.MC(), ref, clusterNamespace)
+	if err != nil {
 		return nil, err
 	}
 	return cp, nil
@@ -457,8 +453,8 @@ func (f *Framework) GetControlPlaneResource(ctx context.Context, clusterName str
 
 // GetMachinePools returns the MachinePool resources. If we don't find the `MachinePools` we assume that the provider is
 // not using MachinePools, so nil pointer is returned without error.
-func (f *Framework) GetMachinePools(ctx context.Context, clusterName string, clusterNamespace string) ([]capiexp.MachinePool, error) {
-	machinePools := &capiexp.MachinePoolList{}
+func (f *Framework) GetMachinePools(ctx context.Context, clusterName string, clusterNamespace string) ([]capi.MachinePool, error) {
+	machinePools := &capi.MachinePoolList{}
 	machinePoolListOptions := []cr.ListOption{
 		cr.InNamespace(clusterNamespace),
 		cr.MatchingLabels{

@@ -539,7 +539,7 @@ func checkCondition(condition *metav1.Condition, objTypeName, objNamespacedName,
 		expectedStatus,
 		expectedReason)
 
-	return condition.Status == expectedStatus && condition.Reason == expectedReason
+	return condition.Status == expectedStatus && (expectedReason == "" || condition.Reason == expectedReason)
 }
 
 // IsClusterApiObjectConditionSet checks if a cluster has the specified condition with the expected status.

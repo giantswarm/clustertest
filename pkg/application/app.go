@@ -212,11 +212,14 @@ func (a *Application) Build() (*applicationv1alpha1.App, *corev1.ConfigMap, erro
 	case "":
 		// When the version is left blank we'll look for an override version from the env vars.
 		// The env var `E2E_OVERRIDE_VERSIONS` is used to provide a comma seperated list
-		// of app version overrides in the format of `app-name=version`.
-		// E.g. for `cluster-aws` the env var might contain `cluster-aws=v1.2.3`
+		// of app version overrides in the format of `app-name=version[:catalog]`.
+		// E.g. for `cluster-aws` the env var might contain `cluster-aws=v1.2.3` or `cluster-aws=v1.2.3:cluster-test`
 		// If no matching env var is found we'll fallback to fetching the latest version
-		ver, ok := getOverrideVersion(a.AppName)
+		ver, catalog, ok := getOverrideVersion(a.AppName)
 		if ok {
+			if catalog != "" {
+				a = a.WithCatalog(catalog)
+			}
 			a = a.WithVersion(ver)
 			break
 		}

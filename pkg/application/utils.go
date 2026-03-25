@@ -59,8 +59,13 @@ func parseTemplate(manifest string, config *TemplateValues) (string, error) {
 	return manifestBuffer.String(), nil
 }
 
-func getOverrideVersions() map[string]string {
-	versions := map[string]string{}
+type overrideVersion struct {
+	Version string
+	Catalog string
+}
+
+func getOverrideVersions() map[string]overrideVersion {
+	versions := map[string]overrideVersion{}
 
 	overrides := os.Getenv(env.OverrideVersions)
 	if overrides != "" {
@@ -68,7 +73,9 @@ func getOverrideVersions() map[string]string {
 		for _, pair := range overridesList {
 			parts := strings.Split(pair, "=")
 			if len(parts) == 2 {
-				versions[strings.TrimSpace(strings.ToLower(parts[0]))] = strings.TrimSpace(parts[1])
+				appName := strings.TrimSpace(strings.ToLower(parts[0]))
+				version, catalog := parseVersionAndCatalog(strings.TrimSpace(parts[1]))
+				versions[appName] = overrideVersion{Version: version, Catalog: catalog}
 			}
 		}
 	}
@@ -76,9 +83,27 @@ func getOverrideVersions() map[string]string {
 	return versions
 }
 
-func getOverrideVersion(app string) (string, bool) {
-	ver := getOverrideVersions()[strings.ToLower(app)]
-	return ver, ver != ""
+func getOverrideVersion(app string) (string, string, bool) {
+	ov, ok := getOverrideVersions()[strings.ToLower(app)]
+	return ov.Version, ov.Catalog, ok
+}
+
+// parseVersionAndCatalog splits a version string that may contain an optional
+// catalog suffix in the format "version:catalog" (e.g. "1.3.0-sha:cluster-test").
+func parseVersionAndCatalog(versionAndCatalog string) (version, catalog string) {
+	lastColonIdx := strings.LastIndex(versionAndCatalog, ":")
+	if lastColonIdx == -1 {
+		return versionAndCatalog, ""
+	}
+
+	version = strings.TrimSpace(versionAndCatalog[:lastColonIdx])
+	catalog = strings.TrimSpace(versionAndCatalog[lastColonIdx+1:])
+
+	if catalog == "" {
+		return versionAndCatalog, ""
+	}
+
+	return version, catalog
 }
 
 func mergeMaps(m1 map[string]string, m2 map[string]string) map[string]string {

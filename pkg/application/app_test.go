@@ -206,6 +206,46 @@ func TestWithVersion_Override(t *testing.T) {
 	}
 }
 
+func TestWithVersion_OverrideWithCatalog(t *testing.T) {
+	sha := "138079087cd7dca8b3c53577848f5de9a72d02c4"
+	overrideVersion := fmt.Sprintf("1.3.0-%s", sha)
+	overrideCatalog := "cluster-test"
+	os.Setenv(env.OverrideVersions, fmt.Sprintf("cluster-eks=%s:%s", overrideVersion, overrideCatalog))
+	defer os.Unsetenv(env.OverrideVersions)
+
+	app, _, err := New("installName", "cluster-eks").WithVersion("").Build()
+	if err != nil {
+		t.Fatalf("Not expecting an error: %v", err)
+	}
+
+	if app.Spec.Version != overrideVersion {
+		t.Errorf("Was expecting version to be overridden. Expected: %s, Actual: %s", overrideVersion, app.Spec.Version)
+	}
+
+	if app.Spec.Catalog != overrideCatalog {
+		t.Errorf("Was expecting catalog to be overridden. Expected: %s, Actual: %s", overrideCatalog, app.Spec.Catalog)
+	}
+}
+
+func TestWithVersion_OverrideWithoutCatalog(t *testing.T) {
+	overrideVersion := "1.3.0"
+	os.Setenv(env.OverrideVersions, fmt.Sprintf("cluster-eks=%s", overrideVersion))
+	defer os.Unsetenv(env.OverrideVersions)
+
+	app, _, err := New("installName", "cluster-eks").WithVersion("").Build()
+	if err != nil {
+		t.Fatalf("Not expecting an error: %v", err)
+	}
+
+	if app.Spec.Version != overrideVersion {
+		t.Errorf("Was expecting version to be overridden. Expected: %s, Actual: %s", overrideVersion, app.Spec.Version)
+	}
+
+	if app.Spec.Catalog != "cluster" {
+		t.Errorf("Was expecting catalog to remain default. Expected: cluster, Actual: %s", app.Spec.Catalog)
+	}
+}
+
 func TestWithVersion_SuffixVariations(t *testing.T) {
 	// Test latest version with matching repo name
 	app, _, err := New("installName", "cluster-aws").WithVersion("latest").Build()

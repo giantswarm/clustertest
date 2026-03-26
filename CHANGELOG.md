@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Pass empty catalog when overriding release apps to preserve the original catalog from the release.
 - Parse catalog suffix from `E2E_OVERRIDE_VERSIONS` values (e.g. `app=1.0.0:catalog`) to avoid invalid semver errors.
 
 ## [4.0.0] - 2026-03-18

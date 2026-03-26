@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Parse catalog suffix from `E2E_OVERRIDE_VERSIONS` values (e.g. `app=1.0.0:catalog`) to avoid invalid semver errors.
+- Bump `releases/sdk` to v0.12.0 to preserve `dependsOn` when overriding release apps.
 
 ## [4.0.0] - 2026-03-18
 

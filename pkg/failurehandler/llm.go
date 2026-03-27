@@ -101,11 +101,10 @@ func LLMPrompt(framework *clustertest.Framework, cluster *application.Cluster, q
 		logger.Log("=========================================================================")
 
 		// Split logs into lines and log each separately for better readability
-		logLines := strings.Split(logs, "\n")
+		// Preserve empty lines for proper formatting of multi-line responses
+		logLines := strings.Split(strings.TrimSuffix(logs, "\n"), "\n")
 		for _, line := range logLines {
-			if line != "" {
-				logger.Log("%s", line)
-			}
+			logger.Log("%s", line)
 		}
 
 		logger.Log("==================== LLM INVESTIGATION RESULTS END ========================")
@@ -215,12 +214,11 @@ func createLLMJob(jobName, namespace, clusterName, query string) *batchv1.Job {
 								"curl",
 							},
 							Args: []string{
-								"-f",                                                           // Fail on HTTP errors (non-200 status codes)
-								"-v",                                                           // Verbose output for debugging
+								"-s",                                                           // Silent mode (suppress progress meter)
+								"-S",                                                           // Show errors even in silent mode
 								"--max-time", fmt.Sprintf("%.0f", llmRequestTimeout.Seconds()), // Maximum time for the request to complete
-								"-X", "POST", // HTTP POST method
 								"-H", "Content-Type: application/json", // JSON content type
-								"-d", jsonPayload, // JSON payload with query
+								"-d", jsonPayload, // JSON payload with query (POST is inferred from -d)
 								serviceEndpoint, // The service endpoint URL
 							},
 							SecurityContext: &corev1.SecurityContext{

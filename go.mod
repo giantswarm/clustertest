@@ -15,7 +15,7 @@ require (
 	github.com/google/go-github/v84 v84.0.0
 	github.com/mittwald/go-helm-client v0.12.19
 	golang.org/x/oauth2 v0.36.0
-	golang.org/x/text v0.35.0
+	golang.org/x/text v0.36.0
 	k8s.io/api v0.35.3
 	k8s.io/apimachinery v0.35.3
 	k8s.io/client-go v0.35.3

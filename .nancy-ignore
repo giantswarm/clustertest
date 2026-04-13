@@ -1,3 +1,4 @@
 CVE-2025-47291 until=2026-05-02 # github.com/containerd/containerd@v1.7.30
 CVE-2025-47290 until=2026-05-02 # github.com/containerd/containerd@v1.7.30
 CVE-2026-33186 until=2026-04-19 # google.golang.org/grpc@v1.79.1
+CVE-2026-35206 until=2026-05-13 # helm.sh/helm/v3@v3.20.0

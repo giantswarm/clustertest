@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Add Gateway API (`HTTPRoute`, `Gateway`) types to the client scheme.
+
 ## [4.1.0] - 2026-04-14
 
 ### Added

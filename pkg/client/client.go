@@ -30,6 +30,7 @@ import (
 	capi "sigs.k8s.io/cluster-api/api/core/v1beta2"
 	cr "sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/client/apiutil"
+	gatewayv1 "sigs.k8s.io/gateway-api/apis/v1"
 	"sigs.k8s.io/yaml"
 
 	"github.com/giantswarm/clustertest/v4/pkg/application"
@@ -158,6 +159,7 @@ func newClient(config *rest.Config, clusterName string) (*Client, error) {
 	_ = releasev1alpha1.AddToScheme(client.Scheme())
 	_ = certmanager.AddToScheme(client.Scheme())
 	_ = helm.AddToScheme(client.Scheme())
+	_ = gatewayv1.AddToScheme(client.Scheme())
 
 	return &Client{
 		Client:      client,

@@ -10,7 +10,7 @@ import (
 
 	"github.com/Masterminds/semver/v3"
 	"github.com/cenkalti/backoff/v5"
-	"github.com/google/go-github/v84/github"
+	"github.com/google/go-github/v85/github"
 	"golang.org/x/oauth2"
 
 	"github.com/giantswarm/clustertest/v4/pkg/logger"

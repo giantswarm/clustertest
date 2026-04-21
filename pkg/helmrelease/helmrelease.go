@@ -11,10 +11,10 @@ import (
 	helmv2 "github.com/fluxcd/helm-controller/api/v2"
 	fluxmeta "github.com/fluxcd/pkg/apis/meta"
 	sourcev1beta2 "github.com/fluxcd/source-controller/api/v1beta2"
+	"gopkg.in/yaml.v3"
 	apiextensionsv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	kubectlscheme "k8s.io/kubectl/pkg/scheme"
-	"gopkg.in/yaml.v3"
 )
 
 func init() {

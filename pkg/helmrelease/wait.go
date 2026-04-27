@@ -2,6 +2,7 @@ package helmrelease
 
 import (
 	"context"
+	"fmt"
 
 	helmv2 "github.com/fluxcd/helm-controller/api/v2"
 	apimeta "k8s.io/apimachinery/pkg/api/meta"
@@ -39,6 +40,38 @@ func IsAppOrHelmReleaseReady(ctx context.Context, c *client.Client, name, namesp
 			return true, nil
 		}
 		return false, nil
+	}
+}
+
+// AreAllReady returns a function that checks whether every HelmRelease in names
+// has a Ready=True condition. Suitable for use with wait.Consistent.
+func AreAllReady(ctx context.Context, c cr.Client, names []types.NamespacedName) func() error {
+	return func() error {
+		allReady := true
+		for _, name := range names {
+			hr := &helmv2.HelmRelease{}
+			if err := c.Get(ctx, name, hr); err != nil {
+				logger.Log("HelmRelease '%s' failed to retrieve: %v", name.Name, err)
+				allReady = false
+				continue
+			}
+
+			condition := apimeta.FindStatusCondition(hr.Status.Conditions, "Ready")
+			switch {
+			case condition == nil:
+				logger.Log("HelmRelease '%s' has no Ready condition yet", name.Name)
+				allReady = false
+			case condition.Status == metav1.ConditionTrue:
+				logger.Log("HelmRelease '%s' is Ready", name.Name)
+			default:
+				logger.Log("HelmRelease '%s' not yet ready: %s - %s", name.Name, condition.Reason, condition.Message)
+				allReady = false
+			}
+		}
+		if !allReady {
+			return fmt.Errorf("not all HelmReleases are ready")
+		}
+		return nil
 	}
 }
 

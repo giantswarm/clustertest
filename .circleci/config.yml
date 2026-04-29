@@ -38,6 +38,7 @@ workflows:
   test:
     jobs:
       - tests:
+          context: architect
           filters:
             tags:
               only: /^v.*/

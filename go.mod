@@ -4,7 +4,7 @@ go 1.26.0
 
 require (
 	dario.cat/mergo v1.0.2
-	github.com/Masterminds/semver/v3 v3.4.0
+	github.com/Masterminds/semver/v3 v3.5.0
 	github.com/cenkalti/backoff/v5 v5.0.3
 	github.com/cert-manager/cert-manager v1.20.2
 	github.com/fluxcd/helm-controller/api v1.5.4

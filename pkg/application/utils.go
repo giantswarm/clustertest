@@ -9,7 +9,7 @@ import (
 	"dario.cat/mergo"
 	"sigs.k8s.io/yaml"
 
-	"github.com/giantswarm/clustertest/v4/pkg/env"
+	"github.com/giantswarm/clustertest/v5/pkg/env"
 )
 
 // TemplateValues is the properties made available to the Values string when templating.

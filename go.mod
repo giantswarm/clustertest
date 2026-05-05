@@ -1,4 +1,4 @@
-module github.com/giantswarm/clustertest/v4
+module github.com/giantswarm/clustertest/v5
 
 go 1.26.2
 

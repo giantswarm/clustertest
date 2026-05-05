@@ -3,9 +3,9 @@ package failurehandler
 import (
 	batchv1 "k8s.io/api/batch/v1"
 
-	"github.com/giantswarm/clustertest/v4"
-	"github.com/giantswarm/clustertest/v4/pkg/application"
-	"github.com/giantswarm/clustertest/v4/pkg/logger"
+	"github.com/giantswarm/clustertest/v5"
+	"github.com/giantswarm/clustertest/v5/pkg/application"
+	"github.com/giantswarm/clustertest/v5/pkg/logger"
 )
 
 // JobsUnsuccessful collects debug information for all Jobs in the workload cluster that haven't completed

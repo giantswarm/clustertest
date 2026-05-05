@@ -8,7 +8,7 @@ import (
 	orgv1alpha1 "github.com/giantswarm/organization-operator/api/v1alpha1"
 	"k8s.io/client-go/kubernetes/scheme"
 
-	"github.com/giantswarm/clustertest/v4/pkg/utils"
+	"github.com/giantswarm/clustertest/v5/pkg/utils"
 )
 
 func init() {

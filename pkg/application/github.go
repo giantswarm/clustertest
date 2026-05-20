@@ -10,24 +10,23 @@ import (
 
 	"github.com/Masterminds/semver/v3"
 	"github.com/cenkalti/backoff/v5"
-	"github.com/google/go-github/v86/github"
-	"golang.org/x/oauth2"
+	"github.com/google/go-github/v87/github"
 
 	"github.com/giantswarm/clustertest/v5/pkg/logger"
 	"github.com/giantswarm/clustertest/v5/pkg/utils"
 )
 
 // newGitHubClient returns a new initialized GitHub client using the GitHub token specified in the environment
-func newGitHubClient(ctx context.Context) *github.Client {
-	var ghHTTPClient *http.Client
-	githubToken := utils.GetGitHubToken()
-	if githubToken != "" {
-		ghHTTPClient = oauth2.NewClient(ctx, oauth2.StaticTokenSource(
-			&oauth2.Token{AccessToken: githubToken},
-		))
+func newGitHubClient(_ context.Context) *github.Client {
+	var opts []github.ClientOptionsFunc
+	if githubToken := utils.GetGitHubToken(); githubToken != "" {
+		opts = append(opts, github.WithAuthToken(githubToken))
 	}
-
-	return github.NewClient(ghHTTPClient)
+	client, err := github.NewClient(opts...)
+	if err != nil {
+		panic(fmt.Sprintf("failed to create GitHub client: %v", err))
+	}
+	return client
 }
 
 // GetLatestAppVersion returns the latest version (tag) name for a given repos release.

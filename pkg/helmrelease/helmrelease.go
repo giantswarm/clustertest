@@ -155,7 +155,7 @@ func (h *HelmRelease) Build() (*helmv2.HelmRelease, error) {
 				Name: h.OCIRepoName,
 			},
 			Install: &helmv2.Install{
-				CreateNamespace: true,
+				CreateNamespace: !h.InCluster,
 				Remediation: &helmv2.InstallRemediation{
 					Retries: 5,
 				},

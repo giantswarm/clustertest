@@ -46,6 +46,8 @@ type HelmRelease struct {
 	// InCluster controls the deployment target: true = management cluster (no kubeConfig),
 	// false = workload cluster (kubeConfig from ClusterName secret).
 	InCluster bool
+	// ServiceAccountName is the Kubernetes service account to impersonate when reconciling.
+	ServiceAccountName string
 }
 
 // New creates a new HelmRelease builder for the given chart.
@@ -98,6 +100,12 @@ func (h *HelmRelease) WithInCluster(inCluster bool) *HelmRelease {
 	return h
 }
 
+// WithServiceAccountName sets the Kubernetes service account to impersonate when reconciling.
+func (h *HelmRelease) WithServiceAccountName(sa string) *HelmRelease {
+	h.ServiceAccountName = sa
+	return h
+}
+
 // WithValues sets the chart values directly.
 func (h *HelmRelease) WithValues(values map[string]interface{}) *HelmRelease {
 	h.Values = values
@@ -147,13 +155,17 @@ func (h *HelmRelease) Build() (*helmv2.HelmRelease, error) {
 				Name: h.OCIRepoName,
 			},
 			Install: &helmv2.Install{
-				CreateNamespace: true,
+				CreateNamespace: !h.InCluster,
 				Remediation: &helmv2.InstallRemediation{
 					Retries: 5,
 				},
 			},
 			Values: rawValues,
 		},
+	}
+
+	if h.ServiceAccountName != "" {
+		hr.Spec.ServiceAccountName = h.ServiceAccountName
 	}
 
 	if !h.InCluster {

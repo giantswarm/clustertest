@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- HelmRelease: Add service account name support.
+
+### Fixed
+
+- HelmRelease: Disable `createNamespace` when running in-cluster.
+
 ### Changed
 
 - Go: Update dependencies.

@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Failure Handler: Add `CertificatesNotReady` to collect debug info for non-ready cert-manager Certificates, CertificateRequests, Orders, and Challenges.
+- Failure Handler: Add `ExternalDNSIssues` to collect status and logs from external-dns Deployments in the workload cluster.
+
 ## [5.1.0] - 2026-05-22
 
 ### Added

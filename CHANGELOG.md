@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [5.2.0] - 2026-05-29
+
 ### Added
 
 - Failure Handler: Add `CertificatesNotReady` to collect debug info for non-ready cert-manager Certificates, CertificateRequests, Orders, and Challenges.
@@ -989,7 +991,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added initial framework layout
 - Added Kubernetes client extended from controller-runtime client
 
-[Unreleased]: https://github.com/giantswarm/clustertest/compare/v5.1.0...HEAD
+[Unreleased]: https://github.com/giantswarm/clustertest/compare/v5.2.0...HEAD
+[5.2.0]: https://github.com/giantswarm/clustertest/compare/v5.1.0...v5.2.0
 [5.1.0]: https://github.com/giantswarm/clustertest/compare/v5.0.1...v5.1.0
 [5.0.1]: https://github.com/giantswarm/clustertest/compare/v5.0.0...v5.0.1
 [5.0.0]: https://github.com/giantswarm/clustertest/compare/v4.3.1...v5.0.0

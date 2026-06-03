@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [5.3.0] - 2026-06-03
+
 ### Changed
 
 - Application: Detect dev builds using `giantswarm/gitsemver` `IsValidDev` in addition to the existing SHA-suffix pattern, so that the `<VERSION>-dev.<branch>.<date>.<time>` format also triggers the `-test` catalog override.
@@ -995,7 +997,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added initial framework layout
 - Added Kubernetes client extended from controller-runtime client
 
-[Unreleased]: https://github.com/giantswarm/clustertest/compare/v5.2.0...HEAD
+[Unreleased]: https://github.com/giantswarm/clustertest/compare/v5.3.0...HEAD
+[5.3.0]: https://github.com/giantswarm/clustertest/compare/v5.2.0...v5.3.0
 [5.2.0]: https://github.com/giantswarm/clustertest/compare/v5.1.0...v5.2.0
 [5.1.0]: https://github.com/giantswarm/clustertest/compare/v5.0.1...v5.1.0
 [5.0.1]: https://github.com/giantswarm/clustertest/compare/v5.0.0...v5.0.1

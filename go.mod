@@ -11,6 +11,7 @@ require (
 	github.com/fluxcd/pkg/apis/meta v1.28.0
 	github.com/fluxcd/source-controller/api v1.8.5
 	github.com/giantswarm/apiextensions-application v0.6.2
+	github.com/giantswarm/gitsemver v1.1.2
 	github.com/giantswarm/kubectl-gs/v2 v2.57.0
 	github.com/giantswarm/organization-operator v1.6.4
 	github.com/giantswarm/releases/sdk v0.12.0
@@ -65,7 +66,6 @@ require (
 	github.com/fluxcd/pkg/apis/kustomize v1.18.0 // indirect
 	github.com/fsnotify/fsnotify v1.10.1 // indirect
 	github.com/fxamacker/cbor/v2 v2.9.2 // indirect
-	github.com/giantswarm/gitsemver v1.1.2 // indirect
 	github.com/giantswarm/k8smetadata v0.26.0 // indirect
 	github.com/giantswarm/microerror v0.4.1 // indirect
 	github.com/giantswarm/release-operator/v4 v4.2.1 // indirect

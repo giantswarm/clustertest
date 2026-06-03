@@ -544,7 +544,7 @@ func TestWithVersion_Catalog(t *testing.T) {
 
 	app, _, err = New("installName", "cluster-aws").
 		WithVersion("v1.2.3-dev.my-branch.2026-06-03.14-30-00"). // Causes the catalog to become 'cluster-test'
-		WithCatalog("override").                                  // Overrides the catalog to 'override'
+		WithCatalog("override").                                 // Overrides the catalog to 'override'
 		Build()
 	if err != nil {
 		t.Fatalf("Not expecting an error: %v", err)

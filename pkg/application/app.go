@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	applicationv1alpha1 "github.com/giantswarm/apiextensions-application/api/v1alpha1"
+	gitsemver "github.com/giantswarm/gitsemver/v2/pkg/gitsemver"
 	templateapp "github.com/giantswarm/kubectl-gs/v2/pkg/template/app"
 	corev1 "k8s.io/api/core/v1"
 
@@ -70,13 +71,13 @@ func New(installName string, appName string) *Application {
 // will first be checked for a matching override var and if not found then
 // the logic will fall back to the same as `latest“.
 //
-// If the version provided is suffixed with a commit sha then the `Catalog` use for the Apps
-// will be updated to `cluster-test`.
+// If the version provided is a dev build (commit SHA suffix or dev.<branch>.<date>.<time> format)
+// then the `Catalog` used for the Apps will be updated to `cluster-test`.
 func (a *Application) WithVersion(version string) *Application {
 	a.Version = version
 
-	// Override the catalog if version contains a sha suffix
-	if isShaVersion.MatchString(version) && !strings.HasSuffix(a.Catalog, "-test") {
+	// Override the catalog if version is a dev build
+	if (isShaVersion.MatchString(version) || gitsemver.IsValidDev(version)) && !strings.HasSuffix(a.Catalog, "-test") {
 		a = a.WithCatalog(fmt.Sprintf("%s-test", a.Catalog))
 	}
 

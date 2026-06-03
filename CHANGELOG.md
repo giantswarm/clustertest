@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Application: Detect dev builds using `giantswarm/gitsemver` `IsValidDev` in addition to the existing SHA-suffix pattern, so that the `<VERSION>-dev.<branch>.<date>.<time>` format also triggers the `-test` catalog override.
+
 ## [5.2.0] - 2026-05-29
 
 ### Added

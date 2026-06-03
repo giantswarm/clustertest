@@ -8,7 +8,7 @@ import (
 	"strings"
 
 	applicationv1alpha1 "github.com/giantswarm/apiextensions-application/api/v1alpha1"
-	gitsemver "github.com/giantswarm/gitsemver/pkg/gitsemver"
+	gitsemver "github.com/giantswarm/gitsemver/v2/pkg/gitsemver"
 	templateapp "github.com/giantswarm/kubectl-gs/v2/pkg/template/app"
 	corev1 "k8s.io/api/core/v1"
 

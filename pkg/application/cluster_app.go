@@ -138,6 +138,10 @@ func (c *Cluster) WithRelease(releasePair ReleasePair) *Cluster {
 // environment variables, if found.
 // If `Release.Version` is set to `latest` then the environment variables will be ignored and the latest available
 // Release will be used.
+//
+// When the latest published Release is used, the cluster app version is only overridden if it was explicitly requested
+// (via a non-empty cluster app version or an `E2E_OVERRIDE_VERSIONS` entry for the cluster app). Otherwise the Release's
+// pinned cluster app version is left untouched so the cluster chart is not incidentally bumped to its latest version.
 func (c *Cluster) GetRelease() (*releases.Release, error) {
 	provider := releases.Provider(c.Provider)
 
@@ -165,16 +169,31 @@ func (c *Cluster) GetRelease() (*releases.Release, error) {
 	var release *releases.Release
 	if releaseVersion == ReleaseLatest {
 		// Use the latest published release for this provider
-		clusterApplication, _, err := c.ClusterApp.Build()
-		if err != nil {
-			return nil, err
-		}
-
 		releaseBuilder = releaseBuilder.
 			// Ensure release has a unique name
-			WithPreReleasePrefix("t").WithRandomPreRelease(10).
+			WithPreReleasePrefix("t").WithRandomPreRelease(10)
+
+		// Only override the cluster app version in the ephemeral Release when it has been
+		// explicitly requested - either via a non-empty version on the cluster app (e.g.
+		// `WithAppVersions("latest")` or a concrete version) or via an `E2E_OVERRIDE_VERSIONS`
+		// entry for the cluster app (e.g. when testing a provider cluster chart PR).
+		//
+		// When nothing is explicitly set we leave the latest published release's pinned
+		// cluster app version untouched. This ensures suites that only test an app (e.g. App
+		// Test Suites) run against the vanilla release and don't incidentally bump the provider
+		// cluster chart (e.g. cluster-aws) to its latest available version, which may be
+		// incompatible with the release under test.
+		_, _, hasClusterAppOverride := getOverrideVersion(c.ClusterApp.AppName)
+		if c.ClusterApp.Version != "" || hasClusterAppOverride {
+			clusterApplication, _, err := c.ClusterApp.Build()
+			if err != nil {
+				return nil, err
+			}
+
 			// Set the Cluster App to use
-			WithClusterApp(strings.TrimPrefix(clusterApplication.Spec.Version, "v"), clusterApplication.Spec.Catalog)
+			releaseBuilder = releaseBuilder.
+				WithClusterApp(strings.TrimPrefix(clusterApplication.Spec.Version, "v"), clusterApplication.Spec.Catalog)
+		}
 
 		for _, overrideApp := range c.appOverrides {
 			logger.Log("Overriding Release app '%s' version '%s' from catalog '%s'", overrideApp.AppName, overrideApp.Version, overrideApp.Catalog)

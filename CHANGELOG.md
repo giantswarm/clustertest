@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Application: When building an ephemeral Release from the latest published release, only override the cluster app version when it was explicitly requested (non-empty cluster app version or an `E2E_OVERRIDE_VERSIONS` entry for the cluster app). Otherwise the release's pinned cluster app version is kept, so suites that only test an app no longer incidentally bump the provider cluster chart to its latest version.
+
 ## [5.3.1] - 2026-06-10
 
 ### Changed

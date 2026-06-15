@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [5.4.0] - 2026-06-15
+
 ### Changed
 
 - Application: When building an ephemeral Release from the latest published release, only override the cluster app version when it was explicitly requested (non-empty cluster app version or an `E2E_OVERRIDE_VERSIONS` entry for the cluster app). Otherwise the release's pinned cluster app version is kept, so suites that only test an app no longer incidentally bump the provider cluster chart to its latest version.
@@ -1010,7 +1012,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added initial framework layout
 - Added Kubernetes client extended from controller-runtime client
 
-[Unreleased]: https://github.com/giantswarm/clustertest/compare/v5.3.1...HEAD
+[Unreleased]: https://github.com/giantswarm/clustertest/compare/v5.4.0...HEAD
+[5.4.0]: https://github.com/giantswarm/clustertest/compare/v5.3.1...v5.4.0
 [5.3.1]: https://github.com/giantswarm/clustertest/compare/v5.3.0...v5.3.1
 [5.3.0]: https://github.com/giantswarm/clustertest/compare/v5.2.0...v5.3.0
 [5.2.0]: https://github.com/giantswarm/clustertest/compare/v5.1.0...v5.2.0

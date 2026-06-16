@@ -9,7 +9,7 @@ import (
 	"time"
 
 	"github.com/Masterminds/semver/v3"
-	"github.com/cenkalti/backoff/v5"
+	"github.com/cenkalti/backoff/v6"
 	"github.com/google/go-github/v88/github"
 
 	"github.com/giantswarm/clustertest/v5/pkg/logger"

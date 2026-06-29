@@ -8,7 +8,7 @@ require (
 	github.com/cenkalti/backoff/v6 v6.0.1
 	github.com/cert-manager/cert-manager v1.20.3
 	github.com/fluxcd/helm-controller/api v1.6.0
-	github.com/fluxcd/pkg/apis/meta v1.30.0
+	github.com/fluxcd/pkg/apis/meta v1.31.0
 	github.com/fluxcd/source-controller/api v1.9.0
 	github.com/giantswarm/apiextensions-application v0.6.2
 	github.com/giantswarm/gitsemver/v2 v2.0.1

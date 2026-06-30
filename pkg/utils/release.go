@@ -10,7 +10,7 @@ import (
 	"time"
 
 	"github.com/Masterminds/semver/v3"
-	"github.com/cenkalti/backoff/v6"
+	"github.com/cenkalti/backoff/v7"
 
 	"github.com/giantswarm/clustertest/v5/pkg/env"
 	"github.com/giantswarm/clustertest/v5/pkg/logger"

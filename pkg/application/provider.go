@@ -14,6 +14,7 @@ const (
 	ProviderAWS           Provider = "aws"
 	ProviderEKS           Provider = "eks"
 	ProviderAzure         Provider = "azure"
+	ProviderAKS           Provider = "aks"
 	ProviderCloudDirector Provider = "cloud-director"
 	ProviderVSphere       Provider = "vsphere"
 	ProviderProxmox       Provider = "proxmox"
@@ -30,6 +31,8 @@ func ProviderFromClusterApplication(app *applicationv1alpha1.App) Provider {
 		return ProviderEKS
 	case "cluster-azure":
 		return ProviderAzure
+	case "cluster-aks":
+		return ProviderAKS
 	case "cluster-cloud-director":
 		return ProviderCloudDirector
 	case "cluster-vsphere":

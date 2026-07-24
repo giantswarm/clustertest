@@ -10,6 +10,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Application: Add support for the AKS provider (`ProviderAKS`), including detection of the `cluster-aks` cluster app.
+- Client: Tune QPS/Burst (defaults 50/100, overridable via `E2E_CLIENT_QPS` / `E2E_CLIENT_BURST`) to avoid silent client-side throttling during E2E suites that repeatedly list whole-cluster resources.
+- Client: Install a retrying transport that retries idempotent (GET/HEAD) requests on transient failures (network errors and HTTP 429/500/502/503/504) with bounded exponential backoff, honoring the server's `Retry-After` header and the request context deadline.
 
 ## [5.4.0] - 2026-06-15
 

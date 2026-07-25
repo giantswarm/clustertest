@@ -36,4 +36,13 @@ const (
 	// When set to "first_previous_major", it will discover the earliest
 	// non-deprecated release from the previous major version.
 	ReleasePreUpgradeVersion = "E2E_RELEASE_PRE_UPGRADE"
+
+	// ClientQPS overrides the client-go QPS (queries per second) used by the
+	// Kubernetes clients. The client-go default of 5 is very low for E2E suites
+	// that repeatedly list whole-cluster resources, causing silent client-side
+	// throttling. Must parse as a float; invalid values fall back to the default.
+	ClientQPS = "E2E_CLIENT_QPS"
+	// ClientBurst overrides the client-go Burst used by the Kubernetes clients.
+	// Must parse as an int; invalid values fall back to the default.
+	ClientBurst = "E2E_CLIENT_BURST"
 )

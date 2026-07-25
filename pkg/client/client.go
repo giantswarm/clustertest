@@ -138,6 +138,10 @@ func NewWithContext(kubeconfigPath string, contextName string) (*Client, error) 
 }
 
 func newClient(config *rest.Config, clusterName string) (*Client, error) {
+	// Tune QPS/Burst and install a retrying transport before the HTTP client is
+	// built so all requests made through this client benefit from it.
+	applyClientResilience(config)
+
 	httpClient, err := rest.HTTPClientFor(config)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create http client - %v", err)

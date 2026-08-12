@@ -17,7 +17,7 @@ require (
 	github.com/giantswarm/releases/sdk v0.13.0
 	github.com/google/go-github/v90 v90.0.0
 	github.com/mittwald/go-helm-client v0.13.2
-	golang.org/x/text v0.40.0
+	golang.org/x/text v0.41.0
 	gopkg.in/yaml.v3 v3.0.1
 	k8s.io/api v0.36.3
 	k8s.io/apiextensions-apiserver v0.36.3

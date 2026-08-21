@@ -192,7 +192,7 @@ func marshalValues(values map[string]interface{}) (*apiextensionsv1.JSON, error)
 }
 
 func parseValuesFile(path string, tv *TemplateValues) (map[string]interface{}, error) {
-	data, err := os.ReadFile(path)
+	data, err := os.ReadFile(path) // #nosec G304
 	if err != nil {
 		return nil, fmt.Errorf("reading values file %s: %w", path, err)
 	}

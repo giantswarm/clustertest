@@ -26,7 +26,7 @@ type Option func(*Options)
 func WithTimeout(timeout time.Duration) Option {
 	return func(options *Options) {
 		//nolint:govet
-		ctx, _ := context.WithTimeout(options.Context, timeout)
+		ctx, _ := context.WithTimeout(options.Context, timeout) // #nosec G118
 		options.Context = ctx
 	}
 }
@@ -50,7 +50,7 @@ func WithContext(context context.Context) Option {
 // the timeout is reached or the function returns as done
 func For(fn WaitCondition, opts ...Option) error {
 	//nolint:govet
-	defaultContext, _ := context.WithTimeout(context.Background(), DefaultTimeout)
+	defaultContext, _ := context.WithTimeout(context.Background(), DefaultTimeout) // #nosec G118
 	options := &Options{
 		Context:  defaultContext,
 		Interval: DefaultInterval,

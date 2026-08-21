@@ -119,7 +119,7 @@ func (a *Application) MustWithValues(values string, config *TemplateValues) *App
 // The file supports templating using Go template strings and uses values provided in `config` to replace placeholders.
 func (a *Application) WithValuesFile(filePath string, config *TemplateValues) (*Application, error) {
 	// We need to check that the values file actually has contents otherwise kubectl-gs fails to build the Application
-	fileBytes, err := os.ReadFile(filePath)
+	fileBytes, err := os.ReadFile(filePath) // #nosec G304
 	if err != nil && !os.IsNotExist(err) {
 		return nil, err
 	}

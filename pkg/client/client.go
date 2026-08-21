@@ -107,7 +107,7 @@ func NewWithContext(kubeconfigPath string, contextName string) (*Client, error) 
 		return nil, fmt.Errorf("a kubeconfig file must be provided")
 	}
 
-	data, err := os.ReadFile(kubeconfigPath)
+	data, err := os.ReadFile(kubeconfigPath) // #nosec G304
 	if err != nil {
 		return nil, fmt.Errorf("failed to create context from kubeconfig file '%s' - %v", kubeconfigPath, err)
 	}

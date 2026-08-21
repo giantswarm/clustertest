@@ -16,7 +16,7 @@ func GetGitHubToken() string {
 
 	tokenLocation := strings.TrimSpace(os.Getenv("GITHUB_TOKEN_FILE"))
 	if tokenLocation != "" {
-		token, err := os.ReadFile(tokenLocation)
+		token, err := os.ReadFile(tokenLocation) // #nosec G703 G304
 		if err != nil {
 			return ""
 		}

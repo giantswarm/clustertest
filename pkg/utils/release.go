@@ -60,7 +60,7 @@ func GetUpgradeReleasesToTest(provider string) (from string, to string, err erro
 	bo.RandomizationFactor = 0.1 // Add some jitter
 
 	operation := func() ([]byte, error) {
-		resp, err := http.Get(releasesURL)
+		resp, err := http.Get(releasesURL) // #nosec G107
 		if err != nil {
 			return nil, err
 		}

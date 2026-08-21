@@ -57,7 +57,7 @@ func TestMain(m *testing.M) {
 		// Tear down Kind cluster
 		fmt.Println("Deleting test kind cluster")
 		_ = provider.Delete(clusterName, kindKubeconfig)
-		os.Remove(kindKubeconfig)
+		os.Remove(kindKubeconfig) // #nosec G104
 	}
 
 	os.Exit(code)

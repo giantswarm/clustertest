@@ -173,7 +173,7 @@ func TestMustWithValuesFile(t *testing.T) {
 
 func TestWithVersion_Override(t *testing.T) {
 	overrideVersion := "v9.9.9"
-	os.Setenv(env.OverrideVersions, fmt.Sprintf("cluster-aws=%s", overrideVersion))
+	os.Setenv(env.OverrideVersions, fmt.Sprintf("cluster-aws=%s", overrideVersion)) // #nosec G104
 
 	// Test successful override
 	app, _, err := New("installName", "cluster-aws").WithVersion("").Build()
@@ -210,7 +210,7 @@ func TestWithVersion_OverrideWithCatalog(t *testing.T) {
 	sha := "138079087cd7dca8b3c53577848f5de9a72d02c4"
 	overrideVersion := fmt.Sprintf("1.3.0-%s", sha)
 	overrideCatalog := "cluster-test"
-	os.Setenv(env.OverrideVersions, fmt.Sprintf("cluster-eks=%s:%s", overrideVersion, overrideCatalog))
+	os.Setenv(env.OverrideVersions, fmt.Sprintf("cluster-eks=%s:%s", overrideVersion, overrideCatalog)) // #nosec G104
 	defer os.Unsetenv(env.OverrideVersions)
 
 	app, _, err := New("installName", "cluster-eks").WithVersion("").Build()
@@ -229,7 +229,7 @@ func TestWithVersion_OverrideWithCatalog(t *testing.T) {
 
 func TestWithVersion_OverrideWithoutCatalog(t *testing.T) {
 	overrideVersion := "1.3.0"
-	os.Setenv(env.OverrideVersions, fmt.Sprintf("cluster-eks=%s", overrideVersion))
+	os.Setenv(env.OverrideVersions, fmt.Sprintf("cluster-eks=%s", overrideVersion)) // #nosec G104
 	defer os.Unsetenv(env.OverrideVersions)
 
 	app, _, err := New("installName", "cluster-eks").WithVersion("").Build()

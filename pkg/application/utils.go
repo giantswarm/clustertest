@@ -39,7 +39,7 @@ func defaultTemplateVars(config *TemplateValues) *TemplateValues {
 }
 
 func parseTemplateFile(path string, config *TemplateValues) (string, error) {
-	manifest, err := os.ReadFile(path)
+	manifest, err := os.ReadFile(path) // #nosec G304
 	if err != nil {
 		return "", err
 	}

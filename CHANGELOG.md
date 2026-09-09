@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Register `source.toolkit.fluxcd.io/v1` in the client scheme, alongside the existing `v1beta2`. `OCIRepository` and `HelmRepository` graduated to `v1`, and that is the version Giant Swarm cluster and app bundle charts emit, so consumers had to call `AddToScheme` themselves to work with those types.
+
 ## [5.5.5] - 2026-09-02
 
 ### Changed

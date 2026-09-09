@@ -10,6 +10,7 @@ import (
 
 	helmv2 "github.com/fluxcd/helm-controller/api/v2"
 	fluxmeta "github.com/fluxcd/pkg/apis/meta"
+	sourcev1 "github.com/fluxcd/source-controller/api/v1"
 	sourcev1beta2 "github.com/fluxcd/source-controller/api/v1beta2"
 	"gopkg.in/yaml.v3"
 	apiextensionsv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
@@ -19,6 +20,7 @@ import (
 
 func init() {
 	_ = helmv2.AddToScheme(kubectlscheme.Scheme)
+	_ = sourcev1.AddToScheme(kubectlscheme.Scheme)
 	_ = sourcev1beta2.AddToScheme(kubectlscheme.Scheme)
 }
 

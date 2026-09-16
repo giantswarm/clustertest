@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	helmv2 "github.com/fluxcd/helm-controller/api/v2"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	apimeta "k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
@@ -17,6 +18,9 @@ import (
 
 // IsHelmReleaseReady returns a WaitCondition that polls the named HelmRelease and
 // becomes true when its Ready condition is True.
+//
+// A HelmRelease that doesn't exist yet is not an error: the condition stays false until
+// it appears, so this can be used to wait for a release that is still being created.
 func IsHelmReleaseReady(ctx context.Context, c cr.Client, name, namespace string) wait.WaitCondition {
 	return isHelmReleaseReady(ctx, c, types.NamespacedName{Name: name, Namespace: namespace})
 }
@@ -79,6 +83,10 @@ func isHelmReleaseReady(ctx context.Context, c cr.Client, name types.NamespacedN
 	return func() (bool, error) {
 		hr := &helmv2.HelmRelease{}
 		if err := c.Get(ctx, name, hr); err != nil {
+			if apierrors.IsNotFound(err) {
+				logger.Log("HelmRelease '%s/%s' not found yet", name.Namespace, name.Name)
+				return false, nil
+			}
 			return false, err
 		}
 

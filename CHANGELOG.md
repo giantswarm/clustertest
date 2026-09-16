@@ -10,6 +10,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Register `source.toolkit.fluxcd.io/v1` in the client scheme, alongside the existing `v1beta2`. `OCIRepository` and `HelmRepository` graduated to `v1`, and that is the version Giant Swarm cluster and app bundle charts emit, so consumers had to call `AddToScheme` themselves to work with those types.
+- `helmrelease.IsHelmReleaseVersion` and `helmrelease.HasDeployedVersion` assert the chart version a HelmRelease has actually deployed, based on `status.history` rather than the version Flux last attempted.
+- `helmrelease.EnsureSource` and `helmrelease.DeleteSource` manage either an `OCIRepository` or a `HelmRepository`, with a chart version pinned by tag. `helmrelease.UpdateOCIRepositoryTag` moves an existing source to another version, which is how an upgrade is triggered for a HelmRelease pulling through `spec.chartRef`.
+
+### Changed
+
+- `helmrelease.IsHelmReleaseReady` no longer errors when the HelmRelease doesn't exist yet, so it can be used to wait for one that is still being created.
+- Deprecate `helmrelease.EnsureOCIRepository` and `helmrelease.DeleteOCIRepository` in favour of `helmrelease.EnsureSource` and `helmrelease.DeleteSource`. They keep working unchanged.
 
 ## [5.5.5] - 2026-09-02
 

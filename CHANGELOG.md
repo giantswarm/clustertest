@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [5.6.0] - 2026-09-16
+
 ### Added
 
 - Register `source.toolkit.fluxcd.io/v1` in the client scheme, alongside the existing `v1beta2`. `OCIRepository` and `HelmRepository` graduated to `v1`, and that is the version Giant Swarm cluster and app bundle charts emit, so consumers had to call `AddToScheme` themselves to work with those types.
@@ -1061,7 +1063,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added initial framework layout
 - Added Kubernetes client extended from controller-runtime client
 
-[Unreleased]: https://github.com/giantswarm/clustertest/compare/v5.5.5...HEAD
+[Unreleased]: https://github.com/giantswarm/clustertest/compare/v5.6.0...HEAD
+[5.6.0]: https://github.com/giantswarm/clustertest/compare/v5.5.5...v5.6.0
 [5.5.5]: https://github.com/giantswarm/clustertest/compare/v5.5.4...v5.5.5
 [5.5.4]: https://github.com/giantswarm/clustertest/compare/v5.5.3...v5.5.4
 [5.5.3]: https://github.com/giantswarm/clustertest/compare/v5.5.2...v5.5.3

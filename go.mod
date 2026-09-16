@@ -6,7 +6,7 @@ require (
 	dario.cat/mergo v1.0.2
 	github.com/Masterminds/semver/v3 v3.5.0
 	github.com/cenkalti/backoff/v7 v7.0.0
-	github.com/cert-manager/cert-manager v1.21.1
+	github.com/cert-manager/cert-manager v1.21.2
 	github.com/fluxcd/helm-controller/api v1.6.4
 	github.com/fluxcd/pkg/apis/meta v1.31.0
 	github.com/fluxcd/source-controller/api v1.9.5
@@ -15,7 +15,7 @@ require (
 	github.com/giantswarm/kubectl-gs/v2 v2.57.0
 	github.com/giantswarm/organization-operator v1.6.4
 	github.com/giantswarm/releases/sdk v0.13.0
-	github.com/google/go-github/v91 v91.0.0
+	github.com/google/go-github/v92 v92.0.0
 	github.com/mittwald/go-helm-client v0.13.3
 	golang.org/x/text v0.42.0
 	gopkg.in/yaml.v3 v3.0.1
@@ -26,7 +26,7 @@ require (
 	k8s.io/kubectl v0.37.0
 	sigs.k8s.io/cluster-api v1.14.2
 	sigs.k8s.io/cluster-api/api v1.14.2
-	sigs.k8s.io/controller-runtime v0.25.0
+	sigs.k8s.io/controller-runtime v0.25.1
 	sigs.k8s.io/e2e-framework v0.7.0
 	sigs.k8s.io/gateway-api v1.6.2
 	sigs.k8s.io/kind v0.33.0

@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Bumped `gitsemver` from `v2.0.1` to `v3.0.1`, which moves the import path to
+  `github.com/giantswarm/gitsemver/v3`. `WithVersion` now also routes the gitsemver v3 dev-build schema
+  `X.Y.Z-r<branch-hash>t<timestamp>h<sha>` to the `-test` catalog. Before this, a chart built from a branch
+  by a toolchain on gitsemver v3 was looked up in the stable catalog and never found. The superseded
+  `X.Y.Z-dev.<branch>.<date>.<time>` schema is still recognised.
+
 ## [5.6.0] - 2026-09-16
 
 ### Added

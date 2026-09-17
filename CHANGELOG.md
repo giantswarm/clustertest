@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `X.Y.Z-r<branch-hash>t<timestamp>h<sha>` to the `-test` catalog. Before this, a chart built from a branch
   by a toolchain on gitsemver v3 was looked up in the stable catalog and never found. The superseded
   `X.Y.Z-dev.<branch>.<date>.<time>` schema is still recognised.
+- Go: Update dependencies.
 
 ## [5.6.0] - 2026-09-16
 

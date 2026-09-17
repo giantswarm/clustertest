@@ -485,6 +485,16 @@ func TestWithVersion_Catalog(t *testing.T) {
 		t.Errorf("Was expecting catalog to be default with test suffix. Expected: %s, Actual: %s", defaultTestCatalog, app.Spec.Catalog)
 	}
 
+	// Test with default catalog (cluster) and a dev-build version in the gitsemver v3 schema
+	app, _, err = New("installName", "cluster-aws").WithVersion("v1.2.3-r7b5b4fa7t20260127094959h1a2b3c4").Build()
+	if err != nil {
+		t.Fatalf("Not expecting an error: %v", err)
+	}
+
+	if app.Spec.Catalog != defaultTestCatalog {
+		t.Errorf("Was expecting catalog to be default with test suffix. Expected: %s, Actual: %s", defaultTestCatalog, app.Spec.Catalog)
+	}
+
 	customCatalog := "giantswarm"
 	customTestCatalog := "giantswarm-test"
 

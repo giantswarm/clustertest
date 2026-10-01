@@ -40,13 +40,5 @@ CVE-2026-81870 until=2026-10-31
 # pkg:golang/go.opentelemetry.io/otel/sdk/log@v0.19.0
 CVE-2026-81872 until=2026-10-31
 
-# pkg:golang/helm.sh/helm/v4@v4.2.0
-CVE-2026-63308 until=2026-10-31
-
-# pkg:golang/oras.land/oras-go/v2@v2.6.0
-CVE-2026-48978 until=2026-10-31
-CVE-2026-50151 until=2026-10-31
-CVE-2026-50162 until=2026-10-31
-CVE-2026-50163 until=2026-10-31
-CVE-2026-85731 until=2026-10-31
-CVE-2026-85732 until=2026-10-31
+# pkg:golang/google.golang.org/grpc@v1.84.0
+CVE-2026-84445 until=2026-10-31

@@ -35,13 +35,13 @@ require (
 
 require (
 	al.essio.dev/pkg/shellescape v1.6.1 // indirect
-	github.com/Azure/go-ansiterm v0.0.0-20261008234032-65faa4be4f89 // indirect
+	github.com/Azure/go-ansiterm v0.0.0-20261013165250-51075c6ea6bc // indirect
 	github.com/BurntSushi/toml v1.6.0 // indirect
 	github.com/MakeNowJust/heredoc v1.0.0 // indirect
 	github.com/Masterminds/goutils v1.1.1 // indirect
 	github.com/Masterminds/sprig/v3 v3.3.0 // indirect
 	github.com/Masterminds/squirrel v1.5.4 // indirect
-	github.com/Microsoft/go-winio v0.6.3 // indirect
+	github.com/Microsoft/go-winio v0.6.4 // indirect
 	github.com/ProtonMail/go-crypto v1.5.2 // indirect
 	github.com/asaskevich/govalidator v0.0.0-20230301143203-a9d515a09cc2 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
@@ -59,9 +59,9 @@ require (
 	github.com/exponent-io/jsonpath v0.0.0-20210407135951-1de76d718b3f // indirect
 	github.com/extism/go-sdk v1.7.1 // indirect
 	github.com/fatih/color v1.19.0 // indirect
-	github.com/fluxcd/cli-utils v1.3.0 // indirect
-	github.com/fluxcd/pkg/apis/acl v0.11.0 // indirect
-	github.com/fluxcd/pkg/apis/kustomize v1.21.0 // indirect
+	github.com/fluxcd/cli-utils v1.4.0 // indirect
+	github.com/fluxcd/pkg/apis/acl v0.12.0 // indirect
+	github.com/fluxcd/pkg/apis/kustomize v1.23.0 // indirect
 	github.com/fsnotify/fsnotify v1.10.1 // indirect
 	github.com/fxamacker/cbor/v2 v2.9.6 // indirect
 	github.com/giantswarm/k8smetadata v0.26.0 // indirect
@@ -101,7 +101,7 @@ require (
 	github.com/gorilla/websocket v1.5.4-0.20250319132907-e064f32e3674 // indirect
 	github.com/gosuri/uitable v0.0.4 // indirect
 	github.com/huandu/xstrings v1.6.2 // indirect
-	github.com/ianlancetaylor/demangle v0.0.0-20260724033716-83e58baca724 // indirect
+	github.com/ianlancetaylor/demangle v0.0.0-20261012173340-cbb8aaea4290 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
 	github.com/jbenet/go-context v0.0.0-20150711004518-d14ea06fba99 // indirect
 	github.com/jmoiron/sqlx v1.4.0 // indirect
@@ -139,7 +139,7 @@ require (
 	github.com/russross/blackfriday/v2 v2.1.0 // indirect
 	github.com/santhosh-tekuri/jsonschema/v6 v6.0.3 // indirect
 	github.com/sergi/go-diff v1.4.0 // indirect
-	github.com/shopspring/decimal v1.5.0 // indirect
+	github.com/shopspring/decimal v1.6.0 // indirect
 	github.com/skeema/knownhosts v1.3.3 // indirect
 	github.com/spf13/afero v1.15.0 // indirect
 	github.com/spf13/cast v1.10.0 // indirect
@@ -168,7 +168,7 @@ require (
 	gopkg.in/evanphx/json-patch.v4 v4.13.0 // indirect
 	gopkg.in/inf.v0 v0.9.1 // indirect
 	gopkg.in/warnings.v0 v0.1.2 // indirect
-	helm.sh/helm/v4 v4.3.0 // indirect
+	helm.sh/helm/v4 v4.3.1 // indirect
 	k8s.io/apiserver v0.37.1 // indirect
 	k8s.io/cli-runtime v0.37.1 // indirect
 	k8s.io/cluster-bootstrap v0.37.1 // indirect
@@ -177,7 +177,7 @@ require (
 	k8s.io/kube-openapi v0.0.0-20260821135717-be32def86098 // indirect
 	k8s.io/streaming v0.37.1 // indirect
 	k8s.io/utils v0.0.0-20260707023825-cf1189d6abe3 // indirect
-	oras.land/oras-go/v2 v2.6.2 // indirect
+	oras.land/oras-go/v2 v2.6.4 // indirect
 	sigs.k8s.io/json v0.0.0-20260909141634-11ed52e25bc5 // indirect
 	sigs.k8s.io/kustomize/api v0.21.2 // indirect
 	sigs.k8s.io/kustomize/kyaml v0.21.2 // indirect

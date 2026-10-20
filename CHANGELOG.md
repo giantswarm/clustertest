@@ -10,6 +10,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Go: Update dependencies.
+- Go: Update to v1.27.2.
+- CI: Use the `architect` orb's commands instead of custom tool installation steps.
 
 ## [5.6.3] - 2026-10-12
 

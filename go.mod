@@ -1,6 +1,6 @@
 module github.com/giantswarm/clustertest/v5
 
-go 1.27.1
+go 1.27.2
 
 require (
 	dario.cat/mergo v1.0.2

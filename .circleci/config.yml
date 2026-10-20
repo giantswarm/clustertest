@@ -9,7 +9,9 @@ jobs:
       image: default
     steps:
       - checkout
-      - architect/machine-install-go
+      - architect/machine-install-go:
+          go_version: 1.27.1
+          archive_sha: 63d339f0da5ab53635a56f2490a7984dfe12dfcff22ad749f63edaf590168445
       - run:
           name: "Create cache dir"
           command: |

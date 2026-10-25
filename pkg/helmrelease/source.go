@@ -121,7 +121,7 @@ func EnsureSource(ctx context.Context, c cr.Client, source Source) error {
 			Spec: sourcev1.HelmRepositorySpec{
 				Type:     repoType,
 				URL:      s.URL,
-				Interval: &metav1.Duration{Duration: s.Interval},
+				Interval: metav1.Duration{Duration: s.Interval},
 			},
 		}
 	default:

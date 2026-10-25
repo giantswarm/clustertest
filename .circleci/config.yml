@@ -1,4 +1,5 @@
 version: 2.1
+
 orbs:
   architect: giantswarm/architect@10.16.3
 
@@ -8,8 +9,8 @@ jobs:
     steps:
       - checkout
       - architect/machine-install-go:
-          go_version: 1.27.2
-          archive_sha: ecbadb99091a3f46e31f5f934b068b1864eafa7995211b39eaddf76996045fe5
+          go_version: 1.27.3
+          archive_sha: 65efbc80fdc1fa2cd2631cad5b481777a68e8725f34e89f50fc6ac714e379b40
       - run:
           name: Install golangci-lint and nancy
           command: |

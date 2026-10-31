@@ -11,7 +11,7 @@ require (
 	github.com/fluxcd/pkg/apis/meta v1.38.0
 	github.com/fluxcd/source-controller/api v1.10.1
 	github.com/giantswarm/apiextensions-application v0.6.2
-	github.com/giantswarm/gitsemver/v3 v3.0.11
+	github.com/giantswarm/gitsemver/v3 v3.0.12
 	github.com/giantswarm/kubectl-gs/v2 v2.57.0
 	github.com/giantswarm/organization-operator v1.6.4
 	github.com/giantswarm/releases/sdk v0.13.0

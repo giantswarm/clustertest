@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Change `NodePool.MinSize` and `NodePool.MaxSize` to `*int` so that callers can tell an unset value from `0`
+
 ## [5.6.7] - 2026-11-17
 
 ### Changed

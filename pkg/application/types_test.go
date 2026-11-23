@@ -3,6 +3,7 @@ package application
 import (
 	"testing"
 
+	"k8s.io/utils/ptr"
 	"sigs.k8s.io/yaml"
 )
 
@@ -33,8 +34,8 @@ func TestClusterValuesNodePool(t *testing.T) {
 				NodePools: NodePools{
 					"pool1": NodePool{
 						Replicas: 1,
-						MinSize:  1,
-						MaxSize:  1,
+						MinSize:  ptr.To(1),
+						MaxSize:  ptr.To(1),
 					},
 				},
 			},
@@ -55,13 +56,25 @@ func TestClusterValuesNodePool(t *testing.T) {
 				NodePools: NodePools{
 					"pool1": NodePool{
 						Replicas: 1,
-						MinSize:  1,
-						MaxSize:  1,
+						MinSize:  ptr.To(1),
+						MaxSize:  ptr.To(1),
 					},
 					"pool2": NodePool{
 						Replicas: 2,
-						MinSize:  2,
-						MaxSize:  2,
+						MinSize:  ptr.To(2),
+						MaxSize:  ptr.To(2),
+					},
+				},
+			},
+		},
+		{
+			description: "map without minSize and maxSize",
+			input:       "nodePools:\n  pool1:\n    replicas: 3",
+			expectError: false,
+			expected: ClusterValues{
+				NodePools: NodePools{
+					"pool1": NodePool{
+						Replicas: 3,
 					},
 				},
 			},
@@ -78,8 +91,8 @@ func TestClusterValuesNodePool(t *testing.T) {
 				NodePools: NodePools{
 					"pool1": NodePool{
 						Replicas: 1,
-						MinSize:  1,
-						MaxSize:  1,
+						MinSize:  ptr.To(1),
+						MaxSize:  ptr.To(1),
 					},
 				},
 			},
@@ -100,13 +113,13 @@ func TestClusterValuesNodePool(t *testing.T) {
 				NodePools: NodePools{
 					"pool1": NodePool{
 						Replicas: 1,
-						MinSize:  1,
-						MaxSize:  1,
+						MinSize:  ptr.To(1),
+						MaxSize:  ptr.To(1),
 					},
 					"pool2": NodePool{
 						Replicas: 2,
-						MinSize:  2,
-						MaxSize:  2,
+						MinSize:  ptr.To(2),
+						MaxSize:  ptr.To(2),
 					},
 				},
 			},
@@ -179,8 +192,8 @@ nodePools:
 				},
 				NodePools: NodePools{
 					"pool1": NodePool{
-						MinSize:  1,
-						MaxSize:  1,
+						MinSize:  ptr.To(1),
+						MaxSize:  ptr.To(1),
 						Replicas: 1,
 					},
 				},
@@ -204,8 +217,8 @@ nodePools:
 				},
 				NodePools: NodePools{
 					"pool1": NodePool{
-						MinSize:  1,
-						MaxSize:  1,
+						MinSize:  ptr.To(1),
+						MaxSize:  ptr.To(1),
 						Replicas: 1,
 					},
 				},
@@ -246,8 +259,8 @@ nodePools:
 				},
 				NodePools: NodePools{
 					"pool1": NodePool{
-						MinSize:  1,
-						MaxSize:  1,
+						MinSize:  ptr.To(1),
+						MaxSize:  ptr.To(1),
 						Replicas: 1,
 					},
 				},
@@ -291,11 +304,11 @@ controlPlane:
 				if !ok {
 					t.Errorf("Result didn't have expected node pool name. Expected %s", key)
 				} else {
-					if val.MaxSize != np.MaxSize {
-						t.Errorf("Result NodePool didn't have expected MaxSize. Expected %d, Actual %d", val.MaxSize, np.MaxSize)
+					if !ptr.Equal(val.MaxSize, np.MaxSize) {
+						t.Errorf("Result NodePool didn't have expected MaxSize. Expected %v, Actual %v", ptr.Deref(val.MaxSize, 0), ptr.Deref(np.MaxSize, 0))
 					}
-					if val.MinSize != np.MinSize {
-						t.Errorf("Result NodePool didn't have expected MinSize. Expected %d, Actual %d", val.MinSize, np.MinSize)
+					if !ptr.Equal(val.MinSize, np.MinSize) {
+						t.Errorf("Result NodePool didn't have expected MinSize. Expected %v, Actual %v", ptr.Deref(val.MinSize, 0), ptr.Deref(np.MinSize, 0))
 					}
 					if val.Replicas != np.Replicas {
 						t.Errorf("Result NodePool didn't have expected Replicas. Expected %d, Actual %d", val.Replicas, np.Replicas)

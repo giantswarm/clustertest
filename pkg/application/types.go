@@ -48,8 +48,8 @@ type ControlPlane struct {
 // NodePool contains the minimum required values for a Node Pools values
 type NodePool struct {
 	Replicas int     `yaml:"replicas"`
-	MaxSize  int     `yaml:"maxSize"`
-	MinSize  int     `yaml:"minSize"`
+	MaxSize  *int    `yaml:"maxSize"`
+	MinSize  *int    `yaml:"minSize"`
 	Name     *string `yaml:"name"`
 }
 

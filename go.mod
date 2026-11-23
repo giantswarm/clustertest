@@ -9,7 +9,7 @@ require (
 	github.com/cert-manager/cert-manager v1.21.3
 	github.com/fluxcd/helm-controller/api v1.7.1
 	github.com/fluxcd/pkg/apis/meta v1.39.0
-	github.com/fluxcd/source-controller/api v1.10.1
+	github.com/fluxcd/source-controller/api v1.10.2
 	github.com/giantswarm/apiextensions-application v0.6.2
 	github.com/giantswarm/gitsemver/v3 v3.1.3
 	github.com/giantswarm/kubectl-gs/v2 v2.57.0

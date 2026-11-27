@@ -8,7 +8,7 @@ require (
 	github.com/cenkalti/backoff/v7 v7.0.3
 	github.com/cert-manager/cert-manager v1.21.3
 	github.com/fluxcd/helm-controller/api v1.7.2
-	github.com/fluxcd/pkg/apis/meta v1.39.0
+	github.com/fluxcd/pkg/apis/meta v1.40.0
 	github.com/fluxcd/source-controller/api v1.10.2
 	github.com/giantswarm/apiextensions-application v0.6.2
 	github.com/giantswarm/gitsemver/v3 v3.1.3
@@ -21,7 +21,7 @@ require (
 	gopkg.in/yaml.v3 v3.0.1
 	k8s.io/api v0.37.2
 	k8s.io/apiextensions-apiserver v0.37.2
-	k8s.io/apimachinery v0.37.2
+	k8s.io/apimachinery v0.37.3
 	k8s.io/client-go v0.37.2
 	k8s.io/kubectl v0.37.2
 	sigs.k8s.io/cluster-api v1.14.4
@@ -158,7 +158,7 @@ require (
 	go.yaml.in/yaml/v2 v2.4.5 // indirect
 	go.yaml.in/yaml/v3 v3.0.6 // indirect
 	golang.org/x/crypto v0.59.0 // indirect
-	golang.org/x/net v0.62.0 // indirect
+	golang.org/x/net v0.63.0 // indirect
 	golang.org/x/oauth2 v0.38.0 // indirect
 	golang.org/x/sync v0.25.0 // indirect
 	golang.org/x/sys v0.50.0 // indirect
@@ -176,7 +176,7 @@ require (
 	k8s.io/component-base v0.37.2 // indirect
 	k8s.io/klog/v2 v2.140.0 // indirect
 	k8s.io/kube-openapi v0.0.0-20260821135717-be32def86098 // indirect
-	k8s.io/streaming v0.37.2 // indirect
+	k8s.io/streaming v0.37.3 // indirect
 	k8s.io/utils v0.0.0-20261023123148-ca04ba58ecab // indirect
 	oras.land/oras-go/v2 v2.7.0 // indirect
 	sigs.k8s.io/json v0.0.0-20260909141634-11ed52e25bc5 // indirect
